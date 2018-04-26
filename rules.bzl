@@ -5,13 +5,13 @@ def _ts_library_impl(ctx):
     inputs = [
       d[TsLibraryInfo].compiled_dir
       for d in ctx.attr.deps
-    ] + ctx.files.srcs + ctx.files._replace_imports_script,
+    ] + ctx.files.srcs + ctx.files._ts_library_generate_full_src_script,
     outputs = [
       ctx.outputs.full_src_dir,
     ],
     executable = ctx.executable._node,
     arguments = [
-      f.path for f in ctx.files._replace_imports_script
+      f.path for f in ctx.files._ts_library_generate_full_src_script
     ] + [
       ctx.build_file_path,
       ctx.outputs.full_src_dir.path,
@@ -66,10 +66,10 @@ ts_library = rule(
       cfg="host",
       default = Label("@build_bazel_rules_nodejs//internal/rollup:tsc"),
     ),
-    "_replace_imports_script": attr.label(
+    "_ts_library_generate_full_src_script": attr.label(
       allow_files = True,
       single_file = True,
-      default = Label("//:replace_imports.js"),
+      default = Label("//:ts_library_generate_full_src.js"),
     ),
   },
   outputs = {
