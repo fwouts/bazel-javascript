@@ -26,6 +26,35 @@ ts_library = rule(
   },
 )
 
+def _ts_binary_impl(ctx):
+  ctx.actions.run_shell(
+    inputs = [ctx.file.lib],
+    outputs = [ctx.outputs.executable_file],
+    command = "echo \"#!/usr/bin/env node\" > %s && cat %s >> %s" % (
+      ctx.outputs.executable_file.path,
+      ctx.file.lib.path,
+      ctx.outputs.executable_file.path,
+    ),
+  )
+  return [
+    DefaultInfo(
+      executable = ctx.outputs.executable_file,
+    ),
+  ]
+
+ts_binary = rule(
+  implementation=_ts_binary_impl,
+  attrs = {
+    "lib": attr.label(
+      single_file = True,
+    ),
+  },
+  executable = True,
+  outputs = {
+    "executable_file": "%{name}.js",
+  },
+)
+
 NpmPackageInfo = provider(fields=["dir", "modules_path"])
 
 def _npm_package_impl(ctx):
@@ -53,7 +82,7 @@ npm_package = rule(
     "version": attr.string(),
     "_yarn": attr.label(
       executable = True,
-      cfg="host",
+      cfg = "host",
       default = Label("@yarn//:yarn"),
     ),
   },

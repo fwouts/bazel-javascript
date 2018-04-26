@@ -1,4 +1,9 @@
-load('//:rules.bzl', 'ts_library')
+load('//:rules.bzl', 'ts_binary', 'ts_library')
+
+ts_binary(
+  name = "app",
+  lib = ":main",
+)
 
 ts_library(
   name = "main",
