@@ -1,2 +1,5 @@
+import { Logger } from "./logger";
+
+const logger = new Logger();
 const message: string = "Hello, World!";
-console.log(message);
+logger.info(message);

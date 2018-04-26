@@ -10,4 +10,15 @@ ts_library(
   srcs = [
     "main.ts",
   ],
+  deps = [
+    ":logger",
+  ]
+)
+
+ts_library(
+  name = "logger",
+  srcs = [
+    "constants.ts",
+    "logger.ts",
+  ],
 )

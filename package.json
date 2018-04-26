@@ -10,6 +10,10 @@
   "devDependencies": {
     "ts-node-dev": "^1.0.0-pre.20",
     "tslint": "^5.9.1",
-    "typescript": "^2.8.1"
+    "typescript": "^2.8.3"
+  },
+  "dependencies": {
+    "codetree": "^0.0.3",
+    "fs-extra": "^5.0.0"
   }
 }
