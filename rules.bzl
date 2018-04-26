@@ -26,21 +26,27 @@ ts_library = rule(
   },
 )
 
+NpmPackageInfo = provider(fields=["dir", "modules_path"])
+
 def _npm_package_impl(ctx):
   ctx.actions.run(
+    executable = ctx.executable._yarn,
+    outputs = [ctx.outputs.dir],
     arguments = [
       "--cwd",
-      ctx.genfiles_dir.path,
-      "--modules-folder",
-      ctx.outputs.node_modules.path,
+      ctx.outputs.dir.path,
       "add",
       ctx.attr.package + "@" + ctx.attr.version,
     ],
-    outputs = [ctx.outputs.node_modules],
-    executable = ctx.executable._yarn,
   )
+  return [
+    NpmPackageInfo(
+      dir = ctx.outputs.dir,
+      modules_path = ctx.outputs.dir.short_path + '/node_modules'
+    ),
+  ]
 
-npm_package = rule (
+npm_package = rule(
   implementation = _npm_package_impl,
   attrs = {
     "package": attr.string(),
@@ -52,6 +58,34 @@ npm_package = rule (
     ),
   },
   outputs = {
-    "node_modules": "%{name}_node_modules",
+    "dir": "%{name}_dir",
   },
+)
+
+def _npm_binary_impl(ctx):
+  modules_path = ctx.attr.package[NpmPackageInfo].modules_path
+  ctx.actions.write(
+    output = ctx.outputs.bin,
+    content = "%s/.bin/%s" % (modules_path, ctx.attr.binary),
+    is_executable = True,
+  )
+  return [
+    DefaultInfo(
+      runfiles = ctx.runfiles(
+        files = [ctx.attr.package[NpmPackageInfo].dir],
+      ),
+      executable = ctx.outputs.bin,
+    )
+  ]
+
+npm_binary = rule(
+  implementation = _npm_binary_impl,
+  attrs = {
+    "package": attr.label(),
+    "binary": attr.string(),
+  },
+  outputs = {
+    "bin": "%{name}.sh"
+  },
+  executable = True,
 )
