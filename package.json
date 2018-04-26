@@ -12,7 +12,6 @@
     "typescript": "^2.8.3"
   },
   "dependencies": {
-    "codetree": "^0.0.3",
     "fs-extra": "^5.0.0"
   }
 }
