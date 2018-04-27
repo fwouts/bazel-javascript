@@ -69,7 +69,7 @@ ts_library = rule(
   implementation=_ts_library_impl,
   attrs = {
     "srcs": attr.label_list(
-      allow_files=[".ts"],
+      allow_files=[".ts", ".tsx"],
     ),
     "deps": attr.label_list(
       providers = [
