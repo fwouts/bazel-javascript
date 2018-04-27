@@ -12,6 +12,7 @@
     "typescript": "^2.8.3"
   },
   "dependencies": {
-    "fs-extra": "^5.0.0"
+    "fs-extra": "^5.0.0",
+    "textbuilder": "^1.0.3"
   }
 }

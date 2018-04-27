@@ -1,23 +1,49 @@
-TsLibraryInfo = provider(fields=["compiled_dir", "full_src_dir", "srcs"])
+TsLibraryInfo = provider(fields=["compiled_dir", "full_src_dir", "srcs", "package_deps"])
+NpmPackageInfo = provider(fields=["package", "version", "dir", "modules_path"])
 
 def _ts_library_impl(ctx):
+  package_deps = depset(
+    direct = [
+      dep[NpmPackageInfo]
+      for dep in ctx.attr.deps
+      if NpmPackageInfo in dep
+    ],
+    transitive = [
+      dep[TsLibraryInfo].package_deps
+      for dep in ctx.attr.deps
+      if TsLibraryInfo in dep
+    ],
+  )
   ctx.actions.run(
     inputs = [
+      ctx.executable._yarn,
+      ctx.executable._tsc,
+    ] + [
       d[TsLibraryInfo].compiled_dir
       for d in ctx.attr.deps
+      if TsLibraryInfo in d
     ] + [
       d[TsLibraryInfo].full_src_dir
       for d in ctx.attr.deps
-    ] + ctx.files.srcs + ctx.files._ts_library_generate_full_src_script,
+      if TsLibraryInfo in d
+    ] + ctx.files.srcs + ctx.files._ts_library_compile_script,
     outputs = [
       ctx.outputs.full_src_dir,
+      ctx.outputs.compiled_dir,
     ],
     executable = ctx.executable._node,
     arguments = [
-      f.path for f in ctx.files._ts_library_generate_full_src_script
+      f.path for f in ctx.files._ts_library_compile_script
     ] + [
+      ctx.executable._yarn.path,
+      ctx.executable._tsc.path,
       ctx.build_file_path,
+      ("|".join([
+        p.package + "@" + p.version
+        for p in package_deps.to_list()
+      ])),
       ctx.outputs.full_src_dir.path,
+      ctx.outputs.compiled_dir.path,
     ] + [
       d.label.package + ':' +
       d.label.name + ':' +
@@ -25,20 +51,9 @@ def _ts_library_impl(ctx):
       d[TsLibraryInfo].compiled_dir.path + ":" +
       d[TsLibraryInfo].full_src_dir.path
       for d in ctx.attr.deps
+      if TsLibraryInfo in d
     ] + [
       f.path for f in ctx.files.srcs
-    ],
-  )
-  ctx.actions.run(
-    inputs = [ctx.outputs.full_src_dir],
-    outputs = [ctx.outputs.compiled_dir],
-    executable = ctx.executable._tsc,
-    arguments = [
-      "--declaration",
-      "-p",
-      ctx.outputs.full_src_dir.path,
-      "--outDir",
-      ctx.outputs.compiled_dir.path,
     ],
   )
   return [
@@ -46,6 +61,7 @@ def _ts_library_impl(ctx):
       srcs = [f.path for f in ctx.files.srcs],
       compiled_dir = ctx.outputs.compiled_dir,
       full_src_dir = ctx.outputs.full_src_dir,
+      package_deps = package_deps,
     ),
   ]
 
@@ -56,7 +72,10 @@ ts_library = rule(
       allow_files=[".ts"],
     ),
     "deps": attr.label_list(
-      providers = [TsLibraryInfo],
+      providers = [
+        [TsLibraryInfo],
+        [NpmPackageInfo],
+      ],
       default = [],
     ),
     "_node": attr.label(
@@ -70,10 +89,15 @@ ts_library = rule(
       cfg="host",
       default = Label("@build_bazel_rules_nodejs//internal/rollup:tsc"),
     ),
-    "_ts_library_generate_full_src_script": attr.label(
+    "_yarn": attr.label(
+      executable = True,
+      cfg = "host",
+      default = Label("@yarn//:yarn"),
+    ),
+    "_ts_library_compile_script": attr.label(
       allow_files = True,
       single_file = True,
-      default = Label("//:ts_library_generate_full_src.js"),
+      default = Label("//:ts_library_compile.js"),
     ),
   },
   outputs = {
@@ -97,6 +121,10 @@ def _ts_binary_impl(ctx):
       ctx.executable._yarn.path,
       ctx.attr.entry,
       ctx.attr.lib[TsLibraryInfo].full_src_dir.path,
+      ("|".join([
+        p.package + "@" + p.version
+        for p in ctx.attr.lib[TsLibraryInfo].package_deps.to_list()
+      ])),
       build_dir.path,
       ctx.outputs.executable_file.path,
     ],
@@ -142,8 +170,6 @@ ts_binary = rule(
   },
 )
 
-NpmPackageInfo = provider(fields=["dir", "modules_path"])
-
 def _npm_package_impl(ctx):
   ctx.actions.run(
     executable = ctx.executable._yarn,
@@ -157,6 +183,8 @@ def _npm_package_impl(ctx):
   )
   return [
     NpmPackageInfo(
+      package = ctx.attr.package,
+      version = ctx.attr.version,
       dir = ctx.outputs.dir,
       modules_path = ctx.outputs.dir.short_path + '/node_modules'
     ),

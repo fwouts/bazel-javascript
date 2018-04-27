@@ -6,8 +6,9 @@ const nodePath = process.argv[0];
 const yarnPath = process.argv[2];
 const entry = process.argv[3];
 const srcDirPath = process.argv[4];
-const buildDirPath = process.argv[5];
-const destFilePath = process.argv[6];
+const packageDeps = process.argv[5].split("|");
+const buildDirPath = process.argv[6];
+const destFilePath = process.argv[7];
 
 if (!fs.existsSync(path.join(srcDirPath, entry))) {
   throw new Error(`Missing entry: ${entry}.`);

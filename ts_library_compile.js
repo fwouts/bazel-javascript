@@ -1,23 +1,55 @@
+const child_process = require("child_process");
 const fs = require("fs-extra");
 const path = require("path");
 const ts = require("typescript");
 
-const buildfileDir = path.dirname(process.argv[2]);
-const destinationDir = process.argv[3];
+const yarnPath = process.argv[2];
+const tscPath = process.argv[3];
+const buildfileDir = path.dirname(process.argv[4]);
+const packageDeps = process.argv[5].split("|");
+const destinationDir = process.argv[6];
+const compilationDir = process.argv[7];
+
 fs.mkdirSync(destinationDir);
 fs.mkdirSync(path.join(destinationDir, "node_modules"));
 fs.writeFileSync(
   path.join(destinationDir, "package.json"),
-  JSON.stringify({}, null, 2),
+  JSON.stringify(
+    {
+      dependencies: packageDeps.reduce((acc, curr) => {
+        const [package, version] = curr.split("@");
+        if (acc[package] && acc[package] !== version) {
+          throw new Error(
+            `Mismatching versions of the same package ${package}: ${
+              acc[package]
+            } and ${version}.`
+          );
+        }
+        return {
+          ...acc,
+          [package]: version
+        };
+      }, {})
+    },
+    null,
+    2
+  ),
   "utf8"
 );
 fs.writeFileSync(
   path.join(destinationDir, "tsconfig.json"),
   JSON.stringify(
     {
-      target: "esnext",
-      module: "esnext",
-      strict: true
+      compilerOptions: {
+        target: "esnext",
+        module: "esnext",
+        moduleResolution: "node",
+        declaration: true,
+        strict: true,
+        esModuleInterop: true,
+        outDir: path.resolve(compilationDir)
+      },
+      exclude: ["node_modules"]
     },
     null,
     2
@@ -25,9 +57,13 @@ fs.writeFileSync(
   "utf8"
 );
 
+child_process.execSync(`${yarnPath} --cwd ${destinationDir}`, {
+  stdio: "inherit"
+});
+
 const pathToPackagedPath = {};
 
-for (let i = 4; i < process.argv.length; i++) {
+for (let i = 8; i < process.argv.length; i++) {
   const arg = process.argv[i];
   if (arg.indexOf(":") !== -1) {
     const [
@@ -105,3 +141,12 @@ for (let i = 4; i < process.argv.length; i++) {
     fs.writeFileSync(destinationFilePath, updatedFile, "utf8");
   }
 }
+
+child_process.execSync(path.resolve(tscPath), {
+  stdio: "inherit",
+  cwd: destinationDir
+});
+
+// child_process.execSync(`${tscPath} -p ${destinationDir}`, {
+//   stdio: "inherit"
+// });
