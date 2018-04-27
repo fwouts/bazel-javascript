@@ -1,6 +1,19 @@
 package(default_visibility = ["//visibility:public"])
 
-load('//:rules.bzl', 'npm_package', 'ts_library')
+load('//:rules.bzl', 'npm_package', 'ts_library', 'ts_script')
+
+ts_script(
+  name = "storybook",
+  cmd = "start-storybook -p 9001 -c .storybook",
+  srcs = [
+    ".storybook/config.js",
+  ],
+  deps = [
+    ":component_story",
+    ":babel-core",
+    ":react-dom",
+  ],
+)
 
 ts_library(
   name = "component_story",
@@ -49,4 +62,16 @@ npm_package(
   name = "react_types",
   package = "@types/react",
   version = "^16.0.0",
+)
+
+npm_package(
+  name = "react-dom",
+  package = "react-dom",
+  version = "^16.0.0",
+)
+
+npm_package(
+  name = "babel-core",
+  package = "babel-core",
+  version = "^6.26.2",
 )

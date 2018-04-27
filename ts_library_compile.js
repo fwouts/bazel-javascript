@@ -176,7 +176,3 @@ child_process.execSync(path.resolve(tscPath), {
   stdio: "inherit",
   cwd: destinationDir
 });
-
-// child_process.execSync(`${tscPath} -p ${destinationDir}`, {
-//   stdio: "inherit"
-// });

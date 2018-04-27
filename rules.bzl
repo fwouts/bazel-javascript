@@ -107,6 +107,97 @@ ts_library = rule(
   },
 )
 
+def _ts_script_impl(ctx):
+  build_dir = ctx.actions.declare_directory(ctx.label.name + "_build_dir")
+  runfiles = ctx.runfiles(
+    symlinks = {
+      "yarn": ctx.executable._yarn,
+      "dist": build_dir,
+    },
+  )
+  ctx.actions.run(
+    inputs = [
+      ctx.executable._yarn,
+    ] + ctx.files.srcs + ctx.files._ts_script_compile_script + [
+      d[TsLibraryInfo].compiled_dir
+      for d in ctx.attr.deps
+      if TsLibraryInfo in d
+    ] + [
+      d[TsLibraryInfo].full_src_dir
+      for d in ctx.attr.deps
+      if TsLibraryInfo in d
+    ],
+    outputs = [build_dir, ctx.outputs.executable_file],
+    executable = ctx.executable._node,
+    arguments = [
+      f.path for f in ctx.files._ts_script_compile_script
+    ] + [
+      ctx.executable._yarn.path,
+      ctx.attr.cmd,
+      ctx.build_file_path,
+      ("|".join([f.path for f in ctx.files.srcs])),
+      ("|".join([
+        d[NpmPackageInfo].package + "@" + d[NpmPackageInfo].version
+        for d in ctx.attr.deps
+        if NpmPackageInfo in d
+      ])),
+      ("|".join([
+        d.label.package + ':' +
+        d.label.name + ':' +
+        ("|".join(d[TsLibraryInfo].srcs)) + ":" +
+        d[TsLibraryInfo].compiled_dir.path + ":" +
+        d[TsLibraryInfo].full_src_dir.path
+        for d in ctx.attr.deps
+        if TsLibraryInfo in d
+      ])),
+      build_dir.path,
+      ctx.outputs.executable_file.path,
+    ],
+  )
+  return [
+    DefaultInfo(
+      executable = ctx.outputs.executable_file,
+      runfiles = runfiles,
+    ),
+  ]
+
+ts_script = rule(
+  implementation = _ts_script_impl,
+  attrs = {
+    "cmd": attr.string(),
+    "srcs": attr.label_list(
+      allow_files = True,
+      default = [],
+    ),
+    "deps": attr.label_list(
+      providers = [
+        [TsLibraryInfo],
+        [NpmPackageInfo],
+      ],
+    ),
+    "_node": attr.label(
+      allow_files = True,
+      executable = True,
+      cfg = "host",
+      default = Label("@nodejs//:node"),
+    ),
+    "_yarn": attr.label(
+      executable = True,
+      cfg = "host",
+      default = Label("@yarn//:yarn"),
+    ),
+    "_ts_script_compile_script": attr.label(
+      allow_files = True,
+      single_file = True,
+      default = Label("//:ts_script_compile.js"),
+    ),
+  },
+  executable = True,
+  outputs = {
+    "executable_file": "%{name}.sh",
+  },
+)
+
 def _ts_binary_impl(ctx):
   build_dir = ctx.actions.declare_directory(ctx.label.name + "_build_dir")
   ctx.actions.run(
