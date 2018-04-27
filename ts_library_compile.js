@@ -10,26 +10,33 @@ const packageDeps = process.argv[5].split("|");
 const destinationDir = process.argv[6];
 const compilationDir = process.argv[7];
 
+const dependencies = packageDeps.reduce((acc, curr) => {
+  const atSignPosition = curr.lastIndexOf("@");
+  if (atSignPosition === -1) {
+    throw new Error(`Expected @ sign in ${curr}.`);
+  }
+  const package = curr.substr(0, atSignPosition);
+  const version = curr.substr(atSignPosition + 1);
+  if (acc[package] && acc[package] !== version) {
+    throw new Error(
+      `Mismatching versions of the same package ${package}: ${
+        acc[package]
+      } and ${version}.`
+    );
+  }
+  return {
+    ...acc,
+    [package]: version
+  };
+}, {});
+
 fs.mkdirSync(destinationDir);
 fs.mkdirSync(path.join(destinationDir, "node_modules"));
 fs.writeFileSync(
   path.join(destinationDir, "package.json"),
   JSON.stringify(
     {
-      dependencies: packageDeps.reduce((acc, curr) => {
-        const [package, version] = curr.split("@");
-        if (acc[package] && acc[package] !== version) {
-          throw new Error(
-            `Mismatching versions of the same package ${package}: ${
-              acc[package]
-            } and ${version}.`
-          );
-        }
-        return {
-          ...acc,
-          [package]: version
-        };
-      }, {})
+      dependencies
     },
     null,
     2
@@ -46,6 +53,7 @@ fs.writeFileSync(
         moduleResolution: "node",
         declaration: true,
         strict: true,
+        jsx: "preserve",
         esModuleInterop: true,
         outDir: path.resolve(compilationDir)
       },
@@ -129,6 +137,28 @@ for (let i = 8; i < process.argv.length; i++) {
           }
         }
         if (!replaceWith) {
+          if (importFrom.startsWith("./")) {
+            // This must be a local import.
+            // Compilation will fail if it's missing. No need to check here.
+          } else {
+            // This must be an external package.
+            // TODO: Also handle workspace-level references, e.g. '@/src/etc'.
+            let packageName;
+            const splitImportFrom = importFrom.split("/");
+            if (
+              splitImportFrom.length >= 2 &&
+              splitImportFrom[0].startsWith("@")
+            ) {
+              // Example: @storybook/react.
+              packageName = splitImportFrom[0] + "/" + splitImportFrom[1];
+            } else {
+              // Example: react.
+              packageName = splitImportFrom[0];
+            }
+            if (!dependencies[packageName]) {
+              throw new Error(`Undeclared dependency: ${packageName}.`);
+            }
+          }
           // It could well be a perfectly correct reference to an external module
           // or another file in the same target.
           // This will fail at compilation time if there is no match.

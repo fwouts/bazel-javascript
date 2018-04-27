@@ -39,8 +39,9 @@ def _ts_library_impl(ctx):
       ctx.executable._tsc.path,
       ctx.build_file_path,
       ("|".join([
-        p.package + "@" + p.version
-        for p in package_deps.to_list()
+        d[NpmPackageInfo].package + "@" + d[NpmPackageInfo].version
+        for d in ctx.attr.deps
+        if NpmPackageInfo in d
       ])),
       ctx.outputs.full_src_dir.path,
       ctx.outputs.compiled_dir.path,
