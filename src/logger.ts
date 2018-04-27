@@ -1,4 +1,4 @@
-import { INFO_PREFIX } from "./constants";
+import { INFO_PREFIX } from "./nested/constants";
 
 export class Logger {
   public info(message: string) {

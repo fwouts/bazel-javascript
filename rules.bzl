@@ -5,6 +5,9 @@ def _ts_library_impl(ctx):
     inputs = [
       d[TsLibraryInfo].compiled_dir
       for d in ctx.attr.deps
+    ] + [
+      d[TsLibraryInfo].full_src_dir
+      for d in ctx.attr.deps
     ] + ctx.files.srcs + ctx.files._ts_library_generate_full_src_script,
     outputs = [
       ctx.outputs.full_src_dir,
@@ -19,7 +22,8 @@ def _ts_library_impl(ctx):
       d.label.package + ':' +
       d.label.name + ':' +
       ("|".join(d[TsLibraryInfo].srcs)) + ":" +
-      d[TsLibraryInfo].compiled_dir.path
+      d[TsLibraryInfo].compiled_dir.path + ":" +
+      d[TsLibraryInfo].full_src_dir.path
       for d in ctx.attr.deps
     ] + [
       f.path for f in ctx.files.srcs

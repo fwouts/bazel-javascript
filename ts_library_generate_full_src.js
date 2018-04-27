@@ -30,7 +30,13 @@ const pathToPackagedPath = {};
 for (let i = 4; i < process.argv.length; i++) {
   const arg = process.argv[i];
   if (arg.indexOf(":") !== -1) {
-    const [targetPackage, targetName, joinedSrcs, outputDir] = arg.split(":");
+    const [
+      targetPackage,
+      targetName,
+      joinedSrcs,
+      compiledDir,
+      fullSrcDir
+    ] = arg.split(":");
     const srcs = joinedSrcs.split("|");
     const rootModuleName =
       "__" + targetPackage.replace(/\//g, "__") + "__" + targetName;
@@ -43,8 +49,17 @@ for (let i = 4; i < process.argv.length; i++) {
         path.parse(src).name
       );
     }
+    // Copy target dependencies.
     fs.copySync(
-      outputDir,
+      path.join(fullSrcDir, "node_modules"),
+      path.join(destinationDir, "node_modules"),
+      {
+        dereference: true
+      }
+    );
+    // Copy target itself.
+    fs.copySync(
+      compiledDir,
       path.join(destinationDir, "node_modules", rootModuleName),
       {
         dereference: true

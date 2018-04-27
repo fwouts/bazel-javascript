@@ -1,3 +1,5 @@
+package(default_visibility = ["//visibility:public"])
+
 load('//:rules.bzl', 'npm_binary', 'npm_package')
 
 npm_binary(

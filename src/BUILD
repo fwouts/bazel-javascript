@@ -1,3 +1,5 @@
+package(default_visibility = ["//visibility:public"])
+
 load('//:rules.bzl', 'ts_binary', 'ts_library')
 
 ts_binary(
@@ -19,7 +21,9 @@ ts_library(
 ts_library(
   name = "logger",
   srcs = [
-    "constants.ts",
     "logger.ts",
   ],
+  deps = [
+    "//src/nested:constants",
+  ]
 )

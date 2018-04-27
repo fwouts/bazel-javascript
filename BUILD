@@ -1,3 +1,5 @@
+package(default_visibility = ["//visibility:public"])
+
 exports_files([
   "rules.bzl",
   "ts_binary_compile.js",
