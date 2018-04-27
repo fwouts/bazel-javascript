@@ -7,22 +7,27 @@ let arg = 0;
 const nodePath = process.argv[arg++];
 const scriptPath = process.argv[arg++];
 const yarnPath = process.argv[arg++];
+const yarnPathShort = process.argv[arg++];
 const cmd = process.argv[arg++];
 const buildPath = process.argv[arg++];
 const srcs = process.argv[arg++].split("|");
 const externalDeps = process.argv[arg++].split("|");
 const internalDeps = process.argv[arg++].split("|");
 const destinationDir = process.argv[arg++];
+const destinationDirShort = process.argv[arg++];
 const executablePath = process.argv[arg++];
 
 fs.mkdirSync(destinationDir);
 for (const src of srcs) {
   const destPath = path.relative(path.dirname(buildPath), src);
   fs.ensureDirSync(path.dirname(path.join(destinationDir, destPath)));
-  fs.copySync(src, path.join(destinationDir, destPath));
+  fs.copySync(src, path.join(destinationDir, destPath), { dereference: true });
 }
 
 const dependencies = externalDeps.reduce((acc, curr) => {
+  if (!curr) {
+    return acc;
+  }
   const atSignPosition = curr.lastIndexOf("@");
   if (atSignPosition === -1) {
     throw new Error(`Expected @ sign in ${curr}.`);
@@ -61,24 +66,9 @@ child_process.execSync(`${yarnPath} --cwd ${destinationDir}`, {
 });
 
 for (const internalDep of internalDeps) {
-  const [
-    targetPackage,
-    targetName,
-    joinedSrcs,
-    compiledDir,
-    fullSrcDir
-  ] = internalDep.split(":");
+  const [targetPackage, targetName, compiledDir] = internalDep.split(":");
   const rootModuleName =
     "__" + targetPackage.replace(/\//g, "__") + "__" + targetName;
-  // Copy target dependencies.
-  fs.copySync(
-    path.join(fullSrcDir, "node_modules"),
-    path.join(destinationDir, "node_modules"),
-    {
-      dereference: true
-    }
-  );
-  // Copy target itself.
   fs.copySync(
     compiledDir,
     path.join(destinationDir, "node_modules", rootModuleName),
@@ -91,8 +81,7 @@ for (const internalDep of internalDeps) {
 fs.writeFileSync(
   executablePath,
   `#!/bin/sh
-cd dist
-../yarn start
+${yarnPathShort} --cwd ${destinationDirShort} start
 `,
   "utf8"
 );

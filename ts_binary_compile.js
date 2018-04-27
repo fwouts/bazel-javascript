@@ -2,19 +2,56 @@ const child_process = require("child_process");
 const fs = require("fs-extra");
 const path = require("path");
 
-const nodePath = process.argv[0];
-const yarnPath = process.argv[2];
-const entry = process.argv[3];
-const srcDirPath = process.argv[4];
-const packageDeps = process.argv[5].split("|");
-const buildDirPath = process.argv[6];
-const destFilePath = process.argv[7];
+let arg = 0;
+
+const nodePath = process.argv[arg++];
+const scriptPath = process.argv[arg++];
+const yarnPath = process.argv[arg++];
+const entry = process.argv[arg++];
+const srcDirPath = process.argv[arg++];
+const externalDeps = process.argv[arg++].split("|");
+const buildDirPath = process.argv[arg++];
+const destFilePath = process.argv[arg++];
 
 if (!fs.existsSync(path.join(srcDirPath, entry))) {
   throw new Error(`Missing entry: ${entry}.`);
 }
 
 fs.copySync(srcDirPath, buildDirPath, { dereference: true });
+
+const dependencies = externalDeps.reduce((acc, curr) => {
+  if (!curr) {
+    return acc;
+  }
+  const atSignPosition = curr.lastIndexOf("@");
+  if (atSignPosition === -1) {
+    throw new Error(`Expected @ sign in ${curr}.`);
+  }
+  const package = curr.substr(0, atSignPosition);
+  const version = curr.substr(atSignPosition + 1);
+  if (acc[package] && acc[package] !== version) {
+    throw new Error(
+      `Mismatching versions of the same package ${package}: ${
+        acc[package]
+      } and ${version}.`
+    );
+  }
+  return {
+    ...acc,
+    [package]: version
+  };
+}, {});
+fs.writeFileSync(
+  path.join(buildDirPath, "package.json"),
+  JSON.stringify(
+    {
+      dependencies
+    },
+    null,
+    2
+  ),
+  "utf8"
+);
 
 fs.writeFileSync(
   path.join(buildDirPath, "webpack.config.js"),
@@ -54,7 +91,7 @@ module.exports = {
   "utf8"
 );
 
-child_process.execSync(`${yarnPath} add --cwd ${buildDirPath}`, {
+child_process.execSync(`${yarnPath} --cwd ${buildDirPath}`, {
   stdio: "inherit"
 });
 

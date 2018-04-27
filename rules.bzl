@@ -1,15 +1,27 @@
-TsLibraryInfo = provider(fields=["compiled_dir", "full_src_dir", "srcs", "package_deps"])
+TsLibraryInfo = provider(fields=["compiled_dir", "full_src_dir", "srcs", "external_deps", "internal_deps"])
 NpmPackageInfo = provider(fields=["package", "version", "dir", "modules_path"])
 
 def _ts_library_impl(ctx):
-  package_deps = depset(
+  internal_deps = depset(
+    direct = [
+      dep
+      for dep in ctx.attr.deps
+      if TsLibraryInfo in dep
+    ],
+    transitive = [
+      dep[TsLibraryInfo].internal_deps
+      for dep in ctx.attr.deps
+      if TsLibraryInfo in dep
+    ],
+  )
+  external_deps = depset(
     direct = [
       dep[NpmPackageInfo]
       for dep in ctx.attr.deps
       if NpmPackageInfo in dep
     ],
     transitive = [
-      dep[TsLibraryInfo].package_deps
+      dep[TsLibraryInfo].external_deps
       for dep in ctx.attr.deps
       if TsLibraryInfo in dep
     ],
@@ -20,11 +32,7 @@ def _ts_library_impl(ctx):
       ctx.executable._tsc,
     ] + [
       d[TsLibraryInfo].compiled_dir
-      for d in ctx.attr.deps
-      if TsLibraryInfo in d
-    ] + [
-      d[TsLibraryInfo].full_src_dir
-      for d in ctx.attr.deps
+      for d in internal_deps
       if TsLibraryInfo in d
     ] + ctx.files.srcs + ctx.files._ts_library_compile_script,
     outputs = [
@@ -43,18 +51,18 @@ def _ts_library_impl(ctx):
         for d in ctx.attr.deps
         if NpmPackageInfo in d
       ])),
+      ("|".join([
+        d.label.package + ':' +
+        d.label.name + ':' +
+        ("|".join(d[TsLibraryInfo].srcs)) + ":" +
+        d[TsLibraryInfo].compiled_dir.path
+        for d in internal_deps
+      ])),
+      ("|".join([
+        f.path for f in ctx.files.srcs
+      ])),
       ctx.outputs.full_src_dir.path,
       ctx.outputs.compiled_dir.path,
-    ] + [
-      d.label.package + ':' +
-      d.label.name + ':' +
-      ("|".join(d[TsLibraryInfo].srcs)) + ":" +
-      d[TsLibraryInfo].compiled_dir.path + ":" +
-      d[TsLibraryInfo].full_src_dir.path
-      for d in ctx.attr.deps
-      if TsLibraryInfo in d
-    ] + [
-      f.path for f in ctx.files.srcs
     ],
   )
   return [
@@ -62,7 +70,8 @@ def _ts_library_impl(ctx):
       srcs = [f.path for f in ctx.files.srcs],
       compiled_dir = ctx.outputs.compiled_dir,
       full_src_dir = ctx.outputs.full_src_dir,
-      package_deps = package_deps,
+      external_deps = external_deps,
+      internal_deps = internal_deps,
     ),
   ]
 
@@ -108,24 +117,43 @@ ts_library = rule(
 )
 
 def _ts_script_impl(ctx):
+  internal_deps = depset(
+    direct = [
+      dep
+      for dep in ctx.attr.deps
+      if TsLibraryInfo in dep
+    ],
+    transitive = [
+      dep[TsLibraryInfo].internal_deps
+      for dep in ctx.attr.deps
+      if TsLibraryInfo in dep
+    ],
+  )
+  external_deps = depset(
+    direct = [
+      dep[NpmPackageInfo]
+      for dep in ctx.attr.deps
+      if NpmPackageInfo in dep
+    ],
+    transitive = [
+      dep[TsLibraryInfo].external_deps
+      for dep in ctx.attr.deps
+      if TsLibraryInfo in dep
+    ],
+  )
   build_dir = ctx.actions.declare_directory(ctx.label.name + "_build_dir")
   runfiles = ctx.runfiles(
-    symlinks = {
-      "yarn": ctx.executable._yarn,
-      "dist": build_dir,
-    },
+    files = [
+      ctx.executable._yarn,
+      build_dir,
+    ],
   )
   ctx.actions.run(
     inputs = [
       ctx.executable._yarn,
     ] + ctx.files.srcs + ctx.files._ts_script_compile_script + [
       d[TsLibraryInfo].compiled_dir
-      for d in ctx.attr.deps
-      if TsLibraryInfo in d
-    ] + [
-      d[TsLibraryInfo].full_src_dir
-      for d in ctx.attr.deps
-      if TsLibraryInfo in d
+      for d in internal_deps
     ],
     outputs = [build_dir, ctx.outputs.executable_file],
     executable = ctx.executable._node,
@@ -133,24 +161,22 @@ def _ts_script_impl(ctx):
       f.path for f in ctx.files._ts_script_compile_script
     ] + [
       ctx.executable._yarn.path,
+      ctx.executable._yarn.short_path,
       ctx.attr.cmd,
       ctx.build_file_path,
       ("|".join([f.path for f in ctx.files.srcs])),
       ("|".join([
-        d[NpmPackageInfo].package + "@" + d[NpmPackageInfo].version
-        for d in ctx.attr.deps
-        if NpmPackageInfo in d
+        d.package + "@" + d.version
+        for d in external_deps
       ])),
       ("|".join([
         d.label.package + ':' +
         d.label.name + ':' +
-        ("|".join(d[TsLibraryInfo].srcs)) + ":" +
-        d[TsLibraryInfo].compiled_dir.path + ":" +
-        d[TsLibraryInfo].full_src_dir.path
-        for d in ctx.attr.deps
-        if TsLibraryInfo in d
+        d[TsLibraryInfo].compiled_dir.path
+        for d in internal_deps
       ])),
       build_dir.path,
+      build_dir.short_path,
       ctx.outputs.executable_file.path,
     ],
   )
@@ -215,7 +241,7 @@ def _ts_binary_impl(ctx):
       ctx.attr.lib[TsLibraryInfo].full_src_dir.path,
       ("|".join([
         p.package + "@" + p.version
-        for p in ctx.attr.lib[TsLibraryInfo].package_deps.to_list()
+        for p in ctx.attr.lib[TsLibraryInfo].external_deps
       ])),
       build_dir.path,
       ctx.outputs.executable_file.path,
