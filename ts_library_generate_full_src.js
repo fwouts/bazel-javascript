@@ -33,7 +33,7 @@ for (let i = 4; i < process.argv.length; i++) {
     const [targetPackage, targetName, joinedSrcs, outputDir] = arg.split(":");
     const srcs = joinedSrcs.split("|");
     const rootModuleName =
-      targetPackage.replace(/\//g, "__") + "__" + targetName;
+      "__" + targetPackage.replace(/\//g, "__") + "__" + targetName;
     for (const src of srcs) {
       pathToPackagedPath[
         path.join(path.dirname(src), path.parse(src).name)
@@ -45,7 +45,10 @@ for (let i = 4; i < process.argv.length; i++) {
     }
     fs.copySync(
       outputDir,
-      path.join(destinationDir, "node_modules", rootModuleName)
+      path.join(destinationDir, "node_modules", rootModuleName),
+      {
+        dereference: true
+      }
     );
   } else {
     const sourceFilePath = arg;

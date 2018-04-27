@@ -3,6 +3,7 @@ load('//:rules.bzl', 'ts_binary', 'ts_library')
 ts_binary(
   name = "app",
   lib = ":main",
+  entry = "main.ts",
 )
 
 ts_library(

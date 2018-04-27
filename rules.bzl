@@ -79,30 +79,23 @@ ts_library = rule(
 )
 
 def _ts_binary_impl(ctx):
-  compiled_file = ctx.actions.declare_file(ctx.label.name + "_compiled_file")
+  build_dir = ctx.actions.declare_directory(ctx.label.name + "_build_dir")
   ctx.actions.run(
-    inputs = [ctx.attr.lib[TsLibraryInfo].full_src_dir],
-    outputs = [compiled_file],
-    executable = ctx.executable._tsc,
+    inputs = [
+      ctx.executable._yarn,
+      ctx.attr.lib[TsLibraryInfo].full_src_dir,
+    ] + ctx.files._ts_binary_compile_script,
+    outputs = [build_dir, ctx.outputs.executable_file],
+    executable = ctx.executable._node,
     arguments = [
-      "-p",
+      f.path for f in ctx.files._ts_binary_compile_script
+    ] + [
+      ctx.executable._yarn.path,
+      ctx.attr.entry,
       ctx.attr.lib[TsLibraryInfo].full_src_dir.path,
-      "--outFile",
-      compiled_file.path,
-      "--module",
-      "amd",
-      "--moduleResolution",
-      "node",
+      build_dir.path,
+      ctx.outputs.executable_file.path,
     ],
-  )
-  ctx.actions.run_shell(
-    inputs = [compiled_file],
-    outputs = [ctx.outputs.executable_file],
-    command = "echo \"#!/usr/bin/env node\" > %s && cat %s >> %s" % (
-      ctx.outputs.executable_file.path,
-      compiled_file.path,
-      ctx.outputs.executable_file.path,
-    ),
   )
   return [
     DefaultInfo(
@@ -116,10 +109,27 @@ ts_binary = rule(
     "lib": attr.label(
       providers = [TsLibraryInfo],
     ),
+    "entry": attr.string(),
+    "_node": attr.label(
+      allow_files = True,
+      executable = True,
+      cfg = "host",
+      default = Label("@nodejs//:node"),
+    ),
     "_tsc": attr.label(
       executable = True,
       cfg="host",
       default = Label("@build_bazel_rules_nodejs//internal/rollup:tsc"),
+    ),
+    "_yarn": attr.label(
+      executable = True,
+      cfg = "host",
+      default = Label("@yarn//:yarn"),
+    ),
+    "_ts_binary_compile_script": attr.label(
+      allow_files = True,
+      single_file = True,
+      default = Label("//:ts_binary_compile.js"),
     ),
   },
   executable = True,
