@@ -60,11 +60,11 @@ fs.writeFileSync(
     {
       compilerOptions: {
         target: "esnext",
-        module: "esnext",
+        module: "commonjs",
         moduleResolution: "node",
         declaration: true,
         strict: true,
-        jsx: "preserve",
+        jsx: "react",
         esModuleInterop: true,
         outDir: path.resolve(compilationDir)
       },

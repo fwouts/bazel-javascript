@@ -81,6 +81,7 @@ for (const internalDep of internalDeps) {
 fs.writeFileSync(
   executablePath,
   `#!/bin/sh
+chmod -R +w ${destinationDirShort}/*
 ${yarnShellCommand(yarnPathShort, destinationDirShort, "start")}
 `,
   "utf8"
