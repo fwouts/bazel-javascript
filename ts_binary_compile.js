@@ -2,6 +2,8 @@ const child_process = require("child_process");
 const fs = require("fs-extra");
 const path = require("path");
 
+const { runYarn } = require("./run_yarn");
+
 let arg = 0;
 
 const nodePath = process.argv[arg++];
@@ -91,16 +93,8 @@ module.exports = {
   "utf8"
 );
 
-child_process.execSync(`${yarnPath} --cwd ${buildDirPath}`, {
-  stdio: "inherit"
-});
-
-child_process.execSync(
-  `${yarnPath} add --cwd ${buildDirPath} ts-loader typescript webpack webpack-cli`,
-  {
-    stdio: "inherit"
-  }
-);
+runYarn(yarnPath, buildDirPath);
+runYarn(yarnPath, buildDirPath, "add ts-loader typescript webpack webpack-cli");
 
 fs.copySync(
   path.join(srcDirPath, "node_modules"),

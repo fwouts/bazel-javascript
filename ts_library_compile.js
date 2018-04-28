@@ -3,6 +3,8 @@ const fs = require("fs-extra");
 const path = require("path");
 const ts = require("typescript");
 
+const { runYarn } = require("./run_yarn");
+
 let arg = 0;
 
 const nodePath = process.argv[arg++];
@@ -74,9 +76,7 @@ fs.writeFileSync(
   "utf8"
 );
 
-child_process.execSync(`${yarnPath} --cwd ${destinationDir}`, {
-  stdio: "inherit"
-});
+runYarn(yarnPath, destinationDir);
 
 const pathToPackagedPath = {};
 

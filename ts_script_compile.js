@@ -2,6 +2,8 @@ const child_process = require("child_process");
 const fs = require("fs-extra");
 const path = require("path");
 
+const { runYarn, yarnShellCommand } = require("./run_yarn");
+
 let arg = 0;
 
 const nodePath = process.argv[arg++];
@@ -61,9 +63,7 @@ fs.writeFileSync(
   "utf8"
 );
 
-child_process.execSync(`${yarnPath} --cwd ${destinationDir}`, {
-  stdio: "inherit"
-});
+runYarn(yarnPath, destinationDir);
 
 for (const internalDep of internalDeps) {
   const [targetPackage, targetName, compiledDir] = internalDep.split(":");
@@ -81,7 +81,7 @@ for (const internalDep of internalDeps) {
 fs.writeFileSync(
   executablePath,
   `#!/bin/sh
-${yarnPathShort} --cwd ${destinationDirShort} start
+${yarnShellCommand(yarnPathShort, destinationDirShort, "start")}
 `,
   "utf8"
 );
