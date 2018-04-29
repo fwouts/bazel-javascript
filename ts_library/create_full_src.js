@@ -19,16 +19,6 @@ const destinationDir = process.argv[arg++];
 
 fs.mkdirSync(destinationDir);
 
-// Copy every external node_modules directory.
-// TODO: Find a way to speed it up. Ideally, we would use fs.symlinkSync() instead
-// since we only need readonly access to these modules, but it doesn't work, I suspect
-// because externalDepsDir is a temporary symlink that stops existing as soon as this
-// rule is done executing.
-fs.copySync(
-  path.join(externalDepsDir, "node_modules"),
-  path.join(destinationDir, "node_modules")
-);
-
 // Add tsconfig.json for future compilation.
 fs.writeFileSync(
   path.join(destinationDir, "tsconfig.json"),
@@ -41,7 +31,16 @@ fs.writeFileSync(
         declaration: true,
         strict: true,
         jsx: "react",
-        esModuleInterop: true
+        esModuleInterop: true,
+        baseUrl: ".",
+        paths: {
+          "*": [
+            path.relative(
+              path.join(destinationDir),
+              path.join(externalDepsDir, "node_modules", "*")
+            )
+          ]
+        }
       },
       exclude: ["node_modules"]
     },
@@ -57,6 +56,7 @@ fs.writeFileSync(
 const pathToPackagedPath = {};
 
 // Copy every internal dependency into the appropriate node_modules/ subdirectory.
+fs.mkdirSync(path.join(destinationDir, "node_modules"));
 for (const internalDep of internalDeps) {
   if (!internalDep) {
     continue;

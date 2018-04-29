@@ -65,7 +65,10 @@ def _ts_library_create_full_src(ctx, external_deps, internal_deps):
 
 def _ts_library_compile(ctx):
   ctx.actions.run(
-    inputs = [ctx.outputs.full_src_dir],
+    inputs = [
+      ctx.outputs.installed_external_deps_dir,
+      ctx.outputs.full_src_dir,
+    ],
     outputs = [ctx.outputs.compiled_dir],
     executable = ctx.executable._tsc,
     arguments = [
@@ -307,6 +310,7 @@ def _ts_binary_compile(ctx):
   ctx.actions.run(
     inputs = [
       ctx.executable._yarn,
+      ctx.outputs.installed_external_deps_dir,
       ctx.outputs.full_src_dir,
     ] + ctx.files._ts_binary_compile_script,
     outputs = [ctx.outputs.executable_file],
@@ -315,6 +319,7 @@ def _ts_binary_compile(ctx):
       f.path for f in ctx.files._ts_binary_compile_script
     ] + [
       ctx.build_file_path,
+      ctx.outputs.installed_external_deps_dir.path,
       ctx.outputs.full_src_dir.path,
       ctx.outputs.executable_file.path,
     ],
