@@ -31,7 +31,7 @@ fs.writeFileSync(
         declaration: true,
         strict: true,
         jsx: "react",
-        esModuleInterop: true,
+        allowSyntheticDefaultImports: true,
         baseUrl: ".",
         paths: {
           "*": [
