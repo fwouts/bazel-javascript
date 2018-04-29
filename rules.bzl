@@ -205,18 +205,30 @@ def _ts_script_impl(ctx):
       if TsLibraryInfo in dep
     ],
   )
-  build_dir = ctx.actions.declare_directory(ctx.label.name + "_build_dir")
+  _download_external_deps(
+    ctx,
+    external_deps,
+    ctx.outputs.installed_external_deps_dir,
+  )
   runfiles = ctx.runfiles(
     files = [
       ctx.executable._yarn,
-      build_dir,
+      ctx.outputs.installed_external_deps_dir,
+      ctx.outputs.full_src_dir,
     ],
   )
   ctx.actions.run(
     inputs = [
       ctx.executable._yarn,
+      ctx.outputs.installed_external_deps_dir,
+    ] + [
+      d[TsLibraryInfo].compiled_dir
+      for d in internal_deps
     ] + ctx.files.srcs + ctx.files._ts_script_compile_script,
-    outputs = [build_dir, ctx.outputs.executable_file],
+    outputs = [
+      ctx.outputs.full_src_dir,
+      ctx.outputs.executable_file,
+    ],
     executable = ctx.executable._node,
     arguments = [
       f.path for f in ctx.files._ts_script_compile_script
@@ -224,20 +236,18 @@ def _ts_script_impl(ctx):
       ctx.executable._yarn.path,
       ctx.executable._yarn.short_path,
       ctx.attr.cmd,
+      ctx.outputs.installed_external_deps_dir.path,
+      ctx.outputs.installed_external_deps_dir.short_path,
       ctx.build_file_path,
       ("|".join([f.path for f in ctx.files.srcs])),
-      ("|".join([
-        d.package + "@" + d.version
-        for d in external_deps
-      ])),
       ("|".join([
         d.label.package + ':' +
         d.label.name + ':' +
         d[TsLibraryInfo].compiled_dir.path
         for d in internal_deps
       ])),
-      build_dir.path,
-      build_dir.short_path,
+      ctx.outputs.full_src_dir.path,
+      ctx.outputs.full_src_dir.short_path,
       ctx.outputs.executable_file.path,
     ],
   )
@@ -273,14 +283,21 @@ ts_script = rule(
       cfg = "host",
       default = Label("@yarn//:yarn"),
     ),
+    "_download_external_deps_script": attr.label(
+      allow_files = True,
+      single_file = True,
+      default = Label("//ts_common:download_external_deps.js"),
+    ),
     "_ts_script_compile_script": attr.label(
       allow_files = True,
       single_file = True,
-      default = Label("//:ts_script_compile.js"),
+      default = Label("//ts_script:compile.js"),
     ),
   },
   executable = True,
   outputs = {
+    "installed_external_deps_dir": "%{name}_external_deps",
+    "full_src_dir": "%{name}_full_src",
     "executable_file": "%{name}.sh",
   },
 )
