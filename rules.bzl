@@ -215,10 +215,7 @@ def _ts_script_impl(ctx):
   ctx.actions.run(
     inputs = [
       ctx.executable._yarn,
-    ] + ctx.files.srcs + ctx.files._ts_script_compile_script + [
-      d[TsLibraryInfo].compiled_dir
-      for d in internal_deps
-    ],
+    ] + ctx.files.srcs + ctx.files._ts_script_compile_script,
     outputs = [build_dir, ctx.outputs.executable_file],
     executable = ctx.executable._node,
     arguments = [
@@ -288,30 +285,12 @@ ts_script = rule(
   },
 )
 
-def _ts_binary_create_full_src(ctx):
-  ctx.actions.run(
-    inputs = [
-      ctx.outputs.installed_external_deps_dir,
-      ctx.attr.lib[TsLibraryInfo].full_src_dir,
-    ] + ctx.files._ts_binary_create_full_src_script,
-    outputs = [ctx.outputs.full_src_dir],
-    executable = ctx.executable._node,
-    arguments = [
-      f.path for f in ctx.files._ts_binary_create_full_src_script
-    ] + [
-      ctx.outputs.installed_external_deps_dir.path,
-      ctx.attr.lib[TsLibraryInfo].full_src_dir.path,
-      ctx.attr.entry,
-      ctx.outputs.full_src_dir.path,
-    ],
-  )
-
 def _ts_binary_compile(ctx):
   ctx.actions.run(
     inputs = [
-      ctx.executable._yarn,
-      ctx.outputs.installed_external_deps_dir,
-      ctx.outputs.full_src_dir,
+      ctx.outputs.installed_webpack_dir,
+      ctx.attr.lib[TsLibraryInfo].installed_external_deps_dir,
+      ctx.attr.lib[TsLibraryInfo].full_src_dir,
     ] + ctx.files._ts_binary_compile_script,
     outputs = [ctx.outputs.executable_file],
     executable = ctx.executable._node,
@@ -319,46 +298,42 @@ def _ts_binary_compile(ctx):
       f.path for f in ctx.files._ts_binary_compile_script
     ] + [
       ctx.build_file_path,
-      ctx.outputs.installed_external_deps_dir.path,
-      ctx.outputs.full_src_dir.path,
+      ctx.attr.entry,
+      ctx.outputs.installed_webpack_dir.path,
+      ctx.attr.lib[TsLibraryInfo].installed_external_deps_dir.path,
+      ctx.attr.lib[TsLibraryInfo].full_src_dir.path,
       ctx.outputs.executable_file.path,
     ],
   )
 
 def _ts_binary_impl(ctx):
   # Steps:
-  # 1. Set up webpack and other build dependencies in empty directory.
-  # 2. Copy ts_library directory into a new directory + add webpack and co.
-  # 3. Compile with webpack.
-  external_deps = depset(
-    direct = [
-      NpmPackageInfo(
-        package = "ts-loader",
-        version = "^4.2.0",
-      ),
-      NpmPackageInfo(
-        package = "typescript",
-        version = "^2.8.3",
-      ),
-      NpmPackageInfo(
-        package = "webpack",
-        version = "^4.6.0",
-      ),
-      NpmPackageInfo(
-        package = "webpack-cli",
-        version = "^2.0.15",
-      ),
-    ],
-    transitive = [
-      ctx.attr.lib[TsLibraryInfo].external_deps,
-    ],
-  )
+  # 1. Download webpack in empty directory.
+  # 2. Add webpack config in copied directory.
+  # 3. Compile with webpack (without copying sources).
+  external_deps = [
+    NpmPackageInfo(
+      package = "ts-loader",
+      version = "^4.2.0",
+    ),
+    NpmPackageInfo(
+      package = "typescript",
+      version = "^2.8.3",
+    ),
+    NpmPackageInfo(
+      package = "webpack",
+      version = "^4.6.0",
+    ),
+    NpmPackageInfo(
+      package = "webpack-cli",
+      version = "^2.0.15",
+    ),
+  ]
   _download_external_deps(
     ctx,
     external_deps,
-    ctx.outputs.installed_external_deps_dir,
+    ctx.outputs.installed_webpack_dir,
   )
-  _ts_binary_create_full_src(ctx)
   _ts_binary_compile(ctx)
   return [
     DefaultInfo(
@@ -394,11 +369,6 @@ ts_binary = rule(
       single_file = True,
       default = Label("//ts_common:download_external_deps.js"),
     ),
-    "_ts_binary_create_full_src_script": attr.label(
-      allow_files = True,
-      single_file = True,
-      default = Label("//ts_binary:create_full_src.js"),
-    ),
     "_ts_binary_compile_script": attr.label(
       allow_files = True,
       single_file = True,
@@ -407,8 +377,7 @@ ts_binary = rule(
   },
   executable = True,
   outputs = {
-    "installed_external_deps_dir": "%{name}_external_deps",
-    "full_src_dir": "%{name}_full_src",
+    "installed_webpack_dir": "%{name}_webpack_deps",
     "executable_file": "%{name}.js",
   },
 )
