@@ -1,6 +1,6 @@
 package(default_visibility = ["//visibility:public"])
 
-load('//:defs.bzl', 'npm_binary', 'npm_package')
+load('@bazel_typescript//:defs.bzl', 'npm_binary', 'npm_package')
 
 npm_binary(
   name = "cli",

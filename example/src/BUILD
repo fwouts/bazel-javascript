@@ -1,6 +1,6 @@
 package(default_visibility = ["//visibility:public"])
 
-load('//:defs.bzl', 'ts_binary', 'ts_library')
+load('@bazel_typescript//:defs.bzl', 'ts_binary', 'ts_library')
 
 ts_binary(
   name = "app",
@@ -24,6 +24,6 @@ ts_library(
     "logger.ts",
   ],
   deps = [
-    "//src/nested:constants",
+    "//example/src/nested:constants",
   ]
 )
