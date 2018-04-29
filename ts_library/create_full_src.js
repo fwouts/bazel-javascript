@@ -85,10 +85,7 @@ for (const internalDep of internalDeps) {
   }
   fs.copySync(
     compiledDir,
-    path.join(destinationDir, "node_modules", rootModuleName),
-    {
-      dereference: true
-    }
+    path.join(destinationDir, "node_modules", rootModuleName)
   );
 }
 
