@@ -1,5 +1,3 @@
-// TODO: Move to ts_common directory.
-
 const child_process = require("child_process");
 
 function runYarn(yarnPath, cwd, command = "") {
