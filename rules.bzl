@@ -9,6 +9,8 @@ TsLibraryInfo = provider(fields=[
 NpmPackageInfo = provider(fields=[
   "package",
   "version",
+  "dir",
+  "modules_path",
 ])
 
 def _download_external_deps(ctx, external_deps, destination):
@@ -414,6 +416,8 @@ def _npm_package_impl(ctx):
     NpmPackageInfo(
       package = ctx.attr.package,
       version = ctx.attr.version,
+      dir = ctx.outputs.dir,
+      modules_path = ctx.outputs.dir.short_path + '/node_modules'
     ),
   ]
 
