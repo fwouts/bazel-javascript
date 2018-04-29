@@ -164,12 +164,12 @@ ts_library = rule(
     "_download_external_deps_script": attr.label(
       allow_files = True,
       single_file = True,
-      default = Label("//ts_common:download_external_deps.js"),
+      default = Label("//internal/ts_common:download_external_deps.js"),
     ),
     "_ts_library_create_full_src_script": attr.label(
       allow_files = True,
       single_file = True,
-      default = Label("//ts_library:create_full_src.js"),
+      default = Label("//internal/ts_library:create_full_src.js"),
     ),
   },
   outputs = {
@@ -288,12 +288,12 @@ ts_script = rule(
     "_download_external_deps_script": attr.label(
       allow_files = True,
       single_file = True,
-      default = Label("//ts_common:download_external_deps.js"),
+      default = Label("//internal/ts_common:download_external_deps.js"),
     ),
     "_ts_script_compile_script": attr.label(
       allow_files = True,
       single_file = True,
-      default = Label("//ts_script:compile.js"),
+      default = Label("//internal/ts_script:compile.js"),
     ),
   },
   executable = True,
@@ -386,12 +386,12 @@ ts_binary = rule(
     "_download_external_deps_script": attr.label(
       allow_files = True,
       single_file = True,
-      default = Label("//ts_common:download_external_deps.js"),
+      default = Label("//internal/ts_common:download_external_deps.js"),
     ),
     "_ts_binary_compile_script": attr.label(
       allow_files = True,
       single_file = True,
-      default = Label("//ts_binary:compile.js"),
+      default = Label("//internal/ts_binary:compile.js"),
     ),
   },
   executable = True,
