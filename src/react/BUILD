@@ -1,6 +1,6 @@
 package(default_visibility = ["//visibility:public"])
 
-load('//:rules.bzl', 'npm_package', 'ts_library', 'ts_script')
+load('//:defs.bzl', 'npm_package', 'ts_library', 'ts_script')
 
 ts_script(
   name = "storybook",

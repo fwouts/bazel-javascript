@@ -1,6 +1,6 @@
 package(default_visibility = ["//visibility:public"])
 
-load('//:rules.bzl', 'npm_package', 'ts_library')
+load('//:defs.bzl', 'npm_package', 'ts_library')
 
 ts_library(
   name = "constants",
