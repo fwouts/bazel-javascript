@@ -55,8 +55,18 @@ fs.writeFileSync(
 // node_modules directory.
 const pathToPackagedPath = {};
 
-// Copy every internal dependency into the appropriate node_modules/ subdirectory.
 fs.mkdirSync(path.join(destinationDir, "node_modules"));
+
+// Types must be copied, as TypeScript struggles with finding type definitions
+// for scoped modules, e.g. @types/storybook__react.
+if (fs.existsSync(path.join(externalDepsDir, "node_modules", "@types"))) {
+  fs.copySync(
+    path.join(externalDepsDir, "node_modules", "@types"),
+    path.join(destinationDir, "node_modules", "@types")
+  );
+}
+
+// Copy every internal dependency into the appropriate node_modules/ subdirectory.
 for (const internalDep of internalDeps) {
   if (!internalDep) {
     continue;
