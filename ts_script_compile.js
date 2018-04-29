@@ -2,7 +2,7 @@ const child_process = require("child_process");
 const fs = require("fs-extra");
 const path = require("path");
 
-const { runYarn, yarnShellCommand } = require("./run_yarn");
+const { runYarn, yarnShellCommand } = require("./ts_common/run_yarn");
 
 let arg = 0;
 

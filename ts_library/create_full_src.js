@@ -3,57 +3,34 @@ const fs = require("fs-extra");
 const path = require("path");
 const ts = require("typescript");
 
-const { runYarn } = require("./run_yarn");
+const { dependenciesMap } = require("../ts_common/dependencies_map");
 
 let arg = 0;
 
 const nodePath = process.argv[arg++];
 const scriptPath = process.argv[arg++];
 const yarnPath = process.argv[arg++];
-const tscPath = process.argv[arg++];
+const externalDepsDir = process.argv[arg++];
 const buildfileDir = path.dirname(process.argv[arg++]);
-const externalDeps = process.argv[arg++].split("|");
+const externalDependencies = dependenciesMap(process.argv[arg++].split("|"));
 const internalDeps = process.argv[arg++].split("|");
 const srcs = process.argv[arg++].split("|");
 const destinationDir = process.argv[arg++];
-const compilationDir = process.argv[arg++];
-
-const dependencies = externalDeps.reduce((acc, curr) => {
-  if (!curr) {
-    return acc;
-  }
-  const atSignPosition = curr.lastIndexOf("@");
-  if (atSignPosition === -1) {
-    throw new Error(`Expected @ sign in ${curr}.`);
-  }
-  const package = curr.substr(0, atSignPosition);
-  const version = curr.substr(atSignPosition + 1);
-  if (acc[package] && acc[package] !== version) {
-    throw new Error(
-      `Mismatching versions of the same package ${package}: ${
-        acc[package]
-      } and ${version}.`
-    );
-  }
-  return {
-    ...acc,
-    [package]: version
-  };
-}, {});
 
 fs.mkdirSync(destinationDir);
 fs.mkdirSync(path.join(destinationDir, "node_modules"));
-fs.writeFileSync(
-  path.join(destinationDir, "package.json"),
-  JSON.stringify(
-    {
-      dependencies
-    },
-    null,
-    2
-  ),
-  "utf8"
+
+// Copy every external node_modules directory.
+// TODO: Find a way to speed it up. Ideally, we would use fs.symlinkSync() instead
+// since we only need readonly access to these modules, but it doesn't work, I suspect
+// because externalDepsDir is a temporary symlink that stops existing as soon as this
+// rule is done executing.
+fs.copySync(
+  path.join(externalDepsDir, "node_modules"),
+  path.join(destinationDir, "node_modules")
 );
+
+// Add tsconfig.json for future compilation.
 fs.writeFileSync(
   path.join(destinationDir, "tsconfig.json"),
   JSON.stringify(
@@ -65,8 +42,7 @@ fs.writeFileSync(
         declaration: true,
         strict: true,
         jsx: "react",
-        esModuleInterop: true,
-        outDir: path.resolve(compilationDir)
+        esModuleInterop: true
       },
       exclude: ["node_modules"]
     },
@@ -76,10 +52,12 @@ fs.writeFileSync(
   "utf8"
 );
 
-runYarn(yarnPath, destinationDir);
-
+// We will need to match every "import './relative/path'" to a non-relative
+// import path, so that every dependency another Bazel rule can find it in the
+// node_modules directory.
 const pathToPackagedPath = {};
 
+// Copy every internal dependency into the appropriate node_modules/ subdirectory.
 for (const internalDep of internalDeps) {
   if (!internalDep) {
     continue;
@@ -114,6 +92,7 @@ for (const internalDep of internalDeps) {
   );
 }
 
+// Update import statements in this target's sources.
 for (const sourceFilePath of srcs) {
   if (!sourceFilePath) {
     continue;
@@ -162,7 +141,7 @@ for (const sourceFilePath of srcs) {
             // Example: react.
             packageName = splitImportFrom[0];
           }
-          if (!dependencies[packageName]) {
+          if (!externalDependencies[packageName]) {
             throw new Error(`Undeclared dependency: ${packageName}.`);
           }
         }
@@ -177,8 +156,3 @@ for (const sourceFilePath of srcs) {
   const updatedFile = ts.createPrinter().printFile(sourceFile);
   fs.writeFileSync(destinationFilePath, updatedFile, "utf8");
 }
-
-child_process.execSync(path.resolve(tscPath), {
-  stdio: "inherit",
-  cwd: destinationDir
-});
