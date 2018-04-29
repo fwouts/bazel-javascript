@@ -18,7 +18,6 @@ const srcs = process.argv[arg++].split("|");
 const destinationDir = process.argv[arg++];
 
 fs.mkdirSync(destinationDir);
-fs.mkdirSync(path.join(destinationDir, "node_modules"));
 
 // Copy every external node_modules directory.
 // TODO: Find a way to speed it up. Ideally, we would use fs.symlinkSync() instead
