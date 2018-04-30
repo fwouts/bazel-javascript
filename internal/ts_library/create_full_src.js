@@ -7,15 +7,24 @@ const { dependenciesMap } = require("../ts_common/dependencies_map");
 
 let arg = 0;
 
-const nodePath = process.argv[arg++];
-const scriptPath = process.argv[arg++];
-const yarnPath = process.argv[arg++];
-const externalDepsDir = process.argv[arg++];
-const buildfileDir = path.dirname(process.argv[arg++]);
-const externalDependencies = dependenciesMap(process.argv[arg++].split("|"));
-const internalDeps = process.argv[arg++].split("|");
-const srcs = process.argv[arg++].split("|");
-const destinationDir = process.argv[arg++];
+const [
+  nodePath,
+  scriptPath,
+  yarnPath,
+  externalDepsDir,
+  buildfilePath,
+  joinedExternalDependencies,
+  joinedInternalDeps,
+  joinedSrcs,
+  destinationDir
+] = process.argv;
+
+const buildfileDir = path.dirname(buildfilePath);
+const externalDependencies = dependenciesMap(
+  joinedExternalDependencies.split("|")
+);
+const internalDeps = joinedInternalDeps.split("|");
+const srcs = joinedSrcs.split("|");
 
 fs.mkdirSync(destinationDir);
 

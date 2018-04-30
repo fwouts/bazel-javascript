@@ -4,14 +4,18 @@ const path = require("path");
 
 let arg = 0;
 
-const nodePath = process.argv[arg++];
-const scriptPath = process.argv[arg++];
-const buildDir = path.dirname(process.argv[arg++]);
-const entry = process.argv[arg++];
-const installedWebpackDir = process.argv[arg++];
-const externalDepsDir = process.argv[arg++];
-const sourceDir = process.argv[arg++];
-const outputFile = process.argv[arg++];
+const [
+  nodePath,
+  scriptPath,
+  buildfilePath,
+  entry,
+  installedWebpackDir,
+  externalDepsDir,
+  sourceDir,
+  outputFile
+] = process.argv;
+
+const buildfileDir = path.dirname(buildfilePath);
 
 fs.writeFileSync(
   path.join(installedWebpackDir, "webpack.config.js"),

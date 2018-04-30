@@ -8,11 +8,17 @@ const { runYarn } = require("./run_yarn");
 
 let arg = 0;
 
-const nodePath = process.argv[arg++];
-const scriptPath = process.argv[arg++];
-const yarnPath = process.argv[arg++];
-const externalDependencies = dependenciesMap(process.argv[arg++].split("|"));
-const destinationDir = process.argv[arg++];
+const [
+  nodePath,
+  scriptPath,
+  yarnPath,
+  joinedExternalDependencies,
+  destinationDir
+] = process.argv;
+
+const externalDependencies = dependenciesMap(
+  joinedExternalDependencies.split("|")
+);
 
 // Create an empty directory with package.json.
 fs.mkdirSync(destinationDir);

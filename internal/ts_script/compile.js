@@ -6,23 +6,28 @@ const { yarnShellCommand } = require("../ts_common/run_yarn");
 
 let arg = 0;
 
-const nodePath = process.argv[arg++];
-const scriptPath = process.argv[arg++];
-const yarnPath = process.argv[arg++];
-const yarnPathShort = process.argv[arg++];
-const cmd = process.argv[arg++];
-const externalDepsDir = process.argv[arg++];
-const externalDepsDirShort = process.argv[arg++];
-const buildPath = process.argv[arg++];
-const srcs = process.argv[arg++].split("|");
-const internalDeps = process.argv[arg++].split("|");
-const destinationDir = process.argv[arg++];
-const destinationDirShort = process.argv[arg++];
-const executablePath = process.argv[arg++];
+const [
+  nodePath,
+  scriptPath,
+  yarnPath,
+  yarnPathShort,
+  cmd,
+  externalDepsDir,
+  externalDepsDirShort,
+  buildfilePath,
+  joinedSrcs,
+  joinedInternalDeps,
+  destinationDir,
+  destinationDirShort,
+  executablePath
+] = process.argv;
+
+const srcs = joinedSrcs.split("|");
+const internalDeps = joinedInternalDeps.split("|");
 
 fs.mkdirSync(destinationDir);
 for (const src of srcs) {
-  const destPath = path.relative(path.dirname(buildPath), src);
+  const destPath = path.relative(path.dirname(buildfilePath), src);
   fs.ensureDirSync(path.dirname(path.join(destinationDir, destPath)));
   fs.copySync(src, path.join(destinationDir, destPath));
 }
