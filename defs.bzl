@@ -19,8 +19,7 @@ def _download_external_deps(ctx, external_deps, destination):
     outputs = [destination],
     executable = ctx.executable._node,
     arguments = [
-      f.path for f in ctx.files._download_external_deps_script
-    ] + [
+      ctx.file._download_external_deps_script.path,
       ctx.executable._yarn.path,
       ("|".join([
         d.package + "@" + d.version
@@ -42,8 +41,7 @@ def _ts_library_create_full_src(ctx, external_deps, internal_deps):
     outputs = [ctx.outputs.full_src_dir],
     executable = ctx.executable._node,
     arguments = [
-      f.path for f in ctx.files._ts_library_create_full_src_script
-    ] + [
+      ctx.file._ts_library_create_full_src_script.path,
       ctx.executable._yarn.path,
       ctx.outputs.installed_external_deps_dir.path,
       ctx.build_file_path,
@@ -233,8 +231,7 @@ def _ts_script_impl(ctx):
     ],
     executable = ctx.executable._node,
     arguments = [
-      f.path for f in ctx.files._ts_script_compile_script
-    ] + [
+      ctx.file._ts_script_compile_script.path,
       ctx.executable._yarn.path,
       ctx.executable._yarn.short_path,
       ctx.attr.cmd,
@@ -314,8 +311,7 @@ def _ts_binary_compile(ctx):
     outputs = [ctx.outputs.executable_file],
     executable = ctx.executable._node,
     arguments = [
-      f.path for f in ctx.files._ts_binary_compile_script
-    ] + [
+      ctx.file._ts_binary_compile_script.path,
       ctx.build_file_path,
       ctx.attr.entry,
       ctx.outputs.installed_webpack_dir.path,
