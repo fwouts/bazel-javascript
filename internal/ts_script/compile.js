@@ -4,8 +4,6 @@ const path = require("path");
 
 const { yarnShellCommand } = require("../ts_common/run_yarn");
 
-let arg = 0;
-
 const [
   nodePath,
   scriptPath,

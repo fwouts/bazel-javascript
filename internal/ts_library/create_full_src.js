@@ -5,8 +5,6 @@ const ts = require("typescript");
 
 const { dependenciesMap } = require("../ts_common/dependencies_map");
 
-let arg = 0;
-
 const [
   nodePath,
   scriptPath,

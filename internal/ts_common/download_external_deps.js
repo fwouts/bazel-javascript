@@ -6,8 +6,6 @@ const ts = require("typescript");
 const { dependenciesMap } = require("./dependencies_map");
 const { runYarn } = require("./run_yarn");
 
-let arg = 0;
-
 const [
   nodePath,
   scriptPath,
