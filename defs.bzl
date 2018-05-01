@@ -1,28 +1,28 @@
+# Produced by ts_library().
 TsLibraryInfo = provider(fields=[
+  # Directory containing the compiled JavaScript and TypeScript definitions.
   "compiled_dir",
+  # Directory containing the TypeScript files used for compilation.
   "full_src_dir",
+  # Source files provided as input.
   "srcs",
+  # Other ts_library targets depended upon.
   "internal_deps",
+  # Depset of npm_packages depended upon (at most one element).
   "npm_packages",
+  # Directory in which node_modules/ with external NPM packages can be found.
   "npm_packages_installed_dir",
 ])
+
+# Produced by npm_packages().
 NpmPackagesInfo = provider(fields=[
   "installed_dir",
 ])
 
 def _ts_library_impl(ctx):
-  internal_deps = depset(
-    direct = [
-      dep
-      for dep in ctx.attr.deps
-      if TsLibraryInfo in dep
-    ],
-    transitive = [
-      dep[TsLibraryInfo].internal_deps
-      for dep in ctx.attr.deps
-      if TsLibraryInfo in dep
-    ],
-  )
+  # Ensure that we depend on at most one npm_packages, since we don't want to
+  # have conflicting package versions coming from separate node_modules
+  # directories.
   extended_npm_packages = depset(
     direct = [
       dep
@@ -41,16 +41,43 @@ def _ts_library_impl(ctx):
       dep.label
       for dep in npm_packages_list
     ]))
+  # If we depend on an npm_packages target, we'll use its node_modules
+  # directory to find modules. Otherwise, we'll use an empty node_modules
+  # directory.
   npm_packages = (
     npm_packages_list[0] if len(npm_packages_list) == 1
     else ctx.attr._empty_npm_packages
   )
+  # Gather all internal deps (other ts_library rules).
+  internal_deps = depset(
+    direct = [
+      dep
+      for dep in ctx.attr.deps
+      if TsLibraryInfo in dep
+    ],
+    transitive = [
+      dep[TsLibraryInfo].internal_deps
+      for dep in ctx.attr.deps
+      if TsLibraryInfo in dep
+    ],
+  )
+  # Create a directory that contains:
+  # - source files
+  # - tsconfig.json
+  # - node_modules/@types
+  # - node_modules/[name] for every internal dep
+  #
+  # Note that node_modules/ will not contain external dependencies from NPM.
+  # Instead, the tsconfig.json will point to the node_modules/ directory of
+  # the npm_packages target we depend on. This means we don't have to lose
+  # performance by copy-pasting node_modules with hundreds of packages.
   _ts_library_create_full_src(
     ctx,
     internal_deps,
     npm_packages,
     ctx.attr.requires,
   )
+  # Compile the directory with `tsc`.
   _ts_library_compile(
     ctx,
     npm_packages,
@@ -80,13 +107,22 @@ def _ts_library_create_full_src(ctx, internal_deps, npm_packages, requires):
     command = "NODE_PATH=" + ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules node \"$@\"",
     use_default_shell_env = True,
     arguments = [
+      # Run `node create_full_src.js`.
       ctx.file._ts_library_create_full_src_script.path,
+      # Directory containing node_modules/ with all external NPM packages
+      # installed.
       npm_packages[NpmPackagesInfo].installed_dir.path,
+      # BUILD file path, necessary to understand relative "import" statements
+      # in TypeScript.
       ctx.build_file_path,
+      # List of NPM package names used by the source files.
       ("|".join([
         p
         for p in requires
       ])),
+      # List of ts_library targets we depend on, along with their source files
+      # (required to replace relative "import" statements with the correct
+      # module name).
       ("|".join([
         d.label.package + ':' +
         d.label.name + ':' +
@@ -94,9 +130,12 @@ def _ts_library_create_full_src(ctx, internal_deps, npm_packages, requires):
         d[TsLibraryInfo].compiled_dir.path
         for d in internal_deps
       ])),
+      # List of source files, which will be processed ("import" statements
+      # automatically replaced) and copied into the new directory.
       ("|".join([
         f.path for f in ctx.files.srcs
       ])),
+      # Directory in which to place the result.
       ctx.outputs.full_src_dir.path,
     ],
   )
@@ -112,8 +151,11 @@ def _ts_library_compile(ctx, npm_packages):
     command = ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules/.bin/tsc \"$@\"",
     use_default_shell_env = True,
     arguments = [
+      # Directory in which tsconfig.json can be found.
       "--project",
       ctx.outputs.full_src_dir.path,
+      # Directory in which to generate the compiled JavaScript and TypeScript
+      # definitions.
       "--outDir",
       ctx.outputs.compiled_dir.path,
     ],
@@ -154,18 +196,9 @@ ts_library = rule(
 )
 
 def _ts_script_impl(ctx):
-  internal_deps = depset(
-    direct = [
-      dep
-      for dep in ctx.attr.deps
-      if TsLibraryInfo in dep
-    ],
-    transitive = [
-      dep[TsLibraryInfo].internal_deps
-      for dep in ctx.attr.deps
-      if TsLibraryInfo in dep
-    ],
-  )
+  # Ensure that we depend on at most one npm_packages, since we don't want to
+  # have conflicting package versions coming from separate node_modules
+  # directories.
   extended_npm_packages = depset(
     direct = [
       dep
@@ -184,6 +217,9 @@ def _ts_script_impl(ctx):
       dep.label
       for dep in npm_packages_list
     ]))
+  # If we depend on an npm_packages target, we'll use its node_modules
+  # directory to find modules. Otherwise, we'll use an empty node_modules
+  # directory.
   npm_packages = (
     npm_packages_list[0] if len(npm_packages_list) == 1
     else ctx.attr._empty_npm_packages
@@ -194,6 +230,34 @@ def _ts_script_impl(ctx):
       ctx.outputs.full_src_dir,
     ],
   )
+  # Gather all internal deps (ts_library rules we depend on).
+  internal_deps = depset(
+    direct = [
+      dep
+      for dep in ctx.attr.deps
+      if TsLibraryInfo in dep
+    ],
+    transitive = [
+      dep[TsLibraryInfo].internal_deps
+      for dep in ctx.attr.deps
+      if TsLibraryInfo in dep
+    ],
+  )
+  # Create a directory that contains:
+  # - source files
+  # - package.json with {
+  #     "scripts": {
+  #       "start": "[cmd]"
+  #     }
+  #   }
+  # - node_modules/[name] for every internal dep
+  #
+  # Note that node_modules/ will not contain external dependencies from NPM.
+  # Instead, the tsconfig.json will point to the node_modules/ directory of
+  # the npm_packages target we depend on. This means we don't have to lose
+  # performance by copy-pasting node_modules with hundreds of packages.
+  #
+  # Also generate a shell script that will run `yarn start`.
   ctx.actions.run_shell(
     inputs = [
       ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
@@ -209,20 +273,32 @@ def _ts_script_impl(ctx):
     command = "NODE_PATH=" + ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules node \"$@\"",
     use_default_shell_env = True,
     arguments = [
+      # Run `node ts_script/compile.js`.
       ctx.file._ts_script_compile_script.path,
+      # The command to run.
       ctx.attr.cmd,
+      # Directory containing node_modules/ with all external NPM packages
+      # installed.
       npm_packages[NpmPackagesInfo].installed_dir.path,
+      # Same path required in short form for the shell script.
       npm_packages[NpmPackagesInfo].installed_dir.short_path,
+      # BUILD file path, necessary to know where to put the source files.
       ctx.build_file_path,
+      # List of source files to copy (which will not be compiled by tsc).
       ("|".join([f.path for f in ctx.files.srcs])),
+      # List of ts_library targets we depend on, along with their compiled
+      # JavaScript and TypeScript definitions.
       ("|".join([
         d.label.package + ':' +
         d.label.name + ':' +
         d[TsLibraryInfo].compiled_dir.path
         for d in internal_deps
       ])),
+      # Directory in which to create package.json and copy sources.
       ctx.outputs.full_src_dir.path,
+      # Same path required in short form for the shell script.
       ctx.outputs.full_src_dir.short_path,
+      # Path to generate the shell script.
       ctx.outputs.executable_file.path,
     ],
   )

@@ -21,6 +21,8 @@ const [
 const srcs = joinedSrcs.split("|");
 const internalDeps = joinedInternalDeps.split("|");
 
+// Copy all sources, making sure to keep their relative location to the BUILD
+// file that included them.
 fs.mkdirSync(destinationDir);
 for (const src of srcs) {
   const destPath = path.relative(path.dirname(buildfilePath), src);
@@ -28,6 +30,7 @@ for (const src of srcs) {
   fs.copySync(src, path.join(destinationDir, destPath));
 }
 
+// Create a package.json with a "scripts" section.
 fs.writeFileSync(
   path.join(destinationDir, "package.json"),
   JSON.stringify(
@@ -64,6 +67,9 @@ module.exports = {
   );
 }
 
+// Copy every internal module we depend on to node_modules/.
+// We don't need to worry about external NPM dependencies here, because the
+// shell script below will mention their node_modules path.
 for (const internalDep of internalDeps) {
   const [targetPackage, targetName, compiledDir] = internalDep.split(":");
   const rootModuleName =
@@ -74,6 +80,7 @@ for (const internalDep of internalDeps) {
   );
 }
 
+// Generate a shell script that invokes `yarn start`.
 fs.writeFileSync(
   executablePath,
   `#!/bin/sh
