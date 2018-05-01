@@ -28,6 +28,7 @@ module.exports = {
     filename: "${path.basename(outputFile)}",
     path: "${path.resolve(path.dirname(outputFile))}",
   },
+  target: "node",
   module: {
     rules: [
       {
