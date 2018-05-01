@@ -7,8 +7,6 @@ const { yarnShellCommand } = require("../ts_common/run_yarn");
 const [
   nodePath,
   scriptPath,
-  yarnPath,
-  yarnPathShort,
   cmd,
   installedNpmPackagesDir,
   installedNpmPackagesDirShort,
@@ -81,7 +79,7 @@ fs.writeFileSync(
   `#!/bin/sh
 chmod -R +w ${destinationDirShort}/*
 export PATH=$PATH:$PWD/${installedNpmPackagesDirShort}/node_modules/.bin
-${yarnShellCommand(yarnPathShort, destinationDirShort, "start")}
+${yarnShellCommand(destinationDirShort, "start")}
 `,
   "utf8"
 );

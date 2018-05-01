@@ -6,7 +6,6 @@ const ts = require("typescript");
 const [
   nodePath,
   scriptPath,
-  yarnPath,
   installedNpmPackagesDir,
   buildfilePath,
   joinedRequires,

@@ -10,7 +10,6 @@ const { runYarn } = require("../ts_common/run_yarn");
 const [
   nodePath,
   scriptPath,
-  yarnPath,
   packageJsonPath,
   yarnLockPath,
   destinationDir
@@ -25,4 +24,4 @@ fs.writeFileSync(
   path.join(destinationDir, "yarn.lock"),
   fs.readFileSync(yarnLockPath)
 );
-runYarn(yarnPath, destinationDir);
+runYarn(destinationDir);

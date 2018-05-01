@@ -1,18 +1,15 @@
 const child_process = require("child_process");
 
-function runYarn(yarnPath, cwd, command = "") {
-  const exitCode = child_process.execSync(
-    yarnShellCommand(yarnPath, cwd, command),
-    {
-      stdio: "inherit"
-    }
-  );
+function runYarn(cwd, command = "") {
+  const exitCode = child_process.execSync(yarnShellCommand(cwd, command), {
+    stdio: "inherit"
+  });
 }
 
-function yarnShellCommand(yarnPath, cwd, command = "") {
+function yarnShellCommand(cwd, command = "") {
   // Don't use the shared cache or touch the lockfile.
   // See https://github.com/yarnpkg/yarn/issues/986.
-  return `${yarnPath} --cwd ${cwd} --frozen-lockfile --cache-folder ./node_modules_cache --global-folder ./node_modules/ ${command}`;
+  return `yarn --cwd ${cwd} --frozen-lockfile --cache-folder ./node_modules_cache --global-folder ./node_modules/ ${command}`;
 }
 
 module.exports = {

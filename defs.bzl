@@ -11,9 +11,8 @@ NpmPackagesInfo = provider(fields=[
 ])
 
 def _ts_library_create_full_src(ctx, internal_deps, npm_packages, requires):
-  ctx.actions.run(
+  ctx.actions.run_shell(
     inputs = [
-      ctx.executable._yarn,
       ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
       ctx.file._ts_library_create_full_src_script,
       npm_packages[NpmPackagesInfo].installed_dir,
@@ -22,13 +21,10 @@ def _ts_library_create_full_src(ctx, internal_deps, npm_packages, requires):
       for d in internal_deps
     ] + ctx.files.srcs,
     outputs = [ctx.outputs.full_src_dir],
-    executable = ctx.executable._node,
-    env = {
-      "NODE_PATH": ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + '/node_modules',
-    },
+    command = "NODE_PATH=" + ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules node \"$@\"",
+    use_default_shell_env = True,
     arguments = [
       ctx.file._ts_library_create_full_src_script.path,
-      ctx.executable._yarn.path,
       npm_packages[NpmPackagesInfo].installed_dir.path,
       ctx.build_file_path,
       ("|".join([
@@ -50,13 +46,15 @@ def _ts_library_create_full_src(ctx, internal_deps, npm_packages, requires):
   )
 
 def _ts_library_compile(ctx, npm_packages):
-  ctx.actions.run(
+  ctx.actions.run_shell(
     inputs = [
       ctx.outputs.full_src_dir,
+      ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
       npm_packages[NpmPackagesInfo].installed_dir,
     ],
     outputs = [ctx.outputs.compiled_dir],
-    executable = ctx.executable._tsc,
+    command = ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules/.bin/tsc \"$@\"",
+    use_default_shell_env = True,
     arguments = [
       "--project",
       ctx.outputs.full_src_dir.path,
@@ -137,22 +135,6 @@ ts_library = rule(
     "requires": attr.string_list(
       default = [],
     ),
-    "_node": attr.label(
-      allow_files = True,
-      executable = True,
-      cfg = "host",
-      default = Label("@nodejs//:node"),
-    ),
-    "_tsc": attr.label(
-      executable = True,
-      cfg="host",
-      default = Label("@build_bazel_rules_nodejs//internal/rollup:tsc"),
-    ),
-    "_yarn": attr.label(
-      executable = True,
-      cfg = "host",
-      default = Label("@yarn//:yarn"),
-    ),
     "_internal_packages": attr.label(
       default = Label("//internal:packages"),
     ),
@@ -208,14 +190,12 @@ def _ts_script_impl(ctx):
   )
   runfiles = ctx.runfiles(
     files = [
-      ctx.executable._yarn,
       npm_packages[NpmPackagesInfo].installed_dir,
       ctx.outputs.full_src_dir,
     ],
   )
-  ctx.actions.run(
+  ctx.actions.run_shell(
     inputs = [
-      ctx.executable._yarn,
       ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
       npm_packages[NpmPackagesInfo].installed_dir,
     ] + [
@@ -226,14 +206,10 @@ def _ts_script_impl(ctx):
       ctx.outputs.full_src_dir,
       ctx.outputs.executable_file,
     ],
-    executable = ctx.executable._node,
-    env = {
-      "NODE_PATH": ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + '/node_modules',
-    },
+    command = "NODE_PATH=" + ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules node \"$@\"",
+    use_default_shell_env = True,
     arguments = [
       ctx.file._ts_script_compile_script.path,
-      ctx.executable._yarn.path,
-      ctx.executable._yarn.short_path,
       ctx.attr.cmd,
       npm_packages[NpmPackagesInfo].installed_dir.path,
       npm_packages[NpmPackagesInfo].installed_dir.short_path,
@@ -271,17 +247,6 @@ ts_script = rule(
         [NpmPackagesInfo],
       ],
     ),
-    "_node": attr.label(
-      allow_files = True,
-      executable = True,
-      cfg = "host",
-      default = Label("@nodejs//:node"),
-    ),
-    "_yarn": attr.label(
-      executable = True,
-      cfg = "host",
-      default = Label("@yarn//:yarn"),
-    ),
     "_internal_packages": attr.label(
       default = Label("//internal:packages"),
     ),
@@ -299,7 +264,7 @@ ts_script = rule(
 )
 
 def _ts_binary_compile(ctx):
-  ctx.actions.run(
+  ctx.actions.run_shell(
     inputs = [
       ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
       ctx.attr._webpack_npm_packages[NpmPackagesInfo].installed_dir,
@@ -307,10 +272,8 @@ def _ts_binary_compile(ctx):
       ctx.attr.lib[TsLibraryInfo].full_src_dir,
     ] + ctx.files._ts_binary_compile_script,
     outputs = [ctx.outputs.executable_file],
-    executable = ctx.executable._node,
-    env = {
-      "NODE_PATH": ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + '/node_modules',
-    },
+    command = "NODE_PATH=" + ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules node \"$@\"",
+    use_default_shell_env = True,
     arguments = [
       ctx.file._ts_binary_compile_script.path,
       ctx.build_file_path,
@@ -337,22 +300,6 @@ ts_binary = rule(
       providers = [TsLibraryInfo],
     ),
     "entry": attr.string(),
-    "_node": attr.label(
-      allow_files = True,
-      executable = True,
-      cfg = "host",
-      default = Label("@nodejs//:node"),
-    ),
-    "_tsc": attr.label(
-      executable = True,
-      cfg="host",
-      default = Label("@build_bazel_rules_nodejs//internal/rollup:tsc"),
-    ),
-    "_yarn": attr.label(
-      executable = True,
-      cfg = "host",
-      default = Label("@yarn//:yarn"),
-    ),
     "_internal_packages": attr.label(
       default = Label("//internal:packages"),
     ),
@@ -372,23 +319,22 @@ ts_binary = rule(
 )
 
 def _npm_packages_impl(ctx):
-  ctx.actions.run(
-      inputs = [
-        ctx.file._npm_packages_install,
-        ctx.executable._yarn,
-        ctx.file.package_json,
-        ctx.file.yarn_lock,
-      ],
-      outputs = [ctx.outputs.installed_dir],
-      executable = ctx.executable._node,
-      arguments = [
-        ctx.file._npm_packages_install.path,
-        ctx.executable._yarn.path,
-        ctx.file.package_json.path,
-        ctx.file.yarn_lock.path,
-        ctx.outputs.installed_dir.path,
-      ],
-    )
+  ctx.actions.run_shell(
+    inputs = [
+      ctx.file._npm_packages_install,
+      ctx.file.package_json,
+      ctx.file.yarn_lock,
+    ],
+    outputs = [ctx.outputs.installed_dir],
+    command = "node \"$@\"",
+    use_default_shell_env = True,
+    arguments = [
+      ctx.file._npm_packages_install.path,
+      ctx.file.package_json.path,
+      ctx.file.yarn_lock.path,
+      ctx.outputs.installed_dir.path,
+    ],
+  )
   return [
     NpmPackagesInfo(
       installed_dir = ctx.outputs.installed_dir
@@ -405,17 +351,6 @@ npm_packages = rule(
     "yarn_lock": attr.label(
       allow_files = True,
       single_file = True,
-    ),
-    "_node": attr.label(
-      allow_files = True,
-      executable = True,
-      cfg = "host",
-      default = Label("@nodejs//:node"),
-    ),
-    "_yarn": attr.label(
-      executable = True,
-      cfg = "host",
-      default = Label("@yarn//:yarn"),
     ),
     "_npm_packages_install": attr.label(
       allow_files = True,
