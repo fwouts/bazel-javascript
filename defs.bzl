@@ -10,59 +10,6 @@ NpmPackagesInfo = provider(fields=[
   "installed_dir",
 ])
 
-def _ts_library_create_full_src(ctx, internal_deps, npm_packages, requires):
-  ctx.actions.run_shell(
-    inputs = [
-      ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
-      ctx.file._ts_library_create_full_src_script,
-      npm_packages[NpmPackagesInfo].installed_dir,
-    ] + [
-      d[TsLibraryInfo].compiled_dir
-      for d in internal_deps
-    ] + ctx.files.srcs,
-    outputs = [ctx.outputs.full_src_dir],
-    command = "NODE_PATH=" + ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules node \"$@\"",
-    use_default_shell_env = True,
-    arguments = [
-      ctx.file._ts_library_create_full_src_script.path,
-      npm_packages[NpmPackagesInfo].installed_dir.path,
-      ctx.build_file_path,
-      ("|".join([
-        p
-        for p in requires
-      ])),
-      ("|".join([
-        d.label.package + ':' +
-        d.label.name + ':' +
-        ("|".join(d[TsLibraryInfo].srcs)) + ":" +
-        d[TsLibraryInfo].compiled_dir.path
-        for d in internal_deps
-      ])),
-      ("|".join([
-        f.path for f in ctx.files.srcs
-      ])),
-      ctx.outputs.full_src_dir.path,
-    ],
-  )
-
-def _ts_library_compile(ctx, npm_packages):
-  ctx.actions.run_shell(
-    inputs = [
-      ctx.outputs.full_src_dir,
-      ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
-      npm_packages[NpmPackagesInfo].installed_dir,
-    ],
-    outputs = [ctx.outputs.compiled_dir],
-    command = ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules/.bin/tsc \"$@\"",
-    use_default_shell_env = True,
-    arguments = [
-      "--project",
-      ctx.outputs.full_src_dir.path,
-      "--outDir",
-      ctx.outputs.compiled_dir.path,
-    ],
-  )
-
 def _ts_library_impl(ctx):
   internal_deps = depset(
     direct = [
@@ -118,6 +65,59 @@ def _ts_library_impl(ctx):
       npm_packages_installed_dir = npm_packages[NpmPackagesInfo].installed_dir,
     ),
   ]
+
+def _ts_library_create_full_src(ctx, internal_deps, npm_packages, requires):
+  ctx.actions.run_shell(
+    inputs = [
+      ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
+      ctx.file._ts_library_create_full_src_script,
+      npm_packages[NpmPackagesInfo].installed_dir,
+    ] + [
+      d[TsLibraryInfo].compiled_dir
+      for d in internal_deps
+    ] + ctx.files.srcs,
+    outputs = [ctx.outputs.full_src_dir],
+    command = "NODE_PATH=" + ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules node \"$@\"",
+    use_default_shell_env = True,
+    arguments = [
+      ctx.file._ts_library_create_full_src_script.path,
+      npm_packages[NpmPackagesInfo].installed_dir.path,
+      ctx.build_file_path,
+      ("|".join([
+        p
+        for p in requires
+      ])),
+      ("|".join([
+        d.label.package + ':' +
+        d.label.name + ':' +
+        ("|".join(d[TsLibraryInfo].srcs)) + ":" +
+        d[TsLibraryInfo].compiled_dir.path
+        for d in internal_deps
+      ])),
+      ("|".join([
+        f.path for f in ctx.files.srcs
+      ])),
+      ctx.outputs.full_src_dir.path,
+    ],
+  )
+
+def _ts_library_compile(ctx, npm_packages):
+  ctx.actions.run_shell(
+    inputs = [
+      ctx.outputs.full_src_dir,
+      ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
+      npm_packages[NpmPackagesInfo].installed_dir,
+    ],
+    outputs = [ctx.outputs.compiled_dir],
+    command = ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules/.bin/tsc \"$@\"",
+    use_default_shell_env = True,
+    arguments = [
+      "--project",
+      ctx.outputs.full_src_dir.path,
+      "--outDir",
+      ctx.outputs.compiled_dir.path,
+    ],
+  )
 
 ts_library = rule(
   implementation=_ts_library_impl,
@@ -263,7 +263,7 @@ ts_script = rule(
   },
 )
 
-def _ts_binary_compile(ctx):
+def _ts_binary_impl(ctx):
   build_dir = ctx.actions.declare_directory(ctx.label.name + "_build_dir")
   ctx.actions.run_shell(
     inputs = [
@@ -289,9 +289,6 @@ def _ts_binary_compile(ctx):
       ctx.outputs.executable_file.path,
     ],
   )
-
-def _ts_binary_impl(ctx):
-  _ts_binary_compile(ctx)
   return [
     DefaultInfo(
       executable = ctx.outputs.executable_file,
