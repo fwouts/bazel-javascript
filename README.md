@@ -64,7 +64,6 @@ Suppose you have the following directory structure:
 
 ```json
 {
-  // ...
   "dependencies": {
     "textbuilder": "^1.0.3"
   },
