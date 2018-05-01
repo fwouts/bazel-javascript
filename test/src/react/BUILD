@@ -31,7 +31,10 @@ ts_library(
 ts_library(
   name = "component",
   srcs = [
-    "component.tsx",
+    "component1.tsx",
+    "component1.css",
+    "component2.tsx",
+    "component2.css",
   ],
   deps = [
     "//test:packages",

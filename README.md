@@ -192,6 +192,7 @@ TypeScript source files.
       <td><code>srcs</code></td>
       <td>
         <p>A list of source files (required).</p>
+        <p>You may include non-TypeScript files, which will be copy-pasted as is.</p>
       </td>
     </tr>
     <tr>

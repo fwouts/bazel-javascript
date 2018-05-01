@@ -143,20 +143,21 @@ def _ts_library_create_full_src(ctx, internal_deps, npm_packages, requires):
 def _ts_library_compile(ctx, npm_packages):
   ctx.actions.run_shell(
     inputs = [
+      ctx.file._ts_library_compile_script,
       ctx.outputs.full_src_dir,
       ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
       npm_packages[NpmPackagesInfo].installed_dir,
     ],
     outputs = [ctx.outputs.compiled_dir],
-    command = ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules/.bin/tsc \"$@\"",
+    command = "NODE_PATH=" + ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules node \"$@\"",
     use_default_shell_env = True,
     arguments = [
-      # Directory in which tsconfig.json can be found.
-      "--project",
+      # Run `node ts_library/compile.js`.
+      ctx.file._ts_library_compile_script.path,
+      # Directory in which the source code as well as tsconfig.json can be found.
       ctx.outputs.full_src_dir.path,
       # Directory in which to generate the compiled JavaScript and TypeScript
       # definitions.
-      "--outDir",
       ctx.outputs.compiled_dir.path,
     ],
   )
@@ -165,7 +166,7 @@ ts_library = rule(
   implementation=_ts_library_impl,
   attrs = {
     "srcs": attr.label_list(
-      allow_files=[".ts", ".tsx"],
+      allow_files = True,
     ),
     "deps": attr.label_list(
       providers = [
@@ -184,6 +185,11 @@ ts_library = rule(
       allow_files = True,
       single_file = True,
       default = Label("//internal/ts_library:create_full_src.js"),
+    ),
+    "_ts_library_compile_script": attr.label(
+      allow_files = True,
+      single_file = True,
+      default = Label("//internal/ts_library:compile.js"),
     ),
     "_empty_npm_packages": attr.label(
       default = Label("//internal/npm_packages/empty:packages"),

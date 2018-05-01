@@ -61,6 +61,25 @@ module.exports = {
       )}", "node_modules"),
     ],
   },
+  resolveLoader: {
+    modules: [
+      path.resolve(__dirname, "..", "${path.relative(
+        destinationDir,
+        installedNpmPackagesDir
+      )}", "node_modules"),
+    ],
+  },
+  module: {
+    rules: [
+      {
+        test: /\.css$/,
+        use: [
+          "style-loader",
+          "css-loader",
+        ],
+      },
+    ],
+  }
 };
 `,
     "utf8"

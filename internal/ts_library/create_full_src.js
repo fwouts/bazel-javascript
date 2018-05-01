@@ -115,6 +115,14 @@ for (const sourceFilePath of srcs) {
     destinationDir,
     path.relative(buildfileDir, sourceFilePath)
   );
+  if (
+    !destinationFilePath.endsWith(".ts") &&
+    !destinationFilePath.endsWith(".tsx")
+  ) {
+    // Assets and other non-TypeScript files should simply be copied.
+    fs.copySync(sourceFilePath, destinationFilePath);
+    continue;
+  }
   const sourceText = fs.readFileSync(sourceFilePath, "utf8");
   const sourceFile = ts.createSourceFile(
     path.basename(sourceFilePath),
@@ -135,7 +143,30 @@ for (const sourceFilePath of srcs) {
       if (!replaceWith) {
         if (importFrom.startsWith("./")) {
           // This must be a local import.
-          // Compilation will fail if it's missing. No need to check here.
+          // It could either be a TypeScript import, in which case the
+          // extension will have been omitted, or it could be an asset such
+          // as a CSS stylesheet, in which case the extension does not need
+          // to be appended.
+          const candidateEndings = [".ts", ".tsx", ""];
+          let foundMatch = false;
+          for (const candidateEnding of candidateEndings) {
+            if (
+              fs.existsSync(
+                path.join(
+                  path.dirname(sourceFilePath),
+                  importFrom,
+                  candidateEnding
+                )
+              )
+            ) {
+              // Good, the file exists.
+              foundMatch = true;
+              break;
+            }
+          }
+          if (!foundMatch) {
+            throw new Error(`Could not find a match for import ${importFrom}.`);
+          }
         } else {
           // This must be an external package.
           // TODO: Also handle workspace-level references, e.g. '@/src/etc'.
