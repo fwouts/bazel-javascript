@@ -126,7 +126,7 @@ def _ts_library_create_full_src(ctx, internal_deps, npm_packages, requires):
       ("|".join([
         d.label.package + ':' +
         d.label.name + ':' +
-        ("|".join(d[TsLibraryInfo].srcs)) + ":" +
+        (";".join(d[TsLibraryInfo].srcs)) + ":" +
         d[TsLibraryInfo].compiled_dir.path
         for d in internal_deps
       ])),

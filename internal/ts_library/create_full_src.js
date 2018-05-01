@@ -81,7 +81,7 @@ for (const internalDep of internalDeps) {
     joinedSrcs,
     compiledDir
   ] = internalDep.split(":");
-  const srcs = joinedSrcs.split("|");
+  const srcs = joinedSrcs.split(";");
   const rootModuleName =
     "__" + targetPackage.replace(/\//g, "__") + "__" + targetName;
   for (const src of srcs) {
