@@ -15,7 +15,7 @@ If you're not already familiar with [Bazel](https://bazel.build), install it fir
 These TypeScript rules for Bazel are separate from the [official Google
 implementation](https://github.com/bazelbuild/rules_typescript).
 
-A few key differences:
+The main differences are:
 
 - Easier setup ([literally four lines](examples/simple/WORKSPACE)).
 - No need for a `node_modules` directory.
