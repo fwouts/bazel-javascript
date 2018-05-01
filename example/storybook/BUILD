@@ -1,15 +1,9 @@
 package(default_visibility = ["//visibility:public"])
 
-load('@bazel_typescript//:defs.bzl', 'npm_binary', 'npm_package')
+load('@bazel_typescript//:defs.bzl', 'npm_binary')
 
 npm_binary(
   name = "cli",
-  package = ":storybook",
+  install = "//example:packages",
   binary = "getstorybook",
-)
-
-npm_package(
-  name = "storybook",
-  package = "@storybook/cli",
-  version = "^3.4.2",
 )

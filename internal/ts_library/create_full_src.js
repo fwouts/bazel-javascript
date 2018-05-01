@@ -3,24 +3,20 @@ const fs = require("fs-extra");
 const path = require("path");
 const ts = require("typescript");
 
-const { dependenciesMap } = require("../ts_common/dependencies_map");
-
 const [
   nodePath,
   scriptPath,
   yarnPath,
-  externalDepsDir,
+  installedNpmPackagesDir,
   buildfilePath,
-  joinedExternalDependencies,
+  joinedRequires,
   joinedInternalDeps,
   joinedSrcs,
   destinationDir
 ] = process.argv;
 
 const buildfileDir = path.dirname(buildfilePath);
-const externalDependencies = dependenciesMap(
-  joinedExternalDependencies.split("|")
-);
+const required = new Set(joinedRequires.split("|"));
 const internalDeps = joinedInternalDeps.split("|");
 const srcs = joinedSrcs.split("|");
 
@@ -44,7 +40,7 @@ fs.writeFileSync(
           "*": [
             path.relative(
               path.join(destinationDir),
-              path.join(externalDepsDir, "node_modules", "*")
+              path.join(installedNpmPackagesDir, "node_modules", "*")
             )
           ]
         }
@@ -66,9 +62,11 @@ fs.mkdirSync(path.join(destinationDir, "node_modules"));
 
 // Types must be copied, as TypeScript struggles with finding type definitions
 // for scoped modules, e.g. @types/storybook__react.
-if (fs.existsSync(path.join(externalDepsDir, "node_modules", "@types"))) {
+if (
+  fs.existsSync(path.join(installedNpmPackagesDir, "node_modules", "@types"))
+) {
   fs.copySync(
-    path.join(externalDepsDir, "node_modules", "@types"),
+    path.join(installedNpmPackagesDir, "node_modules", "@types"),
     path.join(destinationDir, "node_modules", "@types")
   );
 }
@@ -154,7 +152,7 @@ for (const sourceFilePath of srcs) {
             // Example: react.
             packageName = splitImportFrom[0];
           }
-          if (!externalDependencies[packageName]) {
+          if (!required.has(packageName)) {
             throw new Error(`Undeclared dependency: ${packageName}.`);
           }
         }

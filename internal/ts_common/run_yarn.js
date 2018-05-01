@@ -1,9 +1,12 @@
 const child_process = require("child_process");
 
 function runYarn(yarnPath, cwd, command = "") {
-  child_process.execSync(yarnShellCommand(yarnPath, cwd, command), {
-    stdio: "inherit"
-  });
+  const exitCode = child_process.execSync(
+    yarnShellCommand(yarnPath, cwd, command),
+    {
+      stdio: "inherit"
+    }
+  );
 }
 
 function yarnShellCommand(yarnPath, cwd, command = "") {

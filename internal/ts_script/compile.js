@@ -10,8 +10,8 @@ const [
   yarnPath,
   yarnPathShort,
   cmd,
-  externalDepsDir,
-  externalDepsDirShort,
+  installedNpmPackagesDir,
+  installedNpmPackagesDirShort,
   buildfilePath,
   joinedSrcs,
   joinedInternalDeps,
@@ -56,7 +56,7 @@ module.exports = {
       path.resolve(__dirname, "..", "node_modules"),
       path.resolve(__dirname, "..", "${path.relative(
         destinationDir,
-        externalDepsDir
+        installedNpmPackagesDir
       )}", "node_modules"),
     ],
   },
@@ -80,7 +80,7 @@ fs.writeFileSync(
   executablePath,
   `#!/bin/sh
 chmod -R +w ${destinationDirShort}/*
-export PATH=$PATH:$PWD/${externalDepsDirShort}/node_modules/.bin
+export PATH=$PATH:$PWD/${installedNpmPackagesDirShort}/node_modules/.bin
 ${yarnShellCommand(yarnPathShort, destinationDirShort, "start")}
 `,
   "utf8"

@@ -8,7 +8,7 @@ const [
   buildfilePath,
   entry,
   installedWebpackDir,
-  externalDepsDir,
+  installedNpmPackagesDir,
   sourceDir,
   outputFile
 ] = process.argv;
@@ -34,7 +34,7 @@ module.exports = {
   resolve: {
     modules: [
       "${path.resolve(path.join(sourceDir, "node_modules"))}",
-      "${path.resolve(path.join(externalDepsDir, "node_modules"))}",
+      "${path.resolve(path.join(installedNpmPackagesDir, "node_modules"))}",
     ],
     extensions: [".ts", ".tsx", ".js", ".jsx"],
   },

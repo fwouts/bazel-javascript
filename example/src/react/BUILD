@@ -1,6 +1,6 @@
 package(default_visibility = ["//visibility:public"])
 
-load('@bazel_typescript//:defs.bzl', 'npm_package', 'ts_library', 'ts_script')
+load('@bazel_typescript//:defs.bzl', 'ts_library', 'ts_script')
 
 ts_script(
   name = "storybook",
@@ -10,8 +10,6 @@ ts_script(
   ],
   deps = [
     ":component_story",
-    ":babel-core",
-    ":react-dom",
   ],
 )
 
@@ -22,10 +20,11 @@ ts_library(
   ],
   deps = [
     ":component",
-    ":storybook_react",
-    ":storybook_react_types",
-    ":react",
-    ":react_types",
+    "//example:packages",
+  ],
+  requires = [
+    "@storybook/react",
+    "react",
   ]
 )
 
@@ -35,43 +34,9 @@ ts_library(
     "component.tsx",
   ],
   deps = [
-    ":react",
-    ":react_types",
+    "//example:packages",
+  ],
+  requires = [
+    "react",
   ]
-)
-
-npm_package(
-  name = "storybook_react",
-  package = "@storybook/react",
-  version = "^3.4.2",
-)
-
-npm_package(
-  name = "storybook_react_types",
-  package = "@types/storybook__react",
-  version = "^3.0.7",
-)
-
-npm_package(
-  name = "react",
-  package = "react",
-  version = "^16.0.0",
-)
-
-npm_package(
-  name = "react_types",
-  package = "@types/react",
-  version = "^16.0.0",
-)
-
-npm_package(
-  name = "react-dom",
-  package = "react-dom",
-  version = "^16.0.0",
-)
-
-npm_package(
-  name = "babel-core",
-  package = "babel-core",
-  version = "^6.26.2",
 )

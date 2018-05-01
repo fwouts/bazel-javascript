@@ -1,53 +1,41 @@
 TsLibraryInfo = provider(fields=[
-  "installed_external_deps_dir",
   "compiled_dir",
   "full_src_dir",
   "srcs",
-  "external_deps",
   "internal_deps",
+  "npm_packages",
+  "npm_packages_installed_dir",
 ])
-NpmPackageInfo = provider(fields=[
-  "package",
-  "version",
-  "dir",
-  "modules_path",
+NpmPackagesInfo = provider(fields=[
+  "installed_dir",
 ])
 
-def _download_external_deps(ctx, external_deps, destination):
-  ctx.actions.run(
-    inputs = [ctx.executable._yarn] + ctx.files._download_external_deps_script,
-    outputs = [destination],
-    executable = ctx.executable._node,
-    arguments = [
-      ctx.file._download_external_deps_script.path,
-      ctx.executable._yarn.path,
-      ("|".join([
-        d.package + "@" + d.version
-        for d in external_deps
-      ])),
-      destination.path,
-    ],
-  )
-
-def _ts_library_create_full_src(ctx, external_deps, internal_deps):
+def _ts_library_create_full_src(ctx, internal_deps, npm_packages, requires):
   ctx.actions.run(
     inputs = [
       ctx.executable._yarn,
-      ctx.outputs.installed_external_deps_dir,
+      ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
+      ctx.file._ts_library_create_full_src_script,
     ] + [
       d[TsLibraryInfo].compiled_dir
       for d in internal_deps
-    ] + ctx.files.srcs + ctx.files._ts_library_create_full_src_script,
+    ] + ctx.files.srcs + (
+      [npm_packages[NpmPackagesInfo].installed_dir] if npm_packages
+      else []
+    ),
     outputs = [ctx.outputs.full_src_dir],
     executable = ctx.executable._node,
+    env = {
+      "NODE_PATH": ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + '/node_modules',
+    },
     arguments = [
       ctx.file._ts_library_create_full_src_script.path,
       ctx.executable._yarn.path,
-      ctx.outputs.installed_external_deps_dir.path,
+      npm_packages[NpmPackagesInfo].installed_dir.path if npm_packages else ctx.outputs.full_src_dir.path,
       ctx.build_file_path,
       ("|".join([
-        d.package + "@" + d.version
-        for d in external_deps
+        p
+        for p in requires
       ])),
       ("|".join([
         d.label.package + ':' +
@@ -63,12 +51,14 @@ def _ts_library_create_full_src(ctx, external_deps, internal_deps):
     ],
   )
 
-def _ts_library_compile(ctx):
+def _ts_library_compile(ctx, npm_packages):
   ctx.actions.run(
     inputs = [
-      ctx.outputs.installed_external_deps_dir,
       ctx.outputs.full_src_dir,
-    ],
+    ] + (
+      [npm_packages[NpmPackagesInfo].installed_dir] if npm_packages
+      else []
+    ),
     outputs = [ctx.outputs.compiled_dir],
     executable = ctx.executable._tsc,
     arguments = [
@@ -80,10 +70,6 @@ def _ts_library_compile(ctx):
   )
 
 def _ts_library_impl(ctx):
-  # Steps:
-  # 1. Create an empty directory with all external deps installed.
-  # 2. Create a directory with srcs + (external + internal) deps in node_modules.
-  # 3. Compile directory to produce corresponding .js and .d.ts files.
   internal_deps = depset(
     direct = [
       dep
@@ -96,37 +82,46 @@ def _ts_library_impl(ctx):
       if TsLibraryInfo in dep
     ],
   )
-  external_deps = depset(
+  extended_npm_packages = depset(
     direct = [
-      dep[NpmPackageInfo]
+      dep
       for dep in ctx.attr.deps
-      if NpmPackageInfo in dep
+      if NpmPackagesInfo in dep
     ],
     transitive = [
-      dep[TsLibraryInfo].external_deps
+      dep[TsLibraryInfo].npm_packages
       for dep in ctx.attr.deps
       if TsLibraryInfo in dep
     ],
   )
-  _download_external_deps(
-    ctx,
-    external_deps,
-    ctx.outputs.installed_external_deps_dir,
+  npm_packages_list = extended_npm_packages.to_list()
+  if len(npm_packages_list) > 1:
+    fail("Found more than one set of NPM packages: " + ",".join([
+      dep.label
+      for dep in npm_packages_list
+    ]))
+  npm_packages = (
+    npm_packages_list[0] if len(npm_packages_list) == 1
+    else ctx.attr._empty_npm_packages
   )
   _ts_library_create_full_src(
     ctx,
-    external_deps,
     internal_deps,
+    npm_packages,
+    ctx.attr.requires,
   )
-  _ts_library_compile(ctx)
+  _ts_library_compile(
+    ctx,
+    npm_packages,
+  )
   return [
     TsLibraryInfo(
       srcs = [f.path for f in ctx.files.srcs],
-      installed_external_deps_dir = ctx.outputs.installed_external_deps_dir,
       compiled_dir = ctx.outputs.compiled_dir,
       full_src_dir = ctx.outputs.full_src_dir,
-      external_deps = external_deps,
       internal_deps = internal_deps,
+      npm_packages = extended_npm_packages,
+      npm_packages_installed_dir = npm_packages[NpmPackagesInfo].installed_dir,
     ),
   ]
 
@@ -139,8 +134,11 @@ ts_library = rule(
     "deps": attr.label_list(
       providers = [
         [TsLibraryInfo],
-        [NpmPackageInfo],
+        [NpmPackagesInfo],
       ],
+      default = [],
+    ),
+    "requires": attr.string_list(
       default = [],
     ),
     "_node": attr.label(
@@ -159,28 +157,25 @@ ts_library = rule(
       cfg = "host",
       default = Label("@yarn//:yarn"),
     ),
-    "_download_external_deps_script": attr.label(
-      allow_files = True,
-      single_file = True,
-      default = Label("//internal/ts_common:download_external_deps.js"),
+    "_internal_packages": attr.label(
+      default = Label("//internal:packages"),
     ),
     "_ts_library_create_full_src_script": attr.label(
       allow_files = True,
       single_file = True,
       default = Label("//internal/ts_library:create_full_src.js"),
     ),
+    "_empty_npm_packages": attr.label(
+      default = Label("//internal/npm_packages/empty:packages"),
+    ),
   },
   outputs = {
-    "installed_external_deps_dir": "%{name}_external_deps",
     "compiled_dir": "%{name}_compiled",
     "full_src_dir": "%{name}_full_src",
   },
 )
 
 def _ts_script_impl(ctx):
-  # 1. Create an empty directory with all external deps installed.
-  # 2. Create a directory with srcs + (external + internal) deps in node_modules.
-  # 3. Run script in directory.
   internal_deps = depset(
     direct = [
       dep
@@ -193,34 +188,40 @@ def _ts_script_impl(ctx):
       if TsLibraryInfo in dep
     ],
   )
-  external_deps = depset(
+  extended_npm_packages = depset(
     direct = [
-      dep[NpmPackageInfo]
+      dep
       for dep in ctx.attr.deps
-      if NpmPackageInfo in dep
+      if NpmPackagesInfo in dep
     ],
     transitive = [
-      dep[TsLibraryInfo].external_deps
+      dep[TsLibraryInfo].npm_packages
       for dep in ctx.attr.deps
       if TsLibraryInfo in dep
     ],
   )
-  _download_external_deps(
-    ctx,
-    external_deps,
-    ctx.outputs.installed_external_deps_dir,
+  npm_packages_list = extended_npm_packages.to_list()
+  if len(npm_packages_list) > 1:
+    fail("Found more than one set of NPM packages: " + ",".join([
+      dep.label
+      for dep in npm_packages_list
+    ]))
+  npm_packages = (
+    npm_packages_list[0] if len(npm_packages_list) == 1
+    else ctx.attr._empty_npm_packages
   )
   runfiles = ctx.runfiles(
     files = [
       ctx.executable._yarn,
-      ctx.outputs.installed_external_deps_dir,
+      npm_packages[NpmPackagesInfo].installed_dir,
       ctx.outputs.full_src_dir,
     ],
   )
   ctx.actions.run(
     inputs = [
       ctx.executable._yarn,
-      ctx.outputs.installed_external_deps_dir,
+      ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
+      npm_packages[NpmPackagesInfo].installed_dir,
     ] + [
       d[TsLibraryInfo].compiled_dir
       for d in internal_deps
@@ -230,13 +231,16 @@ def _ts_script_impl(ctx):
       ctx.outputs.executable_file,
     ],
     executable = ctx.executable._node,
+    env = {
+      "NODE_PATH": ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + '/node_modules',
+    },
     arguments = [
       ctx.file._ts_script_compile_script.path,
       ctx.executable._yarn.path,
       ctx.executable._yarn.short_path,
       ctx.attr.cmd,
-      ctx.outputs.installed_external_deps_dir.path,
-      ctx.outputs.installed_external_deps_dir.short_path,
+      npm_packages[NpmPackagesInfo].installed_dir.path,
+      npm_packages[NpmPackagesInfo].installed_dir.short_path,
       ctx.build_file_path,
       ("|".join([f.path for f in ctx.files.srcs])),
       ("|".join([
@@ -268,7 +272,7 @@ ts_script = rule(
     "deps": attr.label_list(
       providers = [
         [TsLibraryInfo],
-        [NpmPackageInfo],
+        [NpmPackagesInfo],
       ],
     ),
     "_node": attr.label(
@@ -282,10 +286,8 @@ ts_script = rule(
       cfg = "host",
       default = Label("@yarn//:yarn"),
     ),
-    "_download_external_deps_script": attr.label(
-      allow_files = True,
-      single_file = True,
-      default = Label("//internal/ts_common:download_external_deps.js"),
+    "_internal_packages": attr.label(
+      default = Label("//internal:packages"),
     ),
     "_ts_script_compile_script": attr.label(
       allow_files = True,
@@ -295,7 +297,6 @@ ts_script = rule(
   },
   executable = True,
   outputs = {
-    "installed_external_deps_dir": "%{name}_external_deps",
     "full_src_dir": "%{name}_full_src",
     "executable_file": "%{name}.sh",
   },
@@ -304,51 +305,28 @@ ts_script = rule(
 def _ts_binary_compile(ctx):
   ctx.actions.run(
     inputs = [
-      ctx.outputs.installed_webpack_dir,
-      ctx.attr.lib[TsLibraryInfo].installed_external_deps_dir,
+      ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
+      ctx.attr._webpack_npm_packages[NpmPackagesInfo].installed_dir,
+      ctx.attr.lib[TsLibraryInfo].npm_packages_installed_dir,
       ctx.attr.lib[TsLibraryInfo].full_src_dir,
     ] + ctx.files._ts_binary_compile_script,
     outputs = [ctx.outputs.executable_file],
     executable = ctx.executable._node,
+    env = {
+      "NODE_PATH": ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + '/node_modules',
+    },
     arguments = [
       ctx.file._ts_binary_compile_script.path,
       ctx.build_file_path,
       ctx.attr.entry,
-      ctx.outputs.installed_webpack_dir.path,
-      ctx.attr.lib[TsLibraryInfo].installed_external_deps_dir.path,
+      ctx.attr._webpack_npm_packages[NpmPackagesInfo].installed_dir.path,
+      ctx.attr.lib[TsLibraryInfo].npm_packages_installed_dir.path,
       ctx.attr.lib[TsLibraryInfo].full_src_dir.path,
       ctx.outputs.executable_file.path,
     ],
   )
 
 def _ts_binary_impl(ctx):
-  # Steps:
-  # 1. Download webpack in empty directory.
-  # 2. Add webpack config in copied directory.
-  # 3. Compile with webpack (without copying sources).
-  external_deps = [
-    NpmPackageInfo(
-      package = "ts-loader",
-      version = "^4.2.0",
-    ),
-    NpmPackageInfo(
-      package = "typescript",
-      version = "^2.8.3",
-    ),
-    NpmPackageInfo(
-      package = "webpack",
-      version = "^4.6.0",
-    ),
-    NpmPackageInfo(
-      package = "webpack-cli",
-      version = "^2.0.15",
-    ),
-  ]
-  _download_external_deps(
-    ctx,
-    external_deps,
-    ctx.outputs.installed_webpack_dir,
-  )
   _ts_binary_compile(ctx)
   return [
     DefaultInfo(
@@ -379,71 +357,96 @@ ts_binary = rule(
       cfg = "host",
       default = Label("@yarn//:yarn"),
     ),
-    "_download_external_deps_script": attr.label(
-      allow_files = True,
-      single_file = True,
-      default = Label("//internal/ts_common:download_external_deps.js"),
+    "_internal_packages": attr.label(
+      default = Label("//internal:packages"),
     ),
     "_ts_binary_compile_script": attr.label(
       allow_files = True,
       single_file = True,
       default = Label("//internal/ts_binary:compile.js"),
     ),
+    "_webpack_npm_packages": attr.label(
+      default = Label("//internal/ts_binary/webpack:packages"),
+    ),
   },
   executable = True,
   outputs = {
-    "installed_webpack_dir": "%{name}_webpack_deps",
     "executable_file": "%{name}.js",
   },
 )
 
-def _npm_package_impl(ctx):
+def _npm_packages_impl(ctx):
   ctx.actions.run(
-    executable = ctx.executable._yarn,
-    outputs = [ctx.outputs.dir],
-    arguments = [
-      "--cwd",
-      ctx.outputs.dir.path,
-      "add",
-      ctx.attr.package + "@" + ctx.attr.version,
-    ],
-  )
+      inputs = [
+        ctx.file._npm_packages_install,
+        ctx.executable._yarn,
+        ctx.file.package_json,
+        ctx.file.yarn_lock,
+      ],
+      outputs = [ctx.outputs.installed_dir],
+      executable = ctx.executable._node,
+      arguments = [
+        ctx.file._npm_packages_install.path,
+        ctx.executable._yarn.path,
+        ctx.file.package_json.path,
+        ctx.file.yarn_lock.path,
+        ctx.outputs.installed_dir.path,
+      ],
+    )
   return [
-    NpmPackageInfo(
-      package = ctx.attr.package,
-      version = ctx.attr.version,
-      dir = ctx.outputs.dir,
-      modules_path = ctx.outputs.dir.short_path + '/node_modules'
+    NpmPackagesInfo(
+      installed_dir = ctx.outputs.installed_dir
     ),
   ]
 
-npm_package = rule(
-  implementation = _npm_package_impl,
+npm_packages = rule(
+  implementation = _npm_packages_impl,
   attrs = {
-    "package": attr.string(),
-    "version": attr.string(),
+    "package_json": attr.label(
+      allow_files = True,
+      single_file = True,
+    ),
+    "yarn_lock": attr.label(
+      allow_files = True,
+      single_file = True,
+    ),
+    "_node": attr.label(
+      allow_files = True,
+      executable = True,
+      cfg = "host",
+      default = Label("@nodejs//:node"),
+    ),
     "_yarn": attr.label(
       executable = True,
       cfg = "host",
       default = Label("@yarn//:yarn"),
     ),
+    "_npm_packages_install": attr.label(
+      allow_files = True,
+      single_file = True,
+      default = Label("//internal/npm_packages:install.js"),
+    ),
   },
   outputs = {
-    "dir": "%{name}_dir",
+    "installed_dir": "%{name}_installed_dir",
   },
 )
 
 def _npm_binary_impl(ctx):
-  modules_path = ctx.attr.package[NpmPackageInfo].modules_path
   ctx.actions.write(
     output = ctx.outputs.bin,
-    content = "%s/.bin/%s" % (modules_path, ctx.attr.binary),
+    content = "%s/node_modules/.bin/%s" % (
+      ctx.attr.install[NpmPackagesInfo].installed_dir.short_path,
+      ctx.attr.binary,
+    ),
     is_executable = True,
   )
   return [
     DefaultInfo(
       runfiles = ctx.runfiles(
-        files = [ctx.attr.package[NpmPackageInfo].dir],
+        files = [
+          ctx.attr.install[NpmPackagesInfo].installed_dir,
+        ],
       ),
       executable = ctx.outputs.bin,
     )
@@ -452,7 +455,9 @@ def _npm_binary_impl(ctx):
 npm_binary = rule(
   implementation = _npm_binary_impl,
   attrs = {
-    "package": attr.label(),
+    "install": attr.label(
+      providers = [NpmPackagesInfo],
+    ),
     "binary": attr.string(),
   },
   outputs = {
