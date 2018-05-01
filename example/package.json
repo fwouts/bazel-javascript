@@ -1,8 +1,4 @@
 {
-  "name": "pipes",
-  "version": "0.0.1",
-  "author": "Francois Wouts <f@zenc.io>",
-  "private": true,
   "scripts": {
     "start": "ts-node-dev --respawn src/main.ts",
     "build": "tsc"
