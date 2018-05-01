@@ -1,4 +1,4 @@
-# TypeScript rules for Bazel
+# TypeScript rules for Bazel [alpha]
 
 ## Rules
 
@@ -19,6 +19,13 @@ A few key differences:
 - Easier setup ([literally four lines](https://github.com/zenclabs/bazel-typescript-example/blob/master/WORKSPACE)).
 - No need for a `node_modules` directory.
 - You must specify a `yarn.lock` along with `package.json`.
+
+As of 1 May 2018, a few key features are missing:
+- running tests ([#19](https://github.com/zenclabs/bazel-typescript/issues/19))
+- compiling JS bundles ([#22](https://github.com/zenclabs/bazel-typescript/issues/22))
+- support for asset bundling ([#16](https://github.com/zenclabs/bazel-typescript/issues/16))
+- live reloading ([#23](https://github.com/zenclabs/bazel-typescript/issues/23))
+- automatic BUILD file generation ([#24](https://github.com/zenclabs/bazel-typescript/issues/24))
 
 ## Installation
 
