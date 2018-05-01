@@ -264,6 +264,7 @@ ts_script = rule(
 )
 
 def _ts_binary_compile(ctx):
+  build_dir = ctx.actions.declare_directory(ctx.label.name + "_build_dir")
   ctx.actions.run_shell(
     inputs = [
       ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
@@ -271,7 +272,10 @@ def _ts_binary_compile(ctx):
       ctx.attr.lib[TsLibraryInfo].npm_packages_installed_dir,
       ctx.attr.lib[TsLibraryInfo].full_src_dir,
     ] + ctx.files._ts_binary_compile_script,
-    outputs = [ctx.outputs.executable_file],
+    outputs = [
+      build_dir,
+      ctx.outputs.executable_file,
+    ],
     command = "NODE_PATH=" + ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules node \"$@\"",
     use_default_shell_env = True,
     arguments = [
@@ -281,6 +285,7 @@ def _ts_binary_compile(ctx):
       ctx.attr._webpack_npm_packages[NpmPackagesInfo].installed_dir.path,
       ctx.attr.lib[TsLibraryInfo].npm_packages_installed_dir.path,
       ctx.attr.lib[TsLibraryInfo].full_src_dir.path,
+      build_dir.path,
       ctx.outputs.executable_file.path,
     ],
   )

@@ -10,18 +10,24 @@ const [
   installedWebpackDir,
   installedNpmPackagesDir,
   sourceDir,
+  buildDir,
   outputFile
 ] = process.argv;
 
 const buildfileDir = path.dirname(buildfilePath);
 
+fs.mkdirSync(buildDir);
 fs.writeFileSync(
-  path.join(installedWebpackDir, "webpack.config.js"),
+  path.join(buildDir, "webpack.config.js"),
   `const path = require("path");
 const webpack = require("webpack");
 
 module.exports = {
-  entry: "./${path.relative(installedWebpackDir, path.join(sourceDir, entry))}",
+  entry: "${path.relative(installedWebpackDir, path.join(sourceDir, entry))}",
+  output: {
+    filename: "${path.basename(outputFile)}",
+    path: "${path.resolve(path.dirname(outputFile))}",
+  },
   module: {
     rules: [
       {
@@ -35,6 +41,7 @@ module.exports = {
     modules: [
       "${path.resolve(path.join(sourceDir, "node_modules"))}",
       "${path.resolve(path.join(installedNpmPackagesDir, "node_modules"))}",
+      "${path.resolve(path.join(installedWebpackDir, "node_modules"))}",
     ],
     extensions: [".ts", ".tsx", ".js", ".jsx"],
   },
@@ -50,13 +57,14 @@ module.exports = {
 );
 
 child_process.execSync(
-  `webpack-cli --output-path ${path.resolve(
-    path.dirname(outputFile)
-  )} --output-filename ${path.basename(outputFile)}`,
+  `webpack-cli --config ${path.resolve(
+    path.join(buildDir, "webpack.config.js")
+  )}`,
   {
     cwd: installedWebpackDir,
     stdio: "inherit",
     env: {
+      NODE_PATH: path.resolve(path.join(installedWebpackDir, "node_modules")),
       PATH: path.dirname(nodePath) + ":./node_modules/.bin"
     }
   }
