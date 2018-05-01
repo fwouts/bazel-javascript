@@ -1,6 +1,6 @@
 package(default_visibility = ["//visibility:public"])
 
-load('@bazel_typescript//:defs.bzl', 'ts_library', 'ts_script')
+load("@bazel_typescript//:defs.bzl", "ts_library", "ts_script")
 
 ts_script(
   name = "storybook",
