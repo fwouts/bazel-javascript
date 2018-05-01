@@ -5,7 +5,6 @@ const path = require("path");
 const [
   nodePath,
   scriptPath,
-  buildfilePath,
   entry,
   installedWebpackDir,
   installedNpmPackagesDir,
@@ -14,9 +13,15 @@ const [
   outputFile
 ] = process.argv;
 
-const buildfileDir = path.dirname(buildfilePath);
-
+// Create build directory.
 fs.mkdirSync(buildDir);
+
+// Create webpack.config.js in build directory.
+//
+// Note that we don't actually copy any sources in this directory.
+// Instead, it refers to the existing source directory and node_modules
+// directories (there are two: one containing webpack and other build tools,
+// and another containing the actual code dependencies).
 fs.writeFileSync(
   path.join(buildDir, "webpack.config.js"),
   `const path = require("path");

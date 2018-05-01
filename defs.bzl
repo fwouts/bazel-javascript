@@ -340,6 +340,7 @@ ts_script = rule(
 )
 
 def _ts_binary_impl(ctx):
+  # Create a directory containing the webpack config.
   build_dir = ctx.actions.declare_directory(ctx.label.name + "_build_dir")
   ctx.actions.run_shell(
     inputs = [
@@ -355,13 +356,19 @@ def _ts_binary_impl(ctx):
     command = "NODE_PATH=" + ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules node \"$@\"",
     use_default_shell_env = True,
     arguments = [
+      # Run `node ts_binary/compile.js`.
       ctx.file._ts_binary_compile_script.path,
-      ctx.build_file_path,
+      # Entry point for Webpack (e.g. "main.ts").
       ctx.attr.entry,
+      # Directory containing webpack, webpack-cli, typescript and ts-loader.
       ctx.attr._webpack_npm_packages[NpmPackagesInfo].installed_dir.path,
+      # Directory containing external NPM dependencies the code depends on.
       ctx.attr.lib[TsLibraryInfo].npm_packages_installed_dir.path,
+      # Directory containing the source code of the ts_library.
       ctx.attr.lib[TsLibraryInfo].full_src_dir.path,
+      # Directory in which to place the webpack config.
       build_dir.path,
+      # Directory in which to place the compiled JavaScript.
       ctx.outputs.executable_file.path,
     ],
   )
@@ -407,9 +414,13 @@ def _npm_packages_impl(ctx):
     command = "node \"$@\"",
     use_default_shell_env = True,
     arguments = [
+      # Run `node npm_packages/install.js`.
       ctx.file._npm_packages_install.path,
+      # Path of package.json to install with.
       ctx.file.package_json.path,
+      # Path of yarn.lock to lock versions.
       ctx.file.yarn_lock.path,
+      # Path to install into (node_modules/ will be created there).
       ctx.outputs.installed_dir.path,
     ],
   )
@@ -442,6 +453,8 @@ npm_packages = rule(
 )
 
 def _npm_binary_impl(ctx):
+  # Generate a simple shell script that starts the binary, loaded from the
+  # node_modules/.bin directory.
   ctx.actions.write(
     output = ctx.outputs.bin,
     content = "%s/node_modules/.bin/%s" % (
