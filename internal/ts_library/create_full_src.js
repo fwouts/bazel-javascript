@@ -110,11 +110,11 @@ for (const sourceFilePath of srcs) {
   if (!fs.existsSync(sourceFilePath)) {
     throw new Error(`Missing file: ${sourceFilePath}.`);
   }
-  // TODO: Create directories recursively as required.
   const destinationFilePath = path.join(
     destinationDir,
     path.relative(buildfileDir, sourceFilePath)
   );
+  fs.ensureDirSync(path.dirname(destinationFilePath));
   if (
     !destinationFilePath.endsWith(".ts") &&
     !destinationFilePath.endsWith(".tsx")
