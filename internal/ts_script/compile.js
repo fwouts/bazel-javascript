@@ -25,6 +25,9 @@ const internalDeps = joinedInternalDeps.split("|");
 // file that included them.
 fs.mkdirSync(destinationDir);
 for (const src of srcs) {
+  if (!src) {
+    continue;
+  }
   const destPath = path.relative(path.dirname(buildfilePath), src);
   fs.ensureDirSync(path.dirname(path.join(destinationDir, destPath)));
   fs.copySync(src, path.join(destinationDir, destPath));
