@@ -3,13 +3,22 @@ package(default_visibility = ["//visibility:public"])
 load("@bazel_typescript//:defs.bzl", "ts_library", "ts_script")
 
 ts_script(
-  name = "storybook",
+  name = "storybook-run",
   cmd = "start-storybook -p 9001 -c .storybook",
+  lib = ":storybook",
+)
+
+ts_library(
+  name = "storybook",
   srcs = [
     ".storybook/config.js",
   ],
   deps = [
     ":component_story",
+    "//test:packages",
+  ],
+  requires = [
+    "@storybook/react",
   ],
 )
 
@@ -25,7 +34,7 @@ ts_library(
   requires = [
     "@storybook/react",
     "react",
-  ]
+  ],
 )
 
 ts_library(

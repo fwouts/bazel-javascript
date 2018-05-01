@@ -5,6 +5,7 @@
 - [ts_library](#ts_library)
 - [ts_binary](#ts_binary)
 - [ts_script](#ts_script)
+- [ts_test](#ts_test)
 - [npm_packages](#npm_packages)
 - [npm_binary](#npm_binary)
 
@@ -22,7 +23,6 @@ The main differences are:
 - You must specify a `yarn.lock` along with `package.json`.
 
 As of 1 May 2018, a few key features are missing:
-- running tests ([#19](https://github.com/zenclabs/bazel-typescript/issues/19))
 - compiling JS bundles ([#22](https://github.com/zenclabs/bazel-typescript/issues/22))
 - support for asset bundling ([#16](https://github.com/zenclabs/bazel-typescript/issues/16))
 - live reloading ([#23](https://github.com/zenclabs/bazel-typescript/issues/23))
@@ -38,7 +38,7 @@ Next, create a `WORKSPACE` file in your project root containing:
 git_repository(
   name = "bazel_typescript",
   remote = "https://github.com/zenclabs/bazel-typescript.git",
-  tag = "0.0.6", # check for the latest tag when you install
+  tag = "0.0.7", # check for the latest tag when you install
 )
 ```
 
@@ -261,7 +261,7 @@ Note: for now, the generated file is targeted for Node ([see issue](https://gith
 ### ts_script
 
 ```python
-ts_script(cmd, srcs, deps)
+ts_script(cmd, lib)
 ```
 
 Used to run a script (similarly to `scripts` in `package.json`).
@@ -280,22 +280,22 @@ Used to run a script (similarly to `scripts` in `package.json`).
       </td>
     </tr>
     <tr>
-      <td><code>srcs</code></td>
+      <td><code>lib</code></td>
       <td>
-        <p>A list of source files (optional).</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>deps</code></td>
-      <td>
-        <p>A list of labels (required).</p>
-        <p>
-          This could be any other <code>ts_library</code> targets, or at most one <code>npm_packages</code> target.
-        </p>
+        <p>A <code>ts_library</code> target (required).</p>
+        <p>The script will execute in the target's compiled directory.</p>
       </td>
     </tr>
   </tbody>
 </table>
+
+### ts_test
+
+```python
+ts_test(cmd, lib)
+```
+
+Used to define a test. Arguments are identical to `ts_script`.
 
 ### npm_packages
 

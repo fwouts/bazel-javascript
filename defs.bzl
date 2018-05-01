@@ -210,64 +210,16 @@ ts_library = rule(
 )
 
 def _ts_script_impl(ctx):
-  # Ensure that we depend on at most one npm_packages, since we don't want to
-  # have conflicting package versions coming from separate node_modules
-  # directories.
-  extended_npm_packages = depset(
-    direct = [
-      dep
-      for dep in ctx.attr.deps
-      if NpmPackagesInfo in dep
-    ],
-    transitive = [
-      dep[TsLibraryInfo].npm_packages
-      for dep in ctx.attr.deps
-      if TsLibraryInfo in dep
-    ],
-  )
-  npm_packages_list = extended_npm_packages.to_list()
-  if len(npm_packages_list) > 1:
-    fail("Found more than one set of NPM packages: " + ",".join([
-      dep.label
-      for dep in npm_packages_list
-    ]))
-  # If we depend on an npm_packages target, we'll use its node_modules
-  # directory to find modules. Otherwise, we'll use an empty node_modules
-  # directory.
-  npm_packages = (
-    npm_packages_list[0] if len(npm_packages_list) == 1
-    else ctx.attr._empty_npm_packages
-  )
-  runfiles = ctx.runfiles(
-    files = [
-      npm_packages[NpmPackagesInfo].installed_dir,
-      ctx.outputs.full_src_dir,
-    ],
-  )
-  # Gather all internal deps (ts_library rules we depend on).
-  internal_deps = depset(
-    direct = [
-      dep
-      for dep in ctx.attr.deps
-      if TsLibraryInfo in dep
-    ],
-    transitive = [
-      dep[TsLibraryInfo].internal_deps
-      for dep in ctx.attr.deps
-      if TsLibraryInfo in dep
-    ],
-  )
   # Create a directory that contains:
-  # - source files
+  # - source code from the ts_library we depend on
   # - package.json with {
   #     "scripts": {
   #       "start": "[cmd]"
   #     }
   #   }
-  # - node_modules/[name] for every internal dep
   #
   # Note that node_modules/ will not contain external dependencies from NPM.
-  # Instead, the tsconfig.json will point to the node_modules/ directory of
+  # Instead, the NODE_PATH will point to the node_modules/ directory of
   # the npm_packages target we depend on. This means we don't have to lose
   # performance by copy-pasting node_modules with hundreds of packages.
   #
@@ -275,13 +227,12 @@ def _ts_script_impl(ctx):
   ctx.actions.run_shell(
     inputs = [
       ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
-      npm_packages[NpmPackagesInfo].installed_dir,
-    ] + [
-      d[TsLibraryInfo].compiled_dir
-      for d in internal_deps
-    ] + ctx.files.srcs + ctx.files._ts_script_compile_script,
+      ctx.attr.lib[TsLibraryInfo].npm_packages_installed_dir,
+      ctx.attr.lib[TsLibraryInfo].compiled_dir,
+      ctx.file._ts_script_compile_script,
+    ],
     outputs = [
-      ctx.outputs.full_src_dir,
+      ctx.outputs.compiled_dir,
       ctx.outputs.executable_file,
     ],
     command = "NODE_PATH=" + ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules node \"$@\"",
@@ -293,25 +244,15 @@ def _ts_script_impl(ctx):
       ctx.attr.cmd,
       # Directory containing node_modules/ with all external NPM packages
       # installed.
-      npm_packages[NpmPackagesInfo].installed_dir.path,
+      ctx.attr.lib[TsLibraryInfo].npm_packages_installed_dir.path,
       # Same path required in short form for the shell script.
-      npm_packages[NpmPackagesInfo].installed_dir.short_path,
-      # BUILD file path, necessary to know where to put the source files.
-      ctx.build_file_path,
-      # List of source files to copy (which will not be compiled by tsc).
-      ("|".join([f.path for f in ctx.files.srcs])),
-      # List of ts_library targets we depend on, along with their compiled
-      # JavaScript and TypeScript definitions.
-      ("|".join([
-        d.label.package + ':' +
-        d.label.name + ':' +
-        d[TsLibraryInfo].compiled_dir.path
-        for d in internal_deps
-      ])),
+      ctx.attr.lib[TsLibraryInfo].npm_packages_installed_dir.short_path,
+      # Compiled directory of the ts_library we depend on.
+      ctx.attr.lib[TsLibraryInfo].compiled_dir.path,
       # Directory in which to create package.json and copy sources.
-      ctx.outputs.full_src_dir.path,
+      ctx.outputs.compiled_dir.path,
       # Same path required in short form for the shell script.
-      ctx.outputs.full_src_dir.short_path,
+      ctx.outputs.compiled_dir.short_path,
       # Path to generate the shell script.
       ctx.outputs.executable_file.path,
     ],
@@ -319,7 +260,12 @@ def _ts_script_impl(ctx):
   return [
     DefaultInfo(
       executable = ctx.outputs.executable_file,
-      runfiles = runfiles,
+      runfiles = ctx.runfiles(
+        files = [
+          ctx.attr.lib[TsLibraryInfo].npm_packages_installed_dir,
+          ctx.outputs.compiled_dir,
+        ],
+      ),
     ),
   ]
 
@@ -327,15 +273,8 @@ ts_script = rule(
   implementation = _ts_script_impl,
   attrs = {
     "cmd": attr.string(),
-    "srcs": attr.label_list(
-      allow_files = True,
-      default = [],
-    ),
-    "deps": attr.label_list(
-      providers = [
-        [TsLibraryInfo],
-        [NpmPackagesInfo],
-      ],
+    "lib": attr.label(
+      providers = [TsLibraryInfo],
     ),
     "_internal_packages": attr.label(
       default = Label("//internal:packages"),
@@ -348,7 +287,32 @@ ts_script = rule(
   },
   executable = True,
   outputs = {
-    "full_src_dir": "%{name}_full_src",
+    "compiled_dir": "%{name}_compiled_dir",
+    "executable_file": "%{name}.sh",
+  },
+)
+
+# ts_test is identical to ts_script, but it's marked as "test" instead of
+# "executable".
+ts_test = rule(
+  implementation = _ts_script_impl,
+  attrs = {
+    "cmd": attr.string(),
+    "lib": attr.label(
+      providers = [TsLibraryInfo],
+    ),
+    "_internal_packages": attr.label(
+      default = Label("//internal:packages"),
+    ),
+    "_ts_script_compile_script": attr.label(
+      allow_files = True,
+      single_file = True,
+      default = Label("//internal/ts_script:compile.js"),
+    ),
+  },
+  test = True,
+  outputs = {
+    "compiled_dir": "%{name}_compiled_dir",
     "executable_file": "%{name}.sh",
   },
 )
