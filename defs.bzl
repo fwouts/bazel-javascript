@@ -16,13 +16,11 @@ def _ts_library_create_full_src(ctx, internal_deps, npm_packages, requires):
       ctx.executable._yarn,
       ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
       ctx.file._ts_library_create_full_src_script,
+      npm_packages[NpmPackagesInfo].installed_dir,
     ] + [
       d[TsLibraryInfo].compiled_dir
       for d in internal_deps
-    ] + ctx.files.srcs + (
-      [npm_packages[NpmPackagesInfo].installed_dir] if npm_packages
-      else []
-    ),
+    ] + ctx.files.srcs,
     outputs = [ctx.outputs.full_src_dir],
     executable = ctx.executable._node,
     env = {
@@ -31,7 +29,7 @@ def _ts_library_create_full_src(ctx, internal_deps, npm_packages, requires):
     arguments = [
       ctx.file._ts_library_create_full_src_script.path,
       ctx.executable._yarn.path,
-      npm_packages[NpmPackagesInfo].installed_dir.path if npm_packages else ctx.outputs.full_src_dir.path,
+      npm_packages[NpmPackagesInfo].installed_dir.path,
       ctx.build_file_path,
       ("|".join([
         p
@@ -55,10 +53,8 @@ def _ts_library_compile(ctx, npm_packages):
   ctx.actions.run(
     inputs = [
       ctx.outputs.full_src_dir,
-    ] + (
-      [npm_packages[NpmPackagesInfo].installed_dir] if npm_packages
-      else []
-    ),
+      npm_packages[NpmPackagesInfo].installed_dir,
+    ],
     outputs = [ctx.outputs.compiled_dir],
     executable = ctx.executable._tsc,
     arguments = [
