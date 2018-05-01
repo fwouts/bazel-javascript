@@ -4,6 +4,7 @@
 
 - [ts_library](#ts_library)
 - [ts_binary](#ts_binary)
+- [ts_script](#ts_script)
 - [npm_packages](#npm_packages)
 - [npm_binary](#npm_binary)
 
