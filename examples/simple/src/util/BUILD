@@ -1,6 +1,6 @@
 package(default_visibility = ["//visibility:public"])
 
-load('@bazel_typescript//:defs.bzl', 'ts_library')
+load("@bazel_typescript//:defs.bzl", "ts_library")
 
 ts_library(
   name = "constants",
@@ -8,17 +8,9 @@ ts_library(
     "constants.ts",
   ],
   deps = [
-    ":nodeps",
-    "//example:packages",
+    "//:packages",
   ],
   requires = [
     "textbuilder",
-  ],
-)
-
-ts_library(
-  name = "nodeps",
-  srcs = [
-    "nodeps.ts",
   ],
 )

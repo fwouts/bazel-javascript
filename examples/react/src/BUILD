@@ -1,6 +1,6 @@
 package(default_visibility = ["//visibility:public"])
 
-load('@bazel_typescript//:defs.bzl', 'ts_library', 'ts_script')
+load("@bazel_typescript//:defs.bzl", "ts_library", "ts_script")
 
 ts_script(
   name = "storybook",
@@ -20,7 +20,7 @@ ts_library(
   ],
   deps = [
     ":component",
-    "//example:packages",
+    "//:packages",
   ],
   requires = [
     "@storybook/react",
@@ -34,7 +34,7 @@ ts_library(
     "component.tsx",
   ],
   deps = [
-    "//example:packages",
+    "//:packages",
   ],
   requires = [
     "react",
