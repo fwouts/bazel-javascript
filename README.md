@@ -17,7 +17,7 @@ implementation](https://github.com/bazelbuild/rules_typescript).
 
 A few key differences:
 
-- Easier setup ([literally four lines](https://github.com/zenclabs/bazel-typescript-example/blob/master/WORKSPACE)).
+- Easier setup ([literally four lines](examples/simple/WORKSPACE)).
 - No need for a `node_modules` directory.
 - You must specify a `yarn.lock` along with `package.json`.
 
