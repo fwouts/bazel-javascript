@@ -23,12 +23,20 @@ def _ts_library_impl(ctx):
   # Ensure that we depend on at most one npm_packages, since we don't want to
   # have conflicting package versions coming from separate node_modules
   # directories.
+  direct_npm_packages = [
+    dep
+    for dep in ctx.attr.deps
+    if NpmPackagesInfo in dep
+  ]
+  if len(direct_npm_packages) > 1:
+    fail("Found more than one set of NPM packages in target definition: " + ",".join([
+      dep.label
+      for dep in direct_npm_packages
+    ]))
+  if len(direct_npm_packages) == 0 and len(ctx.attr.requires) > 0:
+    fail("npm_library requires packages but does not depend on an npm_packages target.")
   extended_npm_packages = depset(
-    direct = [
-      dep
-      for dep in ctx.attr.deps
-      if NpmPackagesInfo in dep
-    ],
+    direct = direct_npm_packages,
     transitive = [
       dep[TsLibraryInfo].npm_packages
       for dep in ctx.attr.deps
@@ -37,7 +45,7 @@ def _ts_library_impl(ctx):
   )
   npm_packages_list = extended_npm_packages.to_list()
   if len(npm_packages_list) > 1:
-    fail("Found more than one set of NPM packages: " + ",".join([
+    fail("Found more than one set of NPM packages through dependencies: " + ",".join([
       dep.label
       for dep in npm_packages_list
     ]))
