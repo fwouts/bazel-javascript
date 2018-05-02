@@ -5,7 +5,7 @@ const child_process = require("child_process");
 const fs = require("fs");
 const path = require("path");
 
-const { runYarn } = require("../ts_common/run_yarn");
+const { runYarn } = require("../common/run_yarn");
 
 const [
   nodePath,

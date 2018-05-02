@@ -1,1 +1,1 @@
-workspace(name = "bazel_typescript")
+workspace(name = "bazel_node")
