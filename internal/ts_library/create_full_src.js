@@ -33,15 +33,9 @@ fs.writeFileSync(
         ...originalTsConfig.compilerOptions,
         moduleResolution: "node",
         declaration: true,
+        rootDir: ".",
         baseUrl: ".",
-        paths: {
-          "*": [
-            path.relative(
-              path.join(destinationDir),
-              path.join(installedNpmPackagesDir, "node_modules", "*")
-            )
-          ]
-        }
+        paths: {}
       }
     },
     null,
@@ -50,27 +44,27 @@ fs.writeFileSync(
   "utf8"
 );
 
-// We will need to match every "import './relative/path'" to a non-relative
-// import path, so that every dependency another Bazel rule can find it in the
-// node_modules directory.
-const pathToPackagedPath = {};
-
-fs.mkdirSync(path.join(destinationDir, "node_modules"));
-
-// Types must be copied, as TypeScript struggles with finding type definitions
-// for scoped modules, e.g. @types/storybook__react.
-if (
-  fs.existsSync(path.join(installedNpmPackagesDir, "node_modules", "@types"))
-) {
-  fs.copySync(
-    path.join(installedNpmPackagesDir, "node_modules", "@types"),
-    path.join(destinationDir, "node_modules", "@types")
+if (fs.existsSync(path.join(installedNpmPackagesDir, "node_modules"))) {
+  // Create a symbolic link from node_modules.
+  // IMPORTANT: We need to `cd` into destinationDir so that the symbolic link
+  // stays valid across Bazel compilation steps. Otherwise, it's relative to
+  // the current directory, which will soon stop existing.
+  // I know, weird hack. If you have something better, let me know!
+  child_process.execSync(
+    `cd ${destinationDir} && ln -s ${path.join(
+      path.relative(destinationDir, installedNpmPackagesDir),
+      "node_modules"
+    )} node_modules`,
+    {
+      stdio: "inherit"
+    }
   );
 }
 
 // Copy every internal dependency into the directory (dependencies that are not
 // in the same directory will be moved, e.g. "../../some/path" will become
 // "__parent/__parent/some/path).
+const pathToPackagedPath = {};
 for (const internalDep of internalDeps) {
   if (!internalDep) {
     continue;

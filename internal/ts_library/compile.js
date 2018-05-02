@@ -7,8 +7,12 @@ const [nodePath, scriptPath, fullSrcDir, destinationDir] = process.argv;
 // Copy over any non-TypeScript files (e.g. CSS assets).
 fs.copySync(fullSrcDir, destinationDir, {
   dereference: true,
-  filter: (src, dest) => {
-    return !src.endsWith(".ts") && !src.endsWith(".tsx");
+  filter: name => {
+    return (
+      path.basename(name) !== "node_modules" &&
+      !name.endsWith(".ts") &&
+      !name.endsWith(".tsx")
+    );
   }
 });
 
