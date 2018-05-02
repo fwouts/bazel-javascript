@@ -68,7 +68,9 @@ if (
   );
 }
 
-// Copy every internal dependency into the appropriate node_modules/ subdirectory.
+// Copy every internal dependency into the directory (dependencies that are not
+// in the same directory will be moved, e.g. "../../some/path" will become
+// "__parent/__parent/some/path).
 for (const internalDep of internalDeps) {
   if (!internalDep) {
     continue;
@@ -80,24 +82,25 @@ for (const internalDep of internalDeps) {
     compiledDir
   ] = internalDep.split(":");
   const srcs = joinedSrcs.split(";");
-  const rootModuleName =
-    "__" + targetPackage.replace(/\//g, "__") + "__" + targetName;
+  const internalDepRelativePath = path
+    .relative(buildfileDir, targetPackage)
+    .replace(/\.\.\//g, "__parent/");
   for (const src of srcs) {
     if (!src) {
       continue;
     }
-    pathToPackagedPath[
-      path.join(path.dirname(src), path.parse(src).name)
-    ] = path.join(
-      rootModuleName,
-      path.relative(targetPackage, path.dirname(src)),
-      path.parse(src).name
-    );
+    pathToPackagedPath[path.join(path.dirname(src), path.parse(src).name)] =
+      "./" +
+      path.join(
+        internalDepRelativePath,
+        path.relative(targetPackage, path.dirname(src)),
+        path.parse(src).name
+      );
   }
-  fs.copySync(
-    compiledDir,
-    path.join(destinationDir, "node_modules", rootModuleName)
-  );
+  fs.copySync(compiledDir, path.join(destinationDir, internalDepRelativePath), {
+    dereference: true,
+    filter: name => path.basename(name) !== "tsconfig.json"
+  });
 }
 
 // Update import statements in this target's sources.
@@ -133,7 +136,11 @@ for (const sourceFilePath of srcs) {
     // TODO: Also handle require statements.
     if (statement.kind === ts.SyntaxKind.ImportDeclaration) {
       const importFrom = statement.moduleSpecifier.text;
-      if (importFrom.startsWith("./") || importFrom.startsWith("@/")) {
+      if (
+        importFrom.startsWith("./") ||
+        importFrom.startsWith("../") ||
+        importFrom.startsWith("@/")
+      ) {
         let importPathFromWorkspace;
         if (importFrom[0] === "@") {
           // Workspace-level import, e.g. "@/src/some/path".
