@@ -7,3 +7,7 @@ npm_packages(
   package_json = ":package.json",
   yarn_lock = ":yarn.lock",
 )
+
+exports_files([
+  "tsconfig.json",
+])

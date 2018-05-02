@@ -1,3 +1,3 @@
-import { SUFFIX } from "@/test/src/nested/suffix";
+import { SUFFIX } from "@/nested/suffix";
 
 export const PREFIX = "INFO" + SUFFIX;

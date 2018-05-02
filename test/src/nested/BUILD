@@ -15,6 +15,7 @@ ts_library(
   requires = [
     "textbuilder",
   ],
+  tsconfig = "//test:tsconfig.json",
 )
 
 ts_library(
@@ -23,4 +24,5 @@ ts_library(
     "nodeps.ts",
     "suffix.ts",
   ],
+  tsconfig = "//test:tsconfig.json",
 )

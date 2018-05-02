@@ -30,7 +30,7 @@ fs.writeFileSync(
   JSON.stringify(
     {
       compilerOptions: {
-        ...originalTsConfig.compilerOptions,
+        ...(originalTsConfig.compilerOptions || {}),
         moduleResolution: "node",
         declaration: true,
         rootDir: ".",
@@ -43,6 +43,36 @@ fs.writeFileSync(
   ),
   "utf8"
 );
+
+// Figure out what "@/..." imports should be relative to. What is "@"?
+// TODO: Consider supporting other prefixes specified in tsconfig.paths.
+// By default, "@/..." means it's relative to the workspace directory.
+let atSignImportDir = ".";
+let atSignPatterns;
+if (
+  originalTsConfig.compilerOptions &&
+  originalTsConfig.compilerOptions.paths &&
+  (atSignPatterns = originalTsConfig.compilerOptions.paths["@/*"])
+) {
+  if (atSignPatterns.length !== 1) {
+    throw new Error(
+      `Multiple paths for "@/*" in tsconfig.json are not supported.`
+    );
+  }
+  const atSignPattern = atSignPatterns[0];
+  if (!atSignPattern.endsWith("/*")) {
+    throw new Error(
+      `Path matcher ${atSignPattern} in tsconfig.json was expected to end with "/*".`
+    );
+  }
+  // Find where the directory pointed to is. This is relative to baseUrl, which
+  // is itself related to tsconfig.json's path.
+  atSignImportDir = path.join(
+    path.dirname(tsconfigPath),
+    originalTsConfig.compilerOptions.baseUrl || ".",
+    atSignPattern.substr(0, atSignPattern.length - 2)
+  );
+}
 
 if (fs.existsSync(path.join(installedNpmPackagesDir, "node_modules"))) {
   // Create a symbolic link from node_modules.
@@ -138,7 +168,10 @@ for (const sourceFilePath of srcs) {
         let importPathFromWorkspace;
         if (importFrom[0] === "@") {
           // Workspace-level import, e.g. "@/src/some/path".
-          importPathFromWorkspace = importFrom.substr(2);
+          importPathFromWorkspace = path.join(
+            atSignImportDir,
+            importFrom.substr(2)
+          );
         } else {
           importPathFromWorkspace = path.join(
             path.dirname(sourceFilePath),
