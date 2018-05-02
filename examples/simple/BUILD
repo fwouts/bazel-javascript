@@ -6,7 +6,7 @@ load("@bazel_typescript//:defs.bzl", "ts_binary")
 ts_binary(
   name = "app",
   lib = "//src:main",
-  entry = "main.ts",
+  entry = "main.js",
 )
 
 npm_packages(

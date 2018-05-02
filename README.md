@@ -88,7 +88,7 @@ load("@bazel_typescript//:defs.bzl", "ts_binary")
 ts_binary(
   name = "app",
   lib = "//src:main",
-  entry = "main.ts",
+  entry = "main.js",
 )
 
 npm_packages(
@@ -256,7 +256,7 @@ Note: for now, the generated file is targeted for Node ([see issue](https://gith
         <p>The path of the entrypoint within the <code>ts_library</code> target (required).</p>
         <p>
           For example if the <code>ts_library</code> includes a single file <code>main.ts</code>,
-          entry should be set to <code>"main.ts"</code>.
+          entry should be set to <code>"main.js"</code> (note that it's the compiled version).
         </p>
       </td>
     </tr>
