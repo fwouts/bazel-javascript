@@ -31,6 +31,8 @@ fs.writeFileSync(
     {
       compilerOptions: {
         ...originalTsConfig.compilerOptions,
+        moduleResolution: "node",
+        declaration: true,
         baseUrl: ".",
         paths: {
           "*": [
