@@ -1,6 +1,7 @@
 package(default_visibility = ["//visibility:public"])
 
-load("@bazel_typescript//:defs.bzl", "npm_packages", "ts_binary")
+load("@bazel_node//:defs.bzl", "npm_packages")
+load("@bazel_typescript//:defs.bzl", "ts_binary")
 
 ts_binary(
   name = "app",
