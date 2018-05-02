@@ -20,5 +20,6 @@ ts_library(
   name = "nodeps",
   srcs = [
     "nodeps.ts",
+    "suffix.ts",
   ],
 )

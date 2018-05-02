@@ -103,6 +103,7 @@ for (const internalDep of internalDeps) {
 }
 
 // Update import statements in this target's sources.
+const srcsSet = new Set(srcs);
 for (const sourceFilePath of srcs) {
   if (!sourceFilePath) {
     continue;
@@ -151,9 +152,7 @@ for (const sourceFilePath of srcs) {
             replaceWith = pathToPackagedPath[potentialImportPath];
           }
         }
-        if (replaceWith) {
-          statement.moduleSpecifier = ts.createLiteral(replaceWith);
-        } else {
+        if (!replaceWith) {
           // This must be a local import (in the same target).
           // It could either be a TypeScript import, in which case the
           // extension will have been omitted, or it could be an asset such
@@ -162,16 +161,27 @@ for (const sourceFilePath of srcs) {
           const candidateEndings = [".ts", ".tsx", ""];
           let foundMatch = false;
           for (const candidateEnding of candidateEndings) {
-            if (fs.existsSync(importPathFromWorkspace + candidateEnding)) {
+            if (srcsSet.has(importPathFromWorkspace + candidateEnding)) {
               // Good, the file exists.
               foundMatch = true;
               break;
             }
           }
-          if (!foundMatch) {
+          if (foundMatch) {
+            // Make sure to replace any absolute imports such as "@/src/some/path"
+            // with relative imports, so we don't need to deal with them at a later
+            // stage.
+            replaceWith =
+              "./" +
+              path.relative(
+                path.dirname(sourceFilePath),
+                importPathFromWorkspace
+              );
+          } else {
             throw new Error(`Could not find a match for import ${importFrom}.`);
           }
         }
+        statement.moduleSpecifier = ts.createLiteral(replaceWith);
       } else {
         // This must be an external package.
         // TODO: Also handle workspace-level references, e.g. '@/src/etc'.
