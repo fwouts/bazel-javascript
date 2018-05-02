@@ -134,15 +134,27 @@ for (const sourceFilePath of srcs) {
     // TODO: Also handle require statements.
     if (statement.kind === ts.SyntaxKind.ImportDeclaration) {
       const importFrom = statement.moduleSpecifier.text;
-      let replaceWith;
-      for (const potentialImportPath of Object.keys(pathToPackagedPath)) {
-        if (path.join(buildfileDir, importFrom) === potentialImportPath) {
-          replaceWith = pathToPackagedPath[potentialImportPath];
+      if (importFrom.startsWith("./") || importFrom.startsWith("@/")) {
+        let importPathFromWorkspace;
+        if (importFrom[0] === "@") {
+          // Workspace-level import, e.g. "@/src/some/path".
+          importPathFromWorkspace = importFrom.substr(2);
+        } else {
+          importPathFromWorkspace = path.join(
+            path.dirname(sourceFilePath),
+            importFrom
+          );
         }
-      }
-      if (!replaceWith) {
-        if (importFrom.startsWith("./")) {
-          // This must be a local import.
+        let replaceWith;
+        for (const potentialImportPath of Object.keys(pathToPackagedPath)) {
+          if (importPathFromWorkspace === potentialImportPath) {
+            replaceWith = pathToPackagedPath[potentialImportPath];
+          }
+        }
+        if (replaceWith) {
+          statement.moduleSpecifier = ts.createLiteral(replaceWith);
+        } else {
+          // This must be a local import (in the same target).
           // It could either be a TypeScript import, in which case the
           // extension will have been omitted, or it could be an asset such
           // as a CSS stylesheet, in which case the extension does not need
@@ -150,15 +162,7 @@ for (const sourceFilePath of srcs) {
           const candidateEndings = [".ts", ".tsx", ""];
           let foundMatch = false;
           for (const candidateEnding of candidateEndings) {
-            if (
-              fs.existsSync(
-                path.join(
-                  path.dirname(sourceFilePath),
-                  importFrom,
-                  candidateEnding
-                )
-              )
-            ) {
+            if (fs.existsSync(importPathFromWorkspace + candidateEnding)) {
               // Good, the file exists.
               foundMatch = true;
               break;
@@ -167,31 +171,23 @@ for (const sourceFilePath of srcs) {
           if (!foundMatch) {
             throw new Error(`Could not find a match for import ${importFrom}.`);
           }
-        } else {
-          // This must be an external package.
-          // TODO: Also handle workspace-level references, e.g. '@/src/etc'.
-          let packageName;
-          const splitImportFrom = importFrom.split("/");
-          if (
-            splitImportFrom.length >= 2 &&
-            splitImportFrom[0].startsWith("@")
-          ) {
-            // Example: @storybook/react.
-            packageName = splitImportFrom[0] + "/" + splitImportFrom[1];
-          } else {
-            // Example: react.
-            packageName = splitImportFrom[0];
-          }
-          if (!required.has(packageName)) {
-            throw new Error(`Undeclared dependency: ${packageName}.`);
-          }
         }
-        // It could well be a perfectly correct reference to an external module
-        // or another file in the same target.
-        // This will fail at compilation time if there is no match.
-        continue;
+      } else {
+        // This must be an external package.
+        // TODO: Also handle workspace-level references, e.g. '@/src/etc'.
+        let packageName;
+        const splitImportFrom = importFrom.split("/");
+        if (splitImportFrom.length >= 2 && splitImportFrom[0].startsWith("@")) {
+          // Example: @storybook/react.
+          packageName = splitImportFrom[0] + "/" + splitImportFrom[1];
+        } else {
+          // Example: react.
+          packageName = splitImportFrom[0];
+        }
+        if (!required.has(packageName)) {
+          throw new Error(`Undeclared dependency: ${packageName}.`);
+        }
       }
-      statement.moduleSpecifier = ts.createLiteral(replaceWith);
     }
   }
   const updatedFile = ts.createPrinter().printFile(sourceFile);
