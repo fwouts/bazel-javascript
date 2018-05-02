@@ -27,7 +27,7 @@ fs.writeFileSync(
   JSON.stringify(
     {
       compilerOptions: {
-        target: "esnext",
+        target: "es5",
         module: "commonjs",
         moduleResolution: "node",
         declaration: true,

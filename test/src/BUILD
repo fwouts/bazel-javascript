@@ -5,7 +5,7 @@ load("@bazel_typescript//:defs.bzl", "ts_binary", "ts_library")
 ts_binary(
   name = "app",
   lib = ":main",
-  entry = "main.ts",
+  entry = "main.js",
 )
 
 ts_library(

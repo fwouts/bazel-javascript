@@ -322,7 +322,7 @@ def _ts_binary_impl(ctx):
       ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
       ctx.attr._webpack_npm_packages[NpmPackagesInfo].installed_dir,
       ctx.attr.lib[TsLibraryInfo].npm_packages_installed_dir,
-      ctx.attr.lib[TsLibraryInfo].full_src_dir,
+      ctx.attr.lib[TsLibraryInfo].compiled_dir,
     ] + ctx.files._ts_binary_compile_script,
     outputs = [
       build_dir,
@@ -339,8 +339,8 @@ def _ts_binary_impl(ctx):
       ctx.attr._webpack_npm_packages[NpmPackagesInfo].installed_dir.path,
       # Directory containing external NPM dependencies the code depends on.
       ctx.attr.lib[TsLibraryInfo].npm_packages_installed_dir.path,
-      # Directory containing the source code of the ts_library.
-      ctx.attr.lib[TsLibraryInfo].full_src_dir.path,
+      # Directory containing the compiled source code of the ts_library.
+      ctx.attr.lib[TsLibraryInfo].compiled_dir.path,
       # Directory in which to place the webpack config.
       build_dir.path,
       # Directory in which to place the compiled JavaScript.

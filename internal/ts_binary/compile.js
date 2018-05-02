@@ -34,22 +34,12 @@ module.exports = {
     path: "${path.resolve(path.dirname(outputFile))}",
   },
   target: "node",
-  module: {
-    rules: [
-      {
-        test: /\.tsx?$/,
-        use: 'ts-loader',
-        exclude: /node_modules/,
-      },
-    ],
-  },
   resolve: {
     modules: [
       "${path.resolve(path.join(sourceDir, "node_modules"))}",
       "${path.resolve(path.join(installedNpmPackagesDir, "node_modules"))}",
       "${path.resolve(path.join(installedWebpackDir, "node_modules"))}",
     ],
-    extensions: [".ts", ".tsx", ".js", ".jsx"],
   },
   plugins: [
     new webpack.BannerPlugin({
