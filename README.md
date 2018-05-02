@@ -174,7 +174,7 @@ Hello John
 ### ts_library
 
 ```python
-ts_library(name, srcs, deps = [], requires = [])
+ts_library(name, srcs, deps = [], requires = [], tsconfig = ...)
 ```
 
 Used to generate the compiled JavaScript and declaration files for a set of
@@ -215,6 +215,16 @@ TypeScript source files.
         <p>A list of required NPM module names (optional).</p>
         <p>
           This must include any NPM module that the source files directly depend on.
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>tsconfig</code></td>
+      <td>
+        <p>A custom TypeScript config file (optional).</p>
+        <p>
+          Only compiler options will be used. Some options such as
+          <code>paths</code> will be overridden.
         </p>
       </td>
     </tr>

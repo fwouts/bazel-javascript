@@ -104,6 +104,7 @@ def _ts_library_create_full_src(ctx, internal_deps, npm_packages, requires):
       ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
       ctx.file._ts_library_create_full_src_script,
       npm_packages[NpmPackagesInfo].installed_dir,
+      ctx.file.tsconfig,
     ] + [
       d[TsLibraryInfo].compiled_dir
       for d in internal_deps
@@ -120,6 +121,8 @@ def _ts_library_create_full_src(ctx, internal_deps, npm_packages, requires):
       # BUILD file path, necessary to understand relative "import" statements
       # in TypeScript.
       ctx.build_file_path,
+      # tsconfig.json path.
+      ctx.file.tsconfig.path,
       # List of NPM package names used by the source files.
       ("|".join([
         p
@@ -182,6 +185,11 @@ ts_library = rule(
     ),
     "requires": attr.string_list(
       default = [],
+    ),
+    "tsconfig": attr.label(
+      allow_files = [".json"],
+      single_file = True,
+      default = Label("//internal/ts_library:default_tsconfig.json"),
     ),
     "_internal_packages": attr.label(
       default = Label("//internal:packages"),

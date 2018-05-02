@@ -8,6 +8,7 @@ const [
   scriptPath,
   installedNpmPackagesDir,
   buildfilePath,
+  tsconfigPath,
   joinedRequires,
   joinedInternalDeps,
   joinedSrcs,
@@ -21,19 +22,15 @@ const srcs = joinedSrcs.split("|");
 
 fs.mkdirSync(destinationDir);
 
-// Add tsconfig.json for future compilation.
+// Extract compiler options from tsconfig.json, overriding anything other
+// than compiler options.
+const originalTsConfig = JSON.parse(fs.readFileSync(tsconfigPath, "utf8"));
 fs.writeFileSync(
   path.join(destinationDir, "tsconfig.json"),
   JSON.stringify(
     {
       compilerOptions: {
-        target: "es5",
-        module: "commonjs",
-        moduleResolution: "node",
-        declaration: true,
-        strict: true,
-        jsx: "react",
-        allowSyntheticDefaultImports: true,
+        ...originalTsConfig.compilerOptions,
         baseUrl: ".",
         paths: {
           "*": [
@@ -43,8 +40,7 @@ fs.writeFileSync(
             )
           ]
         }
-      },
-      exclude: ["node_modules"]
+      }
     },
     null,
     2
