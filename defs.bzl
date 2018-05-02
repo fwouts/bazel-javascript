@@ -197,7 +197,7 @@ ts_library = rule(
       default = Label("//internal/ts_library:compile.js"),
     ),
     "_empty_npm_packages": attr.label(
-      default = Label("//internal/npm_packages/empty:packages"),
+      default = Label("@bazel_node//internal/npm_packages/empty:packages"),
     ),
   },
   outputs = {
