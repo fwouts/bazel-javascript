@@ -1,8 +1,9 @@
 package(default_visibility = ["//visibility:public"])
 
-load("@bazel_typescript//:defs.bzl", "ts_library", "ts_script")
+load("@bazel_node//:defs.bzl", "js_script")
+load("@bazel_typescript//:defs.bzl", "ts_library")
 
-ts_script(
+js_script(
   name = "storybook-run",
   cmd = "start-storybook -p 9001 -c .storybook",
   lib = ":storybook",

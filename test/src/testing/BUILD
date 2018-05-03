@@ -1,6 +1,7 @@
 package(default_visibility = ["//visibility:public"])
 
-load("@bazel_typescript//:defs.bzl", "ts_library", "ts_test")
+load("@bazel_node//:defs.bzl", "js_test")
+load("@bazel_typescript//:defs.bzl", "ts_library")
 
 ts_library(
   name = "sum",
@@ -23,7 +24,7 @@ ts_library(
   ],
 )
 
-ts_test(
+js_test(
   name = "sum_test",
   cmd = "jest sum.spec.js",
   lib = ":sum_test_lib",

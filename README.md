@@ -3,9 +3,13 @@
 ## Rules
 
 - [ts_library](#ts_library)
-- [ts_binary](#ts_binary)
-- [ts_script](#ts_script)
-- [ts_test](#ts_test)
+
+Also makes use of rules from [bazel-node](https://github.com/zenclabs/bazel-node):
+- [js_binary](https://github.com/zenclabs/bazel-node#js_binary)
+- [js_script](https://github.com/zenclabs/bazel-node#js_script)
+- [js_test](https://github.com/zenclabs/bazel-node#js_test)
+- [npm_packages](https://github.com/zenclabs/bazel-node#npm_packages)
+- [npm_binary](https://github.com/zenclabs/bazel-node#npm_binary)
 
 ## Overview
 
@@ -13,18 +17,6 @@ If you're not already familiar with [Bazel](https://bazel.build), install it fir
 
 These TypeScript rules for Bazel are separate from the [official Google
 implementation](https://github.com/bazelbuild/rules_typescript).
-
-The main differences are:
-
-- Easier setup ([literally eight lines](examples/simple/WORKSPACE)).
-- No need for a `node_modules` directory.
-- You must specify a `yarn.lock` along with `package.json`.
-
-As of 1 May 2018, a few key features are missing:
-- compiling JS bundles ([#22](https://github.com/zenclabs/bazel-typescript/issues/22))
-- support for asset bundling ([#16](https://github.com/zenclabs/bazel-typescript/issues/16))
-- live reloading ([#23](https://github.com/zenclabs/bazel-typescript/issues/23))
-- automatic BUILD file generation ([#24](https://github.com/zenclabs/bazel-typescript/issues/24))
 
 ## Installation
 
@@ -42,7 +34,7 @@ git_repository(
 git_repository(
   name = "bazel_node",
   remote = "https://github.com/zenclabs/bazel-node.git",
-  tag = "0.0.8", # check for the latest tag when you install
+  tag = "0.0.9", # check for the latest tag when you install
 )
 ```
 
@@ -82,10 +74,9 @@ Suppose you have the following directory structure:
 ```python
 package(default_visibility = ["//visibility:public"])
 
-load("@bazel_node//:defs.bzl", "npm_packages")
-load("@bazel_typescript//:defs.bzl", "ts_binary")
+load("@bazel_node//:defs.bzl", "js_binary", "npm_packages")
 
-ts_binary(
+js_binary(
   name = "app",
   lib = "//src:main",
   entry = "main.js",
@@ -230,84 +221,3 @@ TypeScript source files.
     </tr>
   </tbody>
 </table>
-
-### ts_binary
-
-```python
-ts_binary(name, lib, entry)
-```
-
-Used to compile a `ts_library` to a single JavaScript file.
-
-Note: for now, the generated file is targeted for Node ([see issue](https://github.com/zenclabs/bazel-typescript/issues/22)).
-
-<table>
-  <thead>
-    <tr>
-      <th colspan="2">Attributes</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>name</code></td>
-      <td>
-        <p>A unique name for this rule (required).</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>lib</code></td>
-      <td>
-        <p>A <code>ts_library</code> target (required).</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>entry</code></td>
-      <td>
-        <p>The path of the entrypoint within the <code>ts_library</code> target (required).</p>
-        <p>
-          For example if the <code>ts_library</code> includes a single file <code>main.ts</code>,
-          entry should be set to <code>"main.js"</code> (note that it's the compiled version).
-        </p>
-      </td>
-    </tr>
-  </tbody>
-</table>
-
-### ts_script
-
-```python
-ts_script(cmd, lib)
-```
-
-Used to run a script (similarly to `scripts` in `package.json`).
-
-<table>
-  <thead>
-    <tr>
-      <th colspan="2">Attributes</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>cmd</code></td>
-      <td>
-        <p>The command to run (required).</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>lib</code></td>
-      <td>
-        <p>A <code>ts_library</code> target (required).</p>
-        <p>The script will execute in the target's compiled directory.</p>
-      </td>
-    </tr>
-  </tbody>
-</table>
-
-### ts_test
-
-```python
-ts_test(cmd, lib)
-```
-
-Used to define a test. Arguments are identical to `ts_script`.

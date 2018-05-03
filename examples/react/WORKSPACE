@@ -1,8 +1,13 @@
 # If you choose to copy this example, make sure to use the git_repository()
-# rule below instead.
+# rules below instead.
 local_repository(
   name = "bazel_typescript",
   path = "../..",
+)
+
+local_repository(
+  name = "bazel_node",
+  path = "../../../bazel-node",
 )
 
 # git_repository(
@@ -11,8 +16,8 @@ local_repository(
 #   tag = "0.0.18", # check for the latest tag when you install
 # )
 
-git_repository(
-  name = "bazel_node",
-  remote = "https://github.com/zenclabs/bazel-node.git",
-  tag = "0.0.8", # check for the latest tag when you install
-)
+# git_repository(
+#   name = "bazel_node",
+#   remote = "https://github.com/zenclabs/bazel-node.git",
+#   tag = "0.0.9", # check for the latest tag when you install
+# )
