@@ -31,6 +31,125 @@ git_repository(
 )
 ```
 
+## Basic example
+
+Suppose you have the following directory structure:
+
+```
+[workspace]/
+  WORKSPACE
+  BUILD
+  package.json
+  yarn.lock
+  src/
+    BUILD
+    main.js
+    util/
+      BUILD
+      constants.js
+```
+
+`package.json`
+
+```json
+{
+  "dependencies": {
+    "textbuilder": "^1.0.3"
+  }
+}
+```
+
+`BUILD`
+
+```python
+package(default_visibility = ["//visibility:public"])
+
+load("@bazel_node//:defs.bzl", "js_binary", "npm_packages")
+
+js_binary(
+  name = "app",
+  lib = "//src:main",
+  entry = "main.js",
+)
+
+npm_packages(
+  name = "packages",
+  package_json = ":package.json",
+  yarn_lock = ":yarn.lock",
+)
+```
+
+`src/main.js`
+
+```javascript
+import { GREETING } from "./util/constants";
+
+console.log(GREETING);
+```
+
+`src/BUILD`
+
+```python
+package(default_visibility = ["//visibility:public"])
+
+load("@bazel_node//:defs.bzl", "js_library")
+
+js_library(
+  name = "main",
+  srcs = [
+    "main.js",
+  ],
+  deps = [
+    "//src/util:constants",
+  ],
+)
+```
+
+`src/util/constants.js`
+
+```javascript
+import TextBuilder from "textbuilder";
+
+const t = new TextBuilder();
+t.append("Hello ", process.argv[2] || "Daniel");
+export const GREETING = t.build();
+```
+
+`src/util/BUILD`
+
+```python
+package(default_visibility = ["//visibility:public"])
+
+load("@bazel_node//:defs.bzl", "js_library")
+
+js_library(
+  name = "constants",
+  srcs = [
+    "constants.js",
+  ],
+  deps = [
+    "//:packages",
+  ],
+  requires = [
+    "textbuilder",
+  ],
+)
+```
+
+Run and build the binary:
+```sh
+$ bazel run //:app John
+INFO: Analysed target //:app (0 packages loaded).
+INFO: Found 1 target...
+Target //:app up-to-date:
+  bazel-bin/app.js
+INFO: Elapsed time: 0.140s, Critical Path: 0.00s
+INFO: Build completed successfully, 1 total action
+
+INFO: Running command line: bazel-bin/app.js John
+Hello John
+```
+
 ## Rules
 
 ### js_library
