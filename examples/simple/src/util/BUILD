@@ -12,5 +12,6 @@ ts_library(
   ],
   requires = [
     "textbuilder",
+    "@types/node",
   ],
 )

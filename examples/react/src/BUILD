@@ -20,6 +20,7 @@ ts_library(
   ],
   requires = [
     "@storybook/react",
+    "@types/storybook__react",
   ],
 )
 
@@ -34,7 +35,9 @@ ts_library(
   ],
   requires = [
     "@storybook/react",
+    "@types/storybook__react",
     "react",
+    "@types/react",
   ],
 )
 
@@ -48,5 +51,6 @@ ts_library(
   ],
   requires = [
     "react",
+    "@types/react",
   ]
 )
