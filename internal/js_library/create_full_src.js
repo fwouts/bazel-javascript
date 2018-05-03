@@ -1,4 +1,3 @@
-const child_process = require("child_process");
 const fs = require("fs-extra");
 const path = require("path");
 const ts = require("typescript");
