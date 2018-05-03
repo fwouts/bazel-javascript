@@ -58,10 +58,6 @@ if (fs.existsSync(path.join(installedNpmPackagesDir, "node_modules"))) {
   }
 
   // Create a symbolic link from node_modules.
-  // IMPORTANT: We need to `cd` into destinationDir so that the symbolic link
-  // stays valid across Bazel compilation steps. Otherwise, it's relative to
-  // the current directory, which will soon stop existing.
-  // I know, weird hack. If you have something better, let me know!
   fs.mkdirSync(path.join(destinationDir, "node_modules"));
   for (const f of fs.readdirSync(
     path.join(installedNpmPackagesDir, "node_modules")
@@ -69,15 +65,9 @@ if (fs.existsSync(path.join(installedNpmPackagesDir, "node_modules"))) {
     if (!analyzedPackageNames.has(f)) {
       continue;
     }
-    child_process.execSync(
-      `cd ${destinationDir} && ln -s ${path.join(
-        path.relative(destinationDir, installedNpmPackagesDir),
-        "node_modules",
-        f
-      )} ${path.join("node_modules", f)}`,
-      {
-        stdio: "inherit"
-      }
+    fs.symlinkSync(
+      path.join(installedNpmPackagesDir, "node_modules", f),
+      path.join(destinationDir, "node_modules", f)
     );
   }
 }
