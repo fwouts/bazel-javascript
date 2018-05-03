@@ -67,7 +67,6 @@ if (fs.existsSync(path.join(installedNpmPackagesDir, "node_modules"))) {
   // contain the symbolic link, otherwise TypeScript gets confused.
   // I know, weird hack. If you have something better, let me know!
   fs.mkdirSync(path.join(destinationDir, "node_modules"));
-  fs.mkdirSync(path.join(destinationDir, "node_modules", "@types"));
   for (const packageName of analyzedPackageNames) {
     if (packageName.indexOf("/") !== -1) {
       const [parentName, nestedPackageName] = packageName.split("/");
