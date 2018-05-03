@@ -31,7 +31,7 @@ def _ts_library_impl(ctx):
       for dep in direct_npm_packages
     ]))
   if len(direct_npm_packages) == 0 and len(ctx.attr.requires) > 0:
-    fail("npm_library requires packages but does not depend on an npm_packages target.")
+    fail("ts_library requires packages but does not depend on an npm_packages target.")
   extended_npm_packages = depset(
     direct = direct_npm_packages,
     transitive = [
@@ -67,15 +67,14 @@ def _ts_library_impl(ctx):
     ],
   )
   # Create a directory that contains:
-  # - source files (including internal dependencies)
+  # - source files
   # - tsconfig.json
   # - node_modules (symlinked to installed external dependencies directory)
-  # - internal_node_modules/[name] for every internal dep
+  # - __internal_node_modules/[name] for every internal dep
   _ts_library_create_full_src(
     ctx,
     internal_deps,
     npm_packages,
-    ctx.attr.requires,
   )
   # Compile the directory with `tsc`.
   _ts_library_compile(
@@ -93,7 +92,7 @@ def _ts_library_impl(ctx):
     ),
   ]
 
-def _ts_library_create_full_src(ctx, internal_deps, npm_packages, requires):
+def _ts_library_create_full_src(ctx, internal_deps, npm_packages):
   ctx.actions.run_shell(
     inputs = [
       ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
@@ -121,7 +120,7 @@ def _ts_library_create_full_src(ctx, internal_deps, npm_packages, requires):
       # List of NPM package names used by the source files.
       ("|".join([
         p
-        for p in requires
+        for p in ctx.attr.requires
       ])),
       # List of ts_library targets we depend on, along with their source files
       # (required to replace relative "import" statements with the correct
