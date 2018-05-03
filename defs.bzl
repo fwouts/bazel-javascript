@@ -71,22 +71,26 @@ def _js_library_impl(ctx):
   # - source files
   # - node_modules (symlinked to installed external dependencies directory)
   # - __internal_node_modules/[name] for every internal dep
-  _js_library_process(
+  _js_library_create_full_src(
     ctx,
     internal_deps,
+    npm_packages,
+  )
+  _js_library_compile(
+    ctx,
     npm_packages,
   )
   return [
     JsLibraryInfo(
       srcs = [f.path for f in ctx.files.srcs],
-      full_src_dir = ctx.outputs.full_src_dir,
+      full_src_dir = ctx.outputs.compiled_dir,
       internal_deps = internal_deps,
       npm_packages = extended_npm_packages,
       npm_packages_installed_dir = npm_packages[NpmPackagesInfo].installed_dir,
     ),
   ]
 
-def _js_library_process(ctx, internal_deps, npm_packages):
+def _js_library_create_full_src(ctx, internal_deps, npm_packages):
   ctx.actions.run_shell(
     inputs = [
       ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
@@ -132,6 +136,27 @@ def _js_library_process(ctx, internal_deps, npm_packages):
     ],
   )
 
+def _js_library_compile(ctx, npm_packages):
+  ctx.actions.run_shell(
+    inputs = [
+      ctx.file._js_library_compile_script,
+      ctx.outputs.full_src_dir,
+      ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
+      npm_packages[NpmPackagesInfo].installed_dir,
+    ],
+    outputs = [ctx.outputs.compiled_dir],
+    command = "NODE_PATH=" + ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules node \"$@\"",
+    use_default_shell_env = True,
+    arguments = [
+      # Run `node js_library/compile.js`.
+      ctx.file._js_library_compile_script.path,
+      # Directory in which the source code can be found.
+      ctx.outputs.full_src_dir.path,
+      # Directory in which to output the compiled JavaScript.
+      ctx.outputs.compiled_dir.path,
+    ],
+  )
+
 js_library = rule(
   implementation=_js_library_impl,
   attrs = {
@@ -156,11 +181,17 @@ js_library = rule(
       single_file = True,
       default = Label("//internal/js_library:create_full_src.js"),
     ),
+    "_js_library_compile_script": attr.label(
+      allow_files = True,
+      single_file = True,
+      default = Label("//internal/js_library:compile.js"),
+    ),
     "_empty_npm_packages": attr.label(
       default = Label("@bazel_node//internal/npm_packages/empty:packages"),
     ),
   },
   outputs = {
+    "compiled_dir": "%{name}_compiled",
     "full_src_dir": "%{name}_full_src",
   },
 )
