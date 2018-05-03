@@ -28,6 +28,10 @@ if (fs.existsSync(path.join(installedNpmPackagesDir, "node_modules"))) {
     findPackageDependencies(toAnalyzePackageNames[i]);
   }
   function findPackageDependencies(name) {
+    if (!name) {
+      // Occurs when there are no dependencies.
+      return;
+    }
     if (analyzedPackageNames.has(name)) {
       // Already processed.
       return;
@@ -58,15 +62,10 @@ if (fs.existsSync(path.join(installedNpmPackagesDir, "node_modules"))) {
 
   // Create a symbolic link from node_modules.
   fs.mkdirSync(path.join(destinationDir, "node_modules"));
-  for (const f of fs.readdirSync(
-    path.join(installedNpmPackagesDir, "node_modules")
-  )) {
-    if (!analyzedPackageNames.has(f)) {
-      continue;
-    }
+  for (const packageName of analyzedPackageNames) {
     fs.symlinkSync(
-      path.join(installedNpmPackagesDir, "node_modules", f),
-      path.join(destinationDir, "node_modules", f)
+      path.join(installedNpmPackagesDir, "node_modules", packageName),
+      path.join(destinationDir, "node_modules", packageName)
     );
   }
 }
