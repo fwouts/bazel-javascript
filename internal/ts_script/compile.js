@@ -42,7 +42,6 @@ if (fs.existsSync(path.join(destinationDir, ".storybook"))) {
 module.exports = {
   resolve: {
     modules: [
-      path.resolve(__dirname, "..", "node_modules"),
       path.resolve(__dirname, "..", "${path.relative(
         destinationDir,
         installedNpmPackagesDir
@@ -83,7 +82,7 @@ export PATH=$PATH:$PWD/${installedNpmPackagesDirShort}/node_modules/.bin
 export NODE_PATH=${path.relative(
     destinationDirShort,
     installedNpmPackagesDirShort
-  )}/node_modules
+  )}/node_modules:__internal_node_modules
 ${yarnShellCommand(destinationDirShort, "start")}
 `,
   "utf8"

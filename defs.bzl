@@ -69,13 +69,8 @@ def _ts_library_impl(ctx):
   # Create a directory that contains:
   # - source files (including internal dependencies)
   # - tsconfig.json
-  # - node_modules/@types
-  # - node_modules/[name] for every internal dep
-  #
-  # Note that node_modules/ will not contain external dependencies from NPM.
-  # Instead, the tsconfig.json will point to the node_modules/ directory of
-  # the npm_packages target we depend on. This means we don't have to lose
-  # performance by copy-pasting node_modules with hundreds of packages.
+  # - node_modules (symlinked to installed external dependencies directory)
+  # - internal_node_modules/[name] for every internal dep
   _ts_library_create_full_src(
     ctx,
     internal_deps,

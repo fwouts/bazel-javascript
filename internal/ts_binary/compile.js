@@ -36,7 +36,7 @@ module.exports = {
   target: "node",
   resolve: {
     modules: [
-      "${path.resolve(path.join(compiledDir, "node_modules"))}",
+      "${path.resolve(path.join(compiledDir, "__internal_node_modules"))}",
       "${path.resolve(path.join(installedNpmPackagesDir, "node_modules"))}",
       "${path.resolve(path.join(installedWebpackDir, "node_modules"))}",
     ],

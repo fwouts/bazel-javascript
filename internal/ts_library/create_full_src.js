@@ -21,16 +21,21 @@ const internalDeps = joinedInternalDeps.split("|");
 const srcs = joinedSrcs.split("|");
 
 fs.mkdirSync(destinationDir);
-fs.mkdirSync(path.join(destinationDir, "node_modules"));
 
-// Types must be copied, as TypeScript struggles with finding type definitions
-// for scoped modules, e.g. @types/storybook__react.
-if (
-  fs.existsSync(path.join(installedNpmPackagesDir, "node_modules", "@types"))
-) {
-  fs.copySync(
-    path.join(installedNpmPackagesDir, "node_modules", "@types"),
-    path.join(destinationDir, "node_modules", "@types")
+if (fs.existsSync(path.join(installedNpmPackagesDir, "node_modules"))) {
+  // Create a symbolic link from node_modules.
+  // IMPORTANT: We need to `cd` into destinationDir so that the symbolic link
+  // stays valid across Bazel compilation steps. Otherwise, it's relative to
+  // the current directory, which will soon stop existing.
+  // I know, weird hack. If you have something better, let me know!
+  child_process.execSync(
+    `cd ${destinationDir} && ln -s ${path.join(
+      path.relative(destinationDir, installedNpmPackagesDir),
+      "node_modules"
+    )} node_modules`,
+    {
+      stdio: "inherit"
+    }
   );
 }
 
@@ -48,12 +53,7 @@ fs.writeFileSync(
         rootDir: ".",
         baseUrl: ".",
         paths: {
-          "*": [
-            path.relative(
-              path.join(destinationDir),
-              path.join(installedNpmPackagesDir, "node_modules", "*")
-            )
-          ]
+          "*": [path.join("__internal_node_modules", "*")]
         }
       }
     },
@@ -93,7 +93,8 @@ if (
   );
 }
 
-// Copy every internal dependency into the appropriate node_modules/ subdirectory.
+// Copy every internal dependency into the appropriate internal_node_modules/ subdirectory.
+fs.mkdirSync(path.join(destinationDir, "__internal_node_modules"));
 const pathToPackagedPath = {};
 for (const internalDep of internalDeps) {
   if (!internalDep) {
@@ -122,13 +123,13 @@ for (const internalDep of internalDeps) {
   }
   fs.copySync(
     compiledDir,
-    path.join(destinationDir, "node_modules", rootModuleName),
+    path.join(destinationDir, "__internal_node_modules", rootModuleName),
     {
       dereference: true,
       filter: name => {
-        // Do not copy node_modules recursively. All dependencies are already
-        // added to node_modules within this for loop.
-        return name !== "node_modules";
+        // Do not copy node_modules or internal_node_modules recursively.
+        // All dependencies are already added to node_modules within this for loop.
+        return name !== "node_modules" && name !== "__internal_node_modules";
       }
     }
   );
