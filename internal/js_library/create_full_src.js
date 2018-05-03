@@ -22,20 +22,64 @@ const srcs = joinedSrcs.split("|");
 fs.mkdirSync(destinationDir);
 
 if (fs.existsSync(path.join(installedNpmPackagesDir, "node_modules"))) {
+  // Find all the packages we depend on indirectly. We'll only include those.
+  const analyzedPackageNames = new Set();
+  const toAnalyzePackageNames = Array.from(required);
+  for (let i = 0; i < toAnalyzePackageNames.length; i++) {
+    findPackageDependencies(toAnalyzePackageNames[i]);
+  }
+  function findPackageDependencies(name) {
+    if (analyzedPackageNames.has(name)) {
+      // Already processed.
+      return;
+    }
+    analyzedPackageNames.add(name);
+    const packageJsonPath = path.join(
+      installedNpmPackagesDir,
+      "node_modules",
+      name,
+      "package.json"
+    );
+    if (!fs.existsSync(packageJsonPath)) {
+      return;
+    }
+    try {
+      const package = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
+      if (!package.dependencies) {
+        return;
+      }
+      for (const dependencyName of Object.keys(package.dependencies)) {
+        toAnalyzePackageNames.push(dependencyName);
+      }
+    } catch (e) {
+      console.warn(`Could not read package.json for package ${name}.`, e);
+      return;
+    }
+  }
+
   // Create a symbolic link from node_modules.
   // IMPORTANT: We need to `cd` into destinationDir so that the symbolic link
   // stays valid across Bazel compilation steps. Otherwise, it's relative to
   // the current directory, which will soon stop existing.
   // I know, weird hack. If you have something better, let me know!
-  child_process.execSync(
-    `cd ${destinationDir} && ln -s ${path.join(
-      path.relative(destinationDir, installedNpmPackagesDir),
-      "node_modules"
-    )} node_modules`,
-    {
-      stdio: "inherit"
+  fs.mkdirSync(path.join(destinationDir, "node_modules"));
+  for (const f of fs.readdirSync(
+    path.join(installedNpmPackagesDir, "node_modules")
+  )) {
+    if (!analyzedPackageNames.has(f)) {
+      continue;
     }
-  );
+    child_process.execSync(
+      `cd ${destinationDir} && ln -s ${path.join(
+        path.relative(destinationDir, installedNpmPackagesDir),
+        "node_modules",
+        f
+      )} ${path.join("node_modules", f)}`,
+      {
+        stdio: "inherit"
+      }
+    );
+  }
 }
 
 // Copy every internal dependency into the appropriate internal_node_modules/ subdirectory.
