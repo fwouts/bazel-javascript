@@ -1,0 +1,27 @@
+package(default_visibility = ["//visibility:public"])
+
+load("@bazel_node//:defs.bzl", "js_library")
+
+js_library(
+  name = "b",
+  srcs = [
+    "b.js",
+  ],
+)
+
+js_library(
+  name = "combined",
+  srcs = [
+    "combined.js",
+    "c.js",
+  ],
+  deps = [
+    ":b",
+    "//tests/js-library-complex:a",
+    "//tests/js-library-complex/nested/deep:d",
+    "//tests/js-library-complex:packages",
+  ],
+  requires = [
+    "textbuilder",
+  ],
+)
