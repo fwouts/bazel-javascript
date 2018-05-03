@@ -23,20 +23,88 @@ const srcs = joinedSrcs.split("|");
 fs.mkdirSync(destinationDir);
 
 if (fs.existsSync(path.join(installedNpmPackagesDir, "node_modules"))) {
-  // Create a symbolic link from node_modules.
-  // IMPORTANT: We need to `cd` into destinationDir so that the symbolic link
-  // stays valid across Bazel compilation steps. Otherwise, it's relative to
-  // the current directory, which will soon stop existing.
-  // I know, weird hack. If you have something better, let me know!
-  child_process.execSync(
-    `cd ${destinationDir} && ln -s ${path.join(
-      path.relative(destinationDir, installedNpmPackagesDir),
-      "node_modules"
-    )} node_modules`,
-    {
-      stdio: "inherit"
+  // Find all the packages we depend on indirectly. We'll only include those.
+  const analyzedPackageNames = new Set();
+  const toAnalyzePackageNames = Array.from(required);
+  for (let i = 0; i < toAnalyzePackageNames.length; i++) {
+    findPackageDependencies(toAnalyzePackageNames[i]);
+  }
+  function findPackageDependencies(name) {
+    if (!name) {
+      // Occurs when there are no dependencies.
+      return;
     }
-  );
+    if (analyzedPackageNames.has(name)) {
+      // Already processed.
+      return;
+    }
+    analyzedPackageNames.add(name);
+    const packageJsonPath = path.join(
+      installedNpmPackagesDir,
+      "node_modules",
+      name,
+      "package.json"
+    );
+    if (!fs.existsSync(packageJsonPath)) {
+      return;
+    }
+    try {
+      const package = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
+      if (!package.dependencies) {
+        return;
+      }
+      for (const dependencyName of Object.keys(package.dependencies)) {
+        toAnalyzePackageNames.push(dependencyName);
+      }
+    } catch (e) {
+      console.warn(`Could not read package.json for package ${name}.`, e);
+      return;
+    }
+  }
+
+  // Create a symbolic link from node_modules.
+  // IMPORTANT: We need to `cd` into the immediate parent directory that will
+  // contain the symbolic link, otherwise TypeScript gets confused.
+  // I know, weird hack. If you have something better, let me know!
+  fs.mkdirSync(path.join(destinationDir, "node_modules"));
+  fs.mkdirSync(path.join(destinationDir, "node_modules", "@types"));
+  for (const packageName of analyzedPackageNames) {
+    if (packageName.indexOf("/") !== -1) {
+      const [parentName, nestedPackageName] = packageName.split("/");
+      fs.ensureDirSync(path.join(destinationDir, "node_modules", parentName));
+      child_process.execSync(
+        `cd ${path.join(
+          destinationDir,
+          "node_modules",
+          parentName
+        )} && ln -s ${path.relative(
+          path.join(destinationDir, "node_modules", parentName),
+          path.join(
+            installedNpmPackagesDir,
+            "node_modules",
+            parentName,
+            nestedPackageName
+          )
+        )} ${nestedPackageName}`,
+        {
+          stdio: "inherit"
+        }
+      );
+    } else {
+      child_process.execSync(
+        `cd ${path.join(
+          destinationDir,
+          "node_modules"
+        )} && ln -s ${path.relative(
+          path.join(destinationDir, "node_modules"),
+          path.join(installedNpmPackagesDir, "node_modules", packageName)
+        )} ${packageName}`,
+        {
+          stdio: "inherit"
+        }
+      );
+    }
+  }
 }
 
 // Extract compiler options from tsconfig.json, overriding anything other

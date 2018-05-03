@@ -21,6 +21,7 @@ ts_library(
   ],
   requires = [
     "jest",
+    "@types/jest",
   ],
 )
 
