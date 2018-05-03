@@ -3,6 +3,7 @@
 ## Rules
 
 - [js_library](#js_library)
+- [js_bundle](#js_binary)
 - [js_binary](#js_binary)
 - [js_script](#js_script)
 - [js_test](#js_test)
@@ -81,15 +82,13 @@ Used to represent a set of JavaScript files and their dependencies.
   </tbody>
 </table>
 
-### js_binary
+### js_bundle
 
 ```python
-js_binary(name, lib, entry)
+js_bundle(name, lib, entry)
 ```
 
-Used to compile a `js_library` to a single JavaScript file.
-
-Note: for now, the generated file is targeted for Node ([see issue](https://github.com/zenclabs/bazel-typescript/issues/22)).
+Used to compile a `js_library` to a single JavaScript bundle file.
 
 <table>
   <thead>
@@ -115,13 +114,17 @@ Note: for now, the generated file is targeted for Node ([see issue](https://gith
       <td>
         <p>The path of the entrypoint within the <code>js_library</code> target (required).</p>
         <p>
-          For example if the <code>js_library</code> includes a single file <code>main.ts</code>,
+          For example if the <code>js_library</code> includes a single file <code>main.js</code>,
           entry should be set to <code>"main.js"</code>.
         </p>
       </td>
     </tr>
   </tbody>
 </table>
+
+### js_binary
+
+Identical to `js_bundle`, but produces an executable JavaScript file (using Node).
 
 ### js_script
 

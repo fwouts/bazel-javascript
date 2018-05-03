@@ -1,5 +1,6 @@
 load("//internal/js_library:rule.bzl", "js_library", "JsLibraryInfo")
 load("//internal/js_binary:rule.bzl", "js_binary")
+load("//internal/js_bundle:rule.bzl", "js_bundle")
 load("//internal/js_script_and_test:rule.bzl", "js_script", "js_test")
 load("//internal/npm_packages:rule.bzl", "npm_packages", "NpmPackagesInfo")
 load("//internal/npm_binary:rule.bzl", "npm_binary")
