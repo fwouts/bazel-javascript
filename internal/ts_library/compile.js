@@ -8,11 +8,7 @@ const [nodePath, scriptPath, fullSrcDir, destinationDir] = process.argv;
 fs.copySync(fullSrcDir, destinationDir, {
   dereference: true,
   filter: name => {
-    return (
-      path.basename(name) !== "node_modules" &&
-      !name.endsWith(".ts") &&
-      !name.endsWith(".tsx")
-    );
+    return !name.endsWith(".ts") && !name.endsWith(".tsx");
   }
 });
 

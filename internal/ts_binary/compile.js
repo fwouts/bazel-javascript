@@ -8,7 +8,7 @@ const [
   entry,
   installedWebpackDir,
   installedNpmPackagesDir,
-  sourceDir,
+  compiledDir,
   buildDir,
   outputFile
 ] = process.argv;
@@ -28,7 +28,7 @@ fs.writeFileSync(
 const webpack = require("webpack");
 
 module.exports = {
-  entry: "${path.relative(installedWebpackDir, path.join(sourceDir, entry))}",
+  entry: "${path.relative(installedWebpackDir, path.join(compiledDir, entry))}",
   output: {
     filename: "${path.basename(outputFile)}",
     path: "${path.resolve(path.dirname(outputFile))}",
@@ -36,7 +36,7 @@ module.exports = {
   target: "node",
   resolve: {
     modules: [
-      "${path.resolve(path.join(sourceDir, "node_modules"))}",
+      "${path.resolve(path.join(compiledDir, "node_modules"))}",
       "${path.resolve(path.join(installedNpmPackagesDir, "node_modules"))}",
       "${path.resolve(path.join(installedWebpackDir, "node_modules"))}",
     ],
