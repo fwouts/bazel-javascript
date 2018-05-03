@@ -4,4 +4,5 @@ exports_files([
   "compile.js",
   "create_full_src.js",
   "default_tsconfig.json",
+  "rule.bzl",
 ])
