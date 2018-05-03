@@ -1,4 +1,4 @@
-# Node rules for Bazel [alpha]
+# JavaScript rules for Bazel [alpha]
 
 ## Rules
 
