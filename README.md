@@ -2,6 +2,9 @@
 
 ## Rules
 
+- [js_binary](#js_binary)
+- [js_script](#js_script)
+- [js_test](#js_test)
 - [npm_packages](#npm_packages)
 - [npm_binary](#npm_binary)
 
@@ -18,10 +21,6 @@ The main differences are:
 - No need for a `node_modules` directory.
 - You must specify a `yarn.lock` along with `package.json`.
 
-As of 2 May 2018, these rules are extremely limited and only meant to be used
-along with [TypeScript rules](https://github.com/zenclabs/bazel-typescript).
-However, we're working on bringing them up to the same level of support.
-
 ## Installation
 
 First, install [Bazel](https://docs.bazel.build/versions/master/install.html) and [Yarn](https://yarnpkg.com/lang/en/docs/install).
@@ -37,6 +36,87 @@ git_repository(
 ```
 
 ## Rules
+
+### js_binary
+
+```python
+js_binary(name, lib, entry)
+```
+
+Used to compile a `js_library` to a single JavaScript file.
+
+Note: for now, the generated file is targeted for Node ([see issue](https://github.com/zenclabs/bazel-typescript/issues/22)).
+
+<table>
+  <thead>
+    <tr>
+      <th colspan="2">Attributes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>name</code></td>
+      <td>
+        <p>A unique name for this rule (required).</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>lib</code></td>
+      <td>
+        <p>A <code>js_library</code> target (required).</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>entry</code></td>
+      <td>
+        <p>The path of the entrypoint within the <code>js_library</code> target (required).</p>
+        <p>
+          For example if the <code>js_library</code> includes a single file <code>main.ts</code>,
+          entry should be set to <code>"main.js"</code>.
+        </p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+### js_script
+
+```python
+js_script(cmd, lib)
+```
+
+Used to run a script (similarly to `scripts` in `package.json`).
+
+<table>
+  <thead>
+    <tr>
+      <th colspan="2">Attributes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>cmd</code></td>
+      <td>
+        <p>The command to run (required).</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>lib</code></td>
+      <td>
+        <p>A <code>js_library</code> target (required).</p>
+        <p>The script will execute in the target's compiled directory.</p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+### js_test
+
+```python
+js_test(cmd, lib)
+```
+
+Used to define a test. Arguments are identical to `js_script`.
 
 ### npm_packages
 
