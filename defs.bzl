@@ -305,17 +305,13 @@ js_test = rule(
 )
 
 def _js_binary_impl(ctx):
-  # Create a directory containing the webpack config.
-  build_dir = ctx.actions.declare_directory(ctx.label.name + "_build_dir")
   ctx.actions.run_shell(
     inputs = [
       ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
-      ctx.attr._webpack_npm_packages[NpmPackagesInfo].installed_dir,
       ctx.attr.lib[JsLibraryInfo].npm_packages_installed_dir,
       ctx.attr.lib[JsLibraryInfo].full_src_dir,
     ] + ctx.files._js_binary_compile_script,
     outputs = [
-      build_dir,
       ctx.outputs.executable_file,
     ],
     command = "NODE_PATH=" + ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules node \"$@\"",
@@ -325,14 +321,10 @@ def _js_binary_impl(ctx):
       ctx.file._js_binary_compile_script.path,
       # Entry point for Webpack (e.g. "main.ts").
       ctx.attr.entry,
-      # Directory containing webpack and webpack-cli.
-      ctx.attr._webpack_npm_packages[NpmPackagesInfo].installed_dir.path,
       # Directory containing external NPM dependencies the code depends on.
       ctx.attr.lib[JsLibraryInfo].npm_packages_installed_dir.path,
       # Directory containing the compiled source code of the js_library.
       ctx.attr.lib[JsLibraryInfo].full_src_dir.path,
-      # Directory in which to place the webpack config.
-      build_dir.path,
       # Directory in which to place the compiled JavaScript.
       ctx.outputs.executable_file.path,
     ],
@@ -357,9 +349,6 @@ js_binary = rule(
       allow_files = True,
       single_file = True,
       default = Label("//internal/js_binary:compile.js"),
-    ),
-    "_webpack_npm_packages": attr.label(
-      default = Label("//internal/js_binary/webpack:packages"),
     ),
   },
   executable = True,
