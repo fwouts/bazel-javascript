@@ -19,7 +19,6 @@ webpack(
       filename: path.basename(outputFile),
       path: path.resolve(path.dirname(outputFile))
     },
-    target: "node",
     resolve: {
       modules: [
         path.resolve(path.join(compiledDir, "__internal_node_modules")),
