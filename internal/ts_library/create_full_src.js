@@ -224,7 +224,6 @@ for (const sourceFilePath of srcs) {
         statement.moduleSpecifier = ts.createLiteral(replaceWith);
       } else {
         // This must be an external package.
-        // TODO: Also handle workspace-level references, e.g. '@/src/etc'.
         let packageName;
         const splitImportFrom = importFrom.split("/");
         if (splitImportFrom.length >= 2 && splitImportFrom[0].startsWith("@")) {
