@@ -18,6 +18,8 @@ def _js_binary_impl(ctx):
       ctx.file._js_binary_compile_script.path,
       # Entry point for Webpack (e.g. "main.ts").
       ctx.attr.entry,
+      # Mode for Webpack.
+      ctx.attr.mode,
       # Directory containing external NPM dependencies the code depends on.
       ctx.attr.lib[JsLibraryInfo].npm_packages_installed_dir.path,
       # Directory containing the compiled source code of the js_library.
@@ -39,6 +41,14 @@ js_binary = rule(
       providers = [JsLibraryInfo],
     ),
     "entry": attr.string(),
+    "mode": attr.string(
+      values = [
+        "none",
+        "development",
+        "production",
+      ],
+      default = "none",
+    ),
     "_internal_packages": attr.label(
       default = Label("//internal:packages"),
     ),

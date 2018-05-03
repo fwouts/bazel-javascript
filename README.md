@@ -238,6 +238,15 @@ Used to compile a `js_library` to a single JavaScript bundle file.
         </p>
       </td>
     </tr>
+    <tr>
+      <td><code>mode</code></td>
+      <td>
+        <p>Configuration mode for webpack (default <code>none</code>).</p>
+        <p>
+          See <a href="https://webpack.js.org/concepts/mode">Webpack documentation</a> for details.
+        </p>
+      </td>
+    </tr>
   </tbody>
 </table>
 

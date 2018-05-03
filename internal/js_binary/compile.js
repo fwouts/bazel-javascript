@@ -7,6 +7,7 @@ const [
   nodePath,
   scriptPath,
   entry,
+  mode,
   installedNpmPackagesDir,
   compiledDir,
   outputFile
@@ -19,6 +20,7 @@ webpack(
       filename: path.basename(outputFile),
       path: path.resolve(path.dirname(outputFile))
     },
+    mode,
     resolve: {
       modules: [
         path.resolve(path.join(compiledDir, "__internal_node_modules")),
