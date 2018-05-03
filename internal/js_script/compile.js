@@ -25,6 +25,9 @@ fs.writeFileSync(
     {
       scripts: {
         start: cmd
+      },
+      babel: {
+        presets: []
       }
     },
     null,
