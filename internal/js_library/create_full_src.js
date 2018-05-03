@@ -63,6 +63,10 @@ if (fs.existsSync(path.join(installedNpmPackagesDir, "node_modules"))) {
   // Create a symbolic link from node_modules.
   fs.mkdirSync(path.join(destinationDir, "node_modules"));
   for (const packageName of analyzedPackageNames) {
+    if (packageName.indexOf("/") !== -1) {
+      const [parentName, nestedPackageName] = packageName.split("/");
+      fs.ensureDirSync(path.join(destinationDir, "node_modules", parentName));
+    }
     fs.symlinkSync(
       path.join(installedNpmPackagesDir, "node_modules", packageName),
       path.join(destinationDir, "node_modules", packageName)
