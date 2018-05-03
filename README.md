@@ -15,12 +15,6 @@ If you're not already familiar with [Bazel](https://bazel.build), install it fir
 These Node rules for Bazel are separate from the [official Google
 implementation](https://github.com/bazelbuild/rules_nodejs).
 
-The main differences are:
-
-- Easier setup ([literally four lines](examples/simple/WORKSPACE)).
-- No need for a `node_modules` directory.
-- You must specify a `yarn.lock` along with `package.json`.
-
 ## Installation
 
 First, install [Bazel](https://docs.bazel.build/versions/master/install.html) and [Yarn](https://yarnpkg.com/lang/en/docs/install).
