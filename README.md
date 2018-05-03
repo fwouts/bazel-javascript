@@ -2,6 +2,7 @@
 
 ## Rules
 
+- [js_library](#js_library)
 - [js_binary](#js_binary)
 - [js_script](#js_script)
 - [js_test](#js_test)
@@ -30,6 +31,55 @@ git_repository(
 ```
 
 ## Rules
+
+### js_library
+
+```python
+js_library(name, srcs, deps = [], requires = [], tsconfig = ...)
+```
+
+Used to represent a set of JavaScript files and their dependencies.
+
+<table>
+  <thead>
+    <tr>
+      <th colspan="2">Attributes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>name</code></td>
+      <td>
+        <p>A unique name for this rule (required).</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>srcs</code></td>
+      <td>
+        <p>A list of source files (required).</p>
+        <p>You may include non-JavaScript files, which will be copy-pasted as is.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>deps</code></td>
+      <td>
+        <p>A list of labels (optional).</p>
+        <p>
+          This could be any other <code>js_library</code> targets, or at most one <code>npm_packages</code> target.
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>requires</code></td>
+      <td>
+        <p>A list of required NPM module names (optional).</p>
+        <p>
+          This must include any NPM module that the source files directly depend on.
+        </p>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
 ### js_binary
 
