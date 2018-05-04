@@ -5,14 +5,14 @@ load("@bazel_typescript//:defs.bzl", "ts_library")
 
 js_script(
   name = "storybook-run",
-  cmd = "start-storybook -p 9001 -c .storybook",
+  cmd = "start-storybook -p 9001 -c $LIB_DIR/.storybook",
   lib = ":storybook",
 )
 
 ts_library(
   name = "storybook",
   srcs = [
-    ".storybook/config.js",
+    ".storybook/config.ts",
   ],
   deps = [
     ":component_story",

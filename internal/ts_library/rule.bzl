@@ -51,10 +51,8 @@ def _ts_library_impl(ctx):
     ],
   )
   # Create a directory that contains:
-  # - source files
-  # - tsconfig.json
+  # - source files (including all internal dependencies)
   # - node_modules (symlinked to installed external dependencies directory)
-  # - __internal_node_modules/[name] for every internal dep
   _ts_library_create_full_src(
     ctx,
     internal_deps,
@@ -67,6 +65,7 @@ def _ts_library_impl(ctx):
   )
   return [
     JsLibraryInfo(
+      build_file_path = ctx.build_file_path,
       srcs = [f.path for f in ctx.files.srcs],
       full_src_dir = ctx.outputs.compiled_dir,
       internal_deps = internal_deps,
@@ -95,8 +94,7 @@ def _ts_library_create_full_src(ctx, internal_deps, npm_packages):
       # Directory containing node_modules/ with all external NPM packages
       # installed.
       npm_packages[NpmPackagesInfo].installed_dir.path,
-      # BUILD file path, necessary to understand relative "import" statements
-      # in TypeScript.
+      # BUILD file path
       ctx.build_file_path,
       # tsconfig.json path.
       ctx.file.tsconfig.path,
@@ -105,13 +103,8 @@ def _ts_library_create_full_src(ctx, internal_deps, npm_packages):
         p
         for p in ctx.attr.requires
       ])),
-      # List of ts_library targets we depend on, along with their source files
-      # (required to replace relative "import" statements with the correct
-      # module name).
+      # Source directories of the ts_library targets we depend on.
       ("|".join([
-        d.label.package + ':' +
-        d.label.name + ':' +
-        (";".join(d[JsLibraryInfo].srcs)) + ":" +
         d[JsLibraryInfo].full_src_dir.path
         for d in internal_deps
       ])),

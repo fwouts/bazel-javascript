@@ -6,12 +6,6 @@
     "declaration": true,
     "strict": true,
     "jsx": "react",
-    "allowSyntheticDefaultImports": true,
-    "baseUrl": ".",
-    "paths": {
-      "@/*": [
-        "src/*"
-      ]
-    }
+    "allowSyntheticDefaultImports": true
   }
 }
