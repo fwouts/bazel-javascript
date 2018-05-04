@@ -28,7 +28,7 @@ Next, create a `WORKSPACE` file in your project root containing:
 git_repository(
   name = "bazel_typescript",
   remote = "https://github.com/zenclabs/bazel-typescript.git",
-  tag = "0.0.20", # check for the latest tag when you install
+  tag = "0.0.21", # check for the latest tag when you install
 )
 
 git_repository(
