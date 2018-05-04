@@ -1,6 +1,8 @@
 load("//internal/npm_packages:rule.bzl", "NpmPackagesInfo")
 
 JsLibraryInfo = provider(fields=[
+  # Path of the BUILD file relative to the workspace root.
+  "build_file_path",
   # Directory containing the JavaScript files (and potentially other assets).
   "full_src_dir",
   # Source files provided as input.
@@ -64,9 +66,8 @@ def _js_library_impl(ctx):
     ],
   )
   # Create a directory that contains:
-  # - source files
+  # - source files (including all internal dependencies)
   # - node_modules (symlinked to installed external dependencies directory)
-  # - __internal_node_modules/[name] for every internal dep
   _js_library_create_full_src(
     ctx,
     internal_deps,
@@ -78,6 +79,7 @@ def _js_library_impl(ctx):
   )
   return [
     JsLibraryInfo(
+      build_file_path = ctx.build_file_path,
       srcs = [f.path for f in ctx.files.srcs],
       full_src_dir = ctx.outputs.compiled_dir,
       internal_deps = internal_deps,
@@ -105,20 +107,15 @@ def _js_library_create_full_src(ctx, internal_deps, npm_packages):
       # Directory containing node_modules/ with all external NPM packages
       # installed.
       npm_packages[NpmPackagesInfo].installed_dir.path,
-      # BUILD file path, necessary to understand relative "import" statements.
+      # BUILD file path.
       ctx.build_file_path,
       # List of NPM package names used by the source files.
       ("|".join([
         p
         for p in ctx.attr.requires
       ])),
-      # List of js_library targets we depend on, along with their source files
-      # (required to replace relative "import" statements with the correct
-      # module name).
+      # Source directories of the js_library targets we depend on.
       ("|".join([
-        d.label.package + ':' +
-        d.label.name + ':' +
-        (";".join(d[JsLibraryInfo].srcs)) + ":" +
         d[JsLibraryInfo].full_src_dir.path
         for d in internal_deps
       ])),

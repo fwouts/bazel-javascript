@@ -45,6 +45,8 @@ def _js_script_impl(ctx):
       ctx.outputs.compiled_dir.path,
       # Same path required in short form for the shell script.
       ctx.outputs.compiled_dir.short_path,
+      # BUILD file path for the js_library.
+      ctx.attr.lib[JsLibraryInfo].build_file_path,
       # Path to generate the shell script.
       ctx.outputs.executable_file.path,
     ],

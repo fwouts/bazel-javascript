@@ -13,6 +13,7 @@ const [
   sourceDir,
   destinationDir,
   destinationDirShort,
+  libBuildfilePath,
   executablePath
 ] = process.argv;
 
@@ -36,46 +37,6 @@ fs.writeFileSync(
   "utf8"
 );
 
-// TODO: Remove storybook exception.
-if (fs.existsSync(path.join(destinationDir, ".storybook"))) {
-  fs.writeFileSync(
-    path.join(destinationDir, ".storybook", "webpack.config.js"),
-    `const path = require("path");
-
-module.exports = {
-  resolve: {
-    modules: [
-      path.resolve(__dirname, "..", "${path.relative(
-        destinationDir,
-        installedNpmPackagesDir
-      )}", "node_modules"),
-    ],
-  },
-  resolveLoader: {
-    modules: [
-      path.resolve(__dirname, "..", "${path.relative(
-        destinationDir,
-        installedNpmPackagesDir
-      )}", "node_modules"),
-    ],
-  },
-  module: {
-    rules: [
-      {
-        test: /\.css$/,
-        use: [
-          "style-loader",
-          "css-loader",
-        ],
-      },
-    ],
-  }
-};
-`,
-    "utf8"
-  );
-}
-
 // Generate a shell script that invokes `yarn start`.
 fs.writeFileSync(
   executablePath,
@@ -85,7 +46,8 @@ export PATH=$PATH:$PWD/${installedNpmPackagesDirShort}/node_modules/.bin
 export NODE_PATH=${path.relative(
     destinationDirShort,
     installedNpmPackagesDirShort
-  )}/node_modules:__internal_node_modules
+  )}/node_modules
+export LIB_DIR=${path.dirname(libBuildfilePath)}
 ${yarnShellCommand(destinationDirShort, "start")}
 `,
   "utf8"

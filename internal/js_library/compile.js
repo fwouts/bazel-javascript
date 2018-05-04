@@ -8,9 +8,6 @@ const [nodePath, scriptPath, fullSrcDir, destinationDir] = process.argv;
 fs.copySync(fullSrcDir, destinationDir, {
   dereference: true,
   filter: name => {
-    if (name.indexOf(path.sep + "__internal_node_modules" + path.sep) !== -1) {
-      return true;
-    }
     return (
       path.basename(name) !== "node_modules" &&
       !name.endsWith(".js") &&
@@ -23,7 +20,7 @@ fs.copySync(fullSrcDir, destinationDir, {
 child_process.execSync(
   `${
     process.env.NODE_PATH
-  }/.bin/babel ${fullSrcDir} --plugins transform-es2015-modules-commonjs --ignore node_modules,__internal_node_modules --out-dir ${destinationDir}`,
+  }/.bin/babel ${fullSrcDir} --plugins transform-es2015-modules-commonjs --ignore node_modules --out-dir ${destinationDir}`,
   {
     stdio: "inherit"
   }

@@ -6,6 +6,7 @@ const webpack = require("webpack");
 const [
   nodePath,
   scriptPath,
+  libBuildfilePath,
   entry,
   mode,
   installedNpmPackagesDir,
@@ -15,7 +16,9 @@ const [
 
 webpack(
   {
-    entry: path.resolve(path.join(compiledDir, entry)),
+    entry: path.resolve(
+      path.join(compiledDir, path.dirname(libBuildfilePath), entry)
+    ),
     output: {
       filename: path.basename(outputFile),
       path: path.resolve(path.dirname(outputFile))
@@ -23,7 +26,6 @@ webpack(
     mode,
     resolve: {
       modules: [
-        path.resolve(path.join(compiledDir, "__internal_node_modules")),
         path.resolve(path.join(installedNpmPackagesDir, "node_modules"))
       ]
     },
