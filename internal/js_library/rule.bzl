@@ -116,6 +116,7 @@ def _js_library_create_full_src(ctx, internal_deps, npm_packages):
       ])),
       # Source directories of the js_library targets we depend on.
       ("|".join([
+        (";".join(d[JsLibraryInfo].srcs)) + ":" +
         d[JsLibraryInfo].full_src_dir.path
         for d in internal_deps
       ])),

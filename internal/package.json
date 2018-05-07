@@ -3,6 +3,7 @@
     "babel-cli": "^6.26.0",
     "babel-plugin-transform-es2015-modules-commonjs": "^6.26.2",
     "fs-extra": "^5.0.0",
+    "typescript": "^2.8.3",
     "webpack": "^4.6.0"
   }
 }
