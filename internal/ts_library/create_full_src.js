@@ -113,12 +113,7 @@ for (const internalDep of internalDeps) {
   if (!internalDep) {
     continue;
   }
-  const [
-    targetPackage,
-    targetName,
-    joinedSrcs,
-    compiledDir
-  ] = internalDep.split(":");
+  const [joinedSrcs, compiledDir] = internalDep.split(":");
   const srcs = joinedSrcs.split(";");
   for (const src of srcs) {
     if (!src) {

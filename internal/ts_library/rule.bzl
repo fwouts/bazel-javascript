@@ -105,8 +105,6 @@ def _ts_library_create_full_src(ctx, internal_deps, npm_packages):
       ])),
       # Source directories of the ts_library targets we depend on.
       ("|".join([
-        d.label.package + ':' +
-        d.label.name + ':' +
         (";".join(d[JsLibraryInfo].srcs)) + ":" +
         d[JsLibraryInfo].full_src_dir.path
         for d in internal_deps
