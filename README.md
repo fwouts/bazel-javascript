@@ -27,7 +27,7 @@ Next, create a `WORKSPACE` file in your project root containing:
 git_repository(
   name = "bazel_node",
   remote = "https://github.com/zenclabs/bazel-node.git",
-  tag = "0.0.11", # check for the latest tag when you install
+  tag = "0.0.12", # check for the latest tag when you install
 )
 ```
 
