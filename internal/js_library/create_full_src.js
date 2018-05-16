@@ -5,6 +5,7 @@ const ts = require("typescript");
 const [
   nodePath,
   scriptPath,
+  targetLabel,
   installedNpmPackagesDir,
   buildfilePath,
   joinedRequires,
@@ -108,7 +109,10 @@ for (const src of srcs) {
     continue;
   }
   if (!fs.existsSync(src)) {
-    throw new Error(`Missing file: ${src}.`);
+    console.error(`
+Missing file ${src} required by ${targetLabel}.
+`);
+    process.exit(1);
   }
   const destinationFilePath = path.join(destinationDir, src);
   fs.ensureDirSync(path.dirname(destinationFilePath));
@@ -170,7 +174,11 @@ for (const src of srcs) {
             replaceWith =
               "./" + path.relative(path.dirname(src), importPathFromWorkspace);
           } else {
-            throw new Error(`Could not find a match for import ${importFrom}.`);
+            console.error(`
+Could not find a match for import "${importFrom}".
+Are you missing a source file or a dependency in ${targetLabel}?
+`);
+            process.exit(1);
           }
         }
         statement.moduleSpecifier = ts.createLiteral(replaceWith);
@@ -186,7 +194,11 @@ for (const src of srcs) {
           packageName = splitImportFrom[0];
         }
         if (!required.has(packageName)) {
-          throw new Error(`Undeclared dependency: ${packageName}.`);
+          console.error(`
+Found an import statement referring to an undeclared dependency: "${packageName}".
+Make sure to specify required = ["${packageName}"] in ${targetLabel}.
+`);
+          process.exit(1);
         }
       }
     }
