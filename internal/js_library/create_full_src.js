@@ -196,7 +196,7 @@ Are you missing a source file or a dependency in ${targetLabel}?
         if (!required.has(packageName)) {
           console.error(`
 Found an import statement referring to an undeclared dependency: "${packageName}".
-Make sure to specify required = ["${packageName}"] in ${targetLabel}.
+Make sure to specify requires = ["${packageName}"] in ${targetLabel}.
 `);
           process.exit(1);
         }
