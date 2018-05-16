@@ -3,10 +3,52 @@ const fs = require("fs-extra");
 const path = require("path");
 const ts = require("typescript");
 
+// Node modules that are automatically available in a Node environment.
+// Synced from https://github.com/DefinitelyTyped/DefinitelyTyped/blob/e22846ad77459b3ece25598db93c2013e8c76716/types/node/index.d.ts.
+const NODE_MODULES = new Set([
+  "buffer",
+  "querystring",
+  "events",
+  "http",
+  "cluster",
+  "zlib",
+  "os",
+  "https",
+  "punycode",
+  "repl",
+  "readline",
+  "vm",
+  "child_process",
+  "url",
+  "dns",
+  "net",
+  "dgram",
+  "fs",
+  "path",
+  "string_decoder",
+  "tls",
+  "crypto",
+  "stream",
+  "util",
+  "assert",
+  "tty",
+  "domain",
+  "constants",
+  "module",
+  "process",
+  "v8",
+  "timers",
+  "console",
+  "async_hooks",
+  "http2",
+  "perf_hooks"
+]);
+
 const [
   nodePath,
   scriptPath,
   targetLabel,
+  npmPackagesLabel,
   installedNpmPackagesDir,
   buildfilePath,
   tsconfigPath,
@@ -22,6 +64,30 @@ const internalDeps = joinedInternalDeps.split("|");
 const srcs = joinedSrcs.split("|");
 
 fs.mkdirSync(destinationDir);
+
+const packageJson = fs.readFileSync(
+  path.join(installedNpmPackagesDir, "package.json")
+);
+const packageDefinition = JSON.parse(packageJson);
+const deps = {
+  ...(packageDefinition.dependencies || {}),
+  ...(packageDefinition.devDependencies || {})
+};
+for (const name of required) {
+  if (!name) {
+    // Occurs when there are no dependencies.
+    continue;
+  }
+  if (!(name in deps)) {
+    console.error(
+      `
+No package "${name}" declared in ${npmPackagesLabel}.
+Are you requiring the correct packages in ${targetLabel}?
+`
+    );
+    process.exit(1);
+  }
+}
 
 if (fs.existsSync(path.join(installedNpmPackagesDir, "node_modules"))) {
   // Find all the packages we depend on indirectly. We'll only include those.
@@ -46,9 +112,6 @@ if (fs.existsSync(path.join(installedNpmPackagesDir, "node_modules"))) {
       name,
       "package.json"
     );
-    if (!fs.existsSync(packageJsonPath)) {
-      return;
-    }
     try {
       const package = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
       if (!package.dependencies) {
@@ -270,7 +333,7 @@ Are you missing a source file or a dependency in ${targetLabel}?
           // Example: react.
           packageName = splitImportFrom[0];
         }
-        if (!required.has(packageName)) {
+        if (!required.has(packageName) && !NODE_MODULES.has(packageName)) {
           console.error(`
 Found an import statement referring to an undeclared dependency: "${packageName}".
 Make sure to specify requires = ["${packageName}"] in ${targetLabel}.
