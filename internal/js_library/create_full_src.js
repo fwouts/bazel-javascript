@@ -47,6 +47,7 @@ const [
   nodePath,
   scriptPath,
   targetLabel,
+  npmPackagesLabel,
   installedNpmPackagesDir,
   buildfilePath,
   joinedRequires,
