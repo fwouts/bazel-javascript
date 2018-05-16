@@ -24,6 +24,7 @@ webpack(
       path: path.resolve(path.dirname(outputFile))
     },
     mode,
+    target: "node",
     resolve: {
       modules: [
         path.resolve(path.join(installedNpmPackagesDir, "node_modules"))
