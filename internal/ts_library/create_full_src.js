@@ -6,6 +6,7 @@ const ts = require("typescript");
 const [
   nodePath,
   scriptPath,
+  targetLabel,
   installedNpmPackagesDir,
   buildfilePath,
   tsconfigPath,
@@ -148,15 +149,23 @@ if (
   (atSignPatterns = originalTsConfig.compilerOptions.paths["@/*"])
 ) {
   if (atSignPatterns.length !== 1) {
-    throw new Error(
-      `Multiple paths for "@/*" in tsconfig.json are not supported.`
+    console.error(
+      `
+Multiple paths for "@/*" in tsconfig.json are not supported.
+Please take a look at //${tsconfigPath} to fix this issue.
+`
     );
+    process.exit(1);
   }
   const atSignPattern = atSignPatterns[0];
   if (!atSignPattern.endsWith("/*")) {
-    throw new Error(
-      `Path matcher ${atSignPattern} in tsconfig.json was expected to end with "/*".`
+    console.error(
+      `
+Path matcher ${atSignPattern} in tsconfig.json was expected to end with "/*".
+Please take a look at //${tsconfigPath} to fix this issue.
+`
     );
+    process.exit(1);
   }
   // Find where the directory pointed to is. This is relative to baseUrl, which
   // is itself related to tsconfig.json's path.
@@ -174,7 +183,10 @@ for (const src of srcs) {
     continue;
   }
   if (!fs.existsSync(src)) {
-    throw new Error(`Missing file: ${src}.`);
+    console.error(`
+Missing file ${src} required by ${targetLabel}.
+`);
+    process.exit(1);
   }
   const destinationFilePath = path.join(destinationDir, src);
   fs.ensureDirSync(path.dirname(destinationFilePath));
@@ -239,7 +251,11 @@ for (const src of srcs) {
             replaceWith =
               "./" + path.relative(path.dirname(src), importPathFromWorkspace);
           } else {
-            throw new Error(`Could not find a match for import ${importFrom}.`);
+            console.error(`
+Could not find a match for import "${importFrom}".
+Are you missing a source file or a dependency in ${targetLabel}?
+`);
+            process.exit(1);
           }
         }
         statement.moduleSpecifier = ts.createLiteral(replaceWith);
@@ -255,7 +271,12 @@ for (const src of srcs) {
           packageName = splitImportFrom[0];
         }
         if (!required.has(packageName)) {
-          throw new Error(`Undeclared dependency: ${packageName}.`);
+          console.error(`
+Found an import statement referring to an undeclared dependency: "${packageName}".
+Make sure to specify required = ["${packageName}"] in ${targetLabel}.
+`);
+          console.error();
+          process.exit(1);
         }
       }
     }

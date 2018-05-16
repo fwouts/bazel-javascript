@@ -91,6 +91,8 @@ def _ts_library_create_full_src(ctx, internal_deps, npm_packages):
     arguments = [
       # Run `node create_full_src.js`.
       ctx.file._ts_library_create_full_src_script.path,
+      # Label of the build target (for helpful errors).
+      "//" + ctx.label.package + ":" + ctx.label.name,
       # Directory containing node_modules/ with all external NPM packages
       # installed.
       npm_packages[NpmPackagesInfo].installed_dir.path,
