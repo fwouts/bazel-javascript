@@ -43,63 +43,65 @@ webpack(
     module: {
       rules: [
         {
-          test: /\.module\.css$/,
-          use: [
-            "style-loader",
+          oneOf: [
             {
-              loader: "css-loader",
-              options: {
-                importLoaders: 1,
-                modules: true,
-                camelCase: true
-              }
+              test: /\.module\.css$/,
+              use: [
+                "style-loader",
+                {
+                  loader: "css-loader",
+                  options: {
+                    importLoaders: 1,
+                    modules: true,
+                    camelCase: true
+                  }
+                },
+                "postcss-loader"
+              ]
             },
-            "postcss-loader"
-          ]
-        },
-        {
-          test: /\.module\.scss$/,
-          use: [
-            "style-loader",
             {
-              loader: "css-loader",
-              options: {
-                importLoaders: 2,
-                modules: true,
-                camelCase: true
-              }
+              test: /\.module\.scss$/,
+              use: [
+                "style-loader",
+                {
+                  loader: "css-loader",
+                  options: {
+                    importLoaders: 2,
+                    modules: true,
+                    camelCase: true
+                  }
+                },
+                "postcss-loader",
+                "sass-loader"
+              ]
             },
-            "postcss-loader",
-            "sass-loader"
-          ]
-        },
-        {
-          test: /\.css$/,
-          exclude: /\.module\.css$/,
-          use: [
-            "style-loader",
             {
-              loader: "css-loader",
-              options: {
-                importLoaders: 1
-              }
+              test: /\.css$/,
+              use: [
+                "style-loader",
+                {
+                  loader: "css-loader",
+                  options: {
+                    importLoaders: 1
+                  }
+                },
+                "postcss-loader"
+              ]
             },
-            "postcss-loader"
-          ]
-        },
-        {
-          test: /\.scss$/,
-          exclude: /\.module\.scss$/,
-          use: [
-            "style-loader",
             {
-              loader: "css-loader",
-              options: {
-                importLoaders: 2
-              }
-            },
-            "postcss-loader",
-            "sass-loader"
+              test: /\.scss$/,
+              use: [
+                "style-loader",
+                {
+                  loader: "css-loader",
+                  options: {
+                    importLoaders: 2
+                  }
+                },
+                "postcss-loader",
+                "sass-loader"
+              ]
+            }
           ]
         }
       ]
