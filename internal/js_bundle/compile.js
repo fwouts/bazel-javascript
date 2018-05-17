@@ -44,7 +44,8 @@ webpack(
                 importLoaders: 1,
                 modules: 1
               }
-            }
+            },
+            "postcss-loader"
           ]
         },
         {
@@ -54,10 +55,11 @@ webpack(
             {
               loader: "css-loader",
               options: {
-                importLoaders: 1,
+                importLoaders: 2,
                 modules: 1
               }
             },
+            "postcss-loader",
             "sass-loader"
           ]
         },
@@ -71,7 +73,8 @@ webpack(
               options: {
                 importLoaders: 1
               }
-            }
+            },
+            "postcss-loader"
           ]
         },
         {
@@ -82,9 +85,10 @@ webpack(
             {
               loader: "css-loader",
               options: {
-                importLoaders: 1
+                importLoaders: 2
               }
             },
+            "postcss-loader",
             "sass-loader"
           ]
         }
