@@ -2,6 +2,8 @@ load("//internal/js_library:rule.bzl", "JsLibraryInfo")
 load("//internal/npm_packages:rule.bzl", "NpmPackagesInfo")
 
 def _js_bundle_impl(ctx):
+  if ctx.attr.split_chunks and not ctx.attr.public_path:
+    fail("public_path is required if split_chunks=1")
   ctx.actions.run_shell(
     inputs = [
       ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
@@ -9,7 +11,7 @@ def _js_bundle_impl(ctx):
       ctx.attr.lib[JsLibraryInfo].full_src_dir,
     ] + ctx.files._js_bundle_compile_script,
     outputs = [
-      ctx.outputs.bundle_file,
+      ctx.outputs.bundle_dir,
     ],
     command = "NODE_PATH=" + ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules node \"$@\"",
     use_default_shell_env = True,
@@ -20,14 +22,22 @@ def _js_bundle_impl(ctx):
       ctx.attr.lib[JsLibraryInfo].build_file_path,
       # Entry point for Webpack (e.g. "main.ts").
       ctx.attr.entry,
+      # Target for Webpack.
+      ctx.attr.target,
       # Mode for Webpack.
       ctx.attr.mode,
+      # Enable split chunks or not.
+      "1" if ctx.attr.split_chunks else "0",
+      # Public path for Webpack.
+      ctx.attr.public_path,
+      # Directory containing internal NPM dependencies (for build tools).
+      ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path,
       # Directory containing external NPM dependencies the code depends on.
       ctx.attr.lib[JsLibraryInfo].npm_packages_installed_dir.path,
       # Directory containing the compiled source code of the js_library.
       ctx.attr.lib[JsLibraryInfo].full_src_dir.path,
       # Directory in which to place the compiled JavaScript.
-      ctx.outputs.bundle_file.path,
+      ctx.outputs.bundle_dir.path,
     ],
   )
 
@@ -38,6 +48,18 @@ js_bundle = rule(
       providers = [JsLibraryInfo],
     ),
     "entry": attr.string(),
+    "target": attr.string(
+      values = [
+        "async-node",
+        "node",
+        "electron-main",
+        "electron-renderer",
+        "node",
+        "node-webkit",
+        "web",
+        "webworker",
+      ],
+    ),
     "mode": attr.string(
       values = [
         "none",
@@ -45,6 +67,12 @@ js_bundle = rule(
         "production",
       ],
       default = "none",
+    ),
+    "split_chunks": attr.bool(
+      default = False,
+    ),
+    "public_path": attr.string(
+      default = "",
     ),
     "_internal_packages": attr.label(
       default = Label("//internal:packages"),
@@ -56,6 +84,6 @@ js_bundle = rule(
     ),
   },
   outputs = {
-    "bundle_file": "%{name}.js",
+    "bundle_dir": "%{name}_bundle",
   },
 )

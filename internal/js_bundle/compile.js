@@ -8,11 +8,17 @@ const [
   scriptPath,
   libBuildfilePath,
   entry,
+  target,
   mode,
+  splitChunksStr,
+  publicPath,
+  loadersNpmPackagesDir,
   installedNpmPackagesDir,
   compiledDir,
-  outputFile
+  outputBundleDir
 ] = process.argv;
+
+const splitChunks = splitChunksStr === "1";
 
 webpack(
   {
@@ -20,15 +26,101 @@ webpack(
       path.join(compiledDir, path.dirname(libBuildfilePath), entry)
     ),
     output: {
-      filename: path.basename(outputFile),
-      path: path.resolve(path.dirname(outputFile))
+      filename: "bundle.js",
+      path: path.resolve(outputBundleDir),
+      publicPath: publicPath || undefined
     },
     mode,
+    target,
+    module: {
+      rules: [
+        {
+          test: /\.module\.css$/,
+          use: [
+            "style-loader",
+            {
+              loader: "css-loader",
+              options: {
+                importLoaders: 1,
+                modules: 1
+              }
+            }
+          ]
+        },
+        {
+          test: /\.module\.scss$/,
+          use: [
+            "style-loader",
+            {
+              loader: "css-loader",
+              options: {
+                importLoaders: 1,
+                modules: 1
+              }
+            },
+            "sass-loader"
+          ]
+        },
+        {
+          test: /\.css$/,
+          exclude: /\.module\.css$/,
+          use: [
+            "style-loader",
+            {
+              loader: "css-loader",
+              options: {
+                importLoaders: 1
+              }
+            }
+          ]
+        },
+        {
+          test: /\.scss$/,
+          exclude: /\.module\.scss$/,
+          use: [
+            "style-loader",
+            {
+              loader: "css-loader",
+              options: {
+                importLoaders: 1
+              }
+            },
+            "sass-loader"
+          ]
+        }
+      ]
+    },
+    // Some libraries import Node modules but don't use them in the browser.
+    // Tell Webpack to provide empty mocks for them so importing them works.
+    node:
+      target.indexOf("node") === -1
+        ? {
+            dgram: "empty",
+            fs: "empty",
+            net: "empty",
+            tls: "empty",
+            child_process: "empty"
+          }
+        : {},
     resolve: {
       modules: [
         path.resolve(path.join(installedNpmPackagesDir, "node_modules"))
       ]
-    }
+    },
+    resolveLoader: {
+      modules: [path.resolve(path.join(loadersNpmPackagesDir, "node_modules"))]
+    },
+    plugins: splitChunks
+      ? [
+          // By default, Webpack splits chunks.
+        ]
+      : [
+          // If we don't have a public path, we can't split chunks because we
+          // wouldn't know where to load them from.
+          new webpack.optimize.LimitChunkCountPlugin({
+            maxChunks: 1
+          })
+        ]
   },
   (err, stats) => {
     // See https://webpack.js.org/api/node/#error-handling.

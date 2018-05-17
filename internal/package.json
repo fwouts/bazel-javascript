@@ -2,7 +2,11 @@
   "dependencies": {
     "babel-cli": "^6.26.0",
     "babel-plugin-transform-es2015-modules-commonjs": "^6.26.2",
+    "css-loader": "^0.28.11",
     "fs-extra": "^5.0.0",
+    "node-sass": "^4.9.0",
+    "sass-loader": "^7.0.1",
+    "style-loader": "^0.21.0",
     "typescript": "^2.8.3",
     "webpack": "^4.6.0"
   }

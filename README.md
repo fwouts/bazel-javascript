@@ -204,10 +204,10 @@ Used to represent a set of JavaScript files and their dependencies.
 ### js_bundle
 
 ```python
-js_bundle(name, lib, entry)
+js_bundle(name, lib, entry, target, mode = "none", split_chunks = 0, public_path = "")
 ```
 
-Used to compile a `js_library` to a single JavaScript bundle file.
+Used to compile a `js_library` to a JavaScript bundle.
 
 <table>
   <thead>
@@ -244,6 +244,34 @@ Used to compile a `js_library` to a single JavaScript bundle file.
         <p>Configuration mode for webpack (default <code>none</code>).</p>
         <p>
           See <a href="https://webpack.js.org/concepts/mode">Webpack documentation</a> for details.
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>target</code></td>
+      <td>
+        <p>Target for webpack (required, you most likely need <code>web</code> or <code>node</code>).</p>
+        <p>
+          See <a href="https://webpack.js.org/concepts/targets">Webpack documentation</a> for details.
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>split_chunks</code></td>
+      <td>
+        <p>Whether to split the bundle into chunks.</p>
+        <p>
+          See <a href="https://webpack.js.org/plugins/split-chunks-plugin/#defaults">Webpack documentation</a> for details.
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>public_path</code></td>
+      <td>
+        <p>Public path where the bundle will be served from (required if <code>split_chunks=1</code>).</p>
+        <p>
+          For example if your JavaScript files will be served from https://yourdomain.com/js/,
+          set <code>public_path</code> to <code>"/js/"</code>.
         </p>
       </td>
     </tr>
