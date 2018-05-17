@@ -42,7 +42,8 @@ webpack(
               loader: "css-loader",
               options: {
                 importLoaders: 1,
-                modules: 1
+                modules: true,
+                camelCase: true
               }
             },
             "postcss-loader"
@@ -56,7 +57,8 @@ webpack(
               loader: "css-loader",
               options: {
                 importLoaders: 2,
-                modules: 1
+                modules: true,
+                camelCase: true
               }
             },
             "postcss-loader",
