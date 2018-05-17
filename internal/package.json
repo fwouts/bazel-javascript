@@ -3,6 +3,7 @@
     "babel-cli": "^6.26.0",
     "babel-plugin-transform-es2015-modules-commonjs": "^6.26.2",
     "css-loader": "^0.28.11",
+    "file-loader": "^1.1.11",
     "fs-extra": "^5.0.0",
     "node-sass": "^4.9.0",
     "postcss-loader": "^2.1.5",
