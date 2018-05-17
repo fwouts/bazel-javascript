@@ -3,7 +3,7 @@
 ## Rules
 
 - [js_library](#js_library)
-- [js_bundle](#js_binary)
+- [web_bundle](#js_binary)
 - [js_binary](#js_binary)
 - [js_script](#js_script)
 - [js_test](#js_test)
@@ -201,13 +201,13 @@ Used to represent a set of JavaScript files and their dependencies.
   </tbody>
 </table>
 
-### js_bundle
+### web_bundle
 
 ```python
-js_bundle(name, lib, entry, target, mode = "none", split_chunks = 0, public_path = "", library_name = "", library_target = "umd")
+web_bundle(name, lib, entry, target, mode = "none", split_chunks = 0, public_path = "", library_name = "", library_target = "umd")
 ```
 
-Used to compile a `js_library` to a JavaScript bundle.
+Used to compile a `js_library` to a JavaScript bundle to include in an HTML page.
 
 <table>
   <thead>
@@ -301,7 +301,7 @@ Used to compile a `js_library` to a JavaScript bundle.
 
 ### js_binary
 
-Identical to `js_bundle`, but produces an executable JavaScript file (using Node).
+Identical to `web_bundle`, but produces an executable JavaScript file (using Node).
 
 ### js_script
 

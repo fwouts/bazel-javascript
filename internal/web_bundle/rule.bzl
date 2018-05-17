@@ -1,7 +1,7 @@
 load("//internal/js_library:rule.bzl", "JsLibraryInfo")
 load("//internal/npm_packages:rule.bzl", "NpmPackagesInfo")
 
-def _js_bundle_impl(ctx):
+def _web_bundle_impl(ctx):
   if ctx.attr.split_chunks and not ctx.attr.public_path:
     fail("public_path is required if split_chunks=1")
   ctx.actions.run_shell(
@@ -9,15 +9,15 @@ def _js_bundle_impl(ctx):
       ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
       ctx.attr.lib[JsLibraryInfo].npm_packages_installed_dir,
       ctx.attr.lib[JsLibraryInfo].full_src_dir,
-    ] + ctx.files._js_bundle_compile_script,
+    ] + ctx.files._web_bundle_compile_script,
     outputs = [
       ctx.outputs.bundle_dir,
     ],
     command = "NODE_PATH=" + ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules node \"$@\"",
     use_default_shell_env = True,
     arguments = [
-      # Run `node js_bundle/compile.js`.
-      ctx.file._js_bundle_compile_script.path,
+      # Run `node web_bundle/compile.js`.
+      ctx.file._web_bundle_compile_script.path,
       # Path of the directory containing the lib's BUILD file.
       ctx.attr.lib[JsLibraryInfo].build_file_path,
       # Entry point for Webpack (e.g. "main.ts").
@@ -43,8 +43,8 @@ def _js_bundle_impl(ctx):
     ],
   )
 
-js_bundle = rule(
-  implementation=_js_bundle_impl,
+web_bundle = rule(
+  implementation=_web_bundle_impl,
   attrs = {
     "lib": attr.label(
       providers = [JsLibraryInfo],
@@ -93,10 +93,10 @@ js_bundle = rule(
     "_internal_packages": attr.label(
       default = Label("//internal:packages"),
     ),
-    "_js_bundle_compile_script": attr.label(
+    "_web_bundle_compile_script": attr.label(
       allow_files = True,
       single_file = True,
-      default = Label("//internal/js_bundle:compile.js"),
+      default = Label("//internal/web_bundle:compile.js"),
     ),
   },
   outputs = {
