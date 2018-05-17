@@ -155,7 +155,12 @@ Hello John
 ### js_library
 
 ```python
-js_library(name, srcs, deps = [], requires = [], tsconfig = ...)
+js_library(
+  name,
+  srcs,
+  deps = [],
+  requires = [],
+)
 ```
 
 Used to represent a set of JavaScript files and their dependencies.
@@ -204,7 +209,17 @@ Used to represent a set of JavaScript files and their dependencies.
 ### web_bundle
 
 ```python
-web_bundle(name, lib, entry, target, mode = "none", split_chunks = 0, public_path = "", library_name = "", library_target = "umd")
+web_bundle(
+  name,
+  lib,
+  entry,
+  target,
+  mode = "none",
+  split_chunks = 0,
+  public_path = "",
+  library_name = "",
+  library_target = "umd",
+)
 ```
 
 Used to compile a `js_library` to a JavaScript bundle to include in an HTML page.
