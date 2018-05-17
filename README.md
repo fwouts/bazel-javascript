@@ -204,7 +204,7 @@ Used to represent a set of JavaScript files and their dependencies.
 ### js_bundle
 
 ```python
-js_bundle(name, lib, entry, target, mode = "none", split_chunks = 0, public_path = "")
+js_bundle(name, lib, entry, target, mode = "none", split_chunks = 0, public_path = "", library_name = "", library_target = "umd")
 ```
 
 Used to compile a `js_library` to a JavaScript bundle.
@@ -272,6 +272,27 @@ Used to compile a `js_library` to a JavaScript bundle.
         <p>
           For example if your JavaScript files will be served from https://yourdomain.com/js/,
           set <code>public_path</code> to <code>"/js/"</code>.
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>library_name</code></td>
+      <td>
+        <p>The name of a library to generate (optional).</p>
+        <p>
+          This is only necessary if you're building a JavaScript library to be used by a third-party.
+        </p>
+        <p>
+          See <a href="https://webpack.js.org/configuration/output/#output-library">Webpack documentation</a> for details.
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>library_target</code></td>
+      <td>
+        <p>The type of library to generate (default <code>"umd"</code>). Use along with <code>library_name</code>.</p>
+        <p>
+          See <a href="https://webpack.js.org/configuration/output/#output-librarytarget">Webpack documentation</a> for details.
         </p>
       </td>
     </tr>

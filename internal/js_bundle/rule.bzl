@@ -26,6 +26,8 @@ def _js_bundle_impl(ctx):
       ctx.attr.target,
       # Mode for Webpack.
       ctx.attr.mode,
+      # Library for Webpack (optional).
+      ctx.attr.library_name + "/" + ctx.attr.library_target if ctx.attr.library_name else "",
       # Enable split chunks or not.
       "1" if ctx.attr.split_chunks else "0",
       # Public path for Webpack.
@@ -71,8 +73,22 @@ js_bundle = rule(
     "split_chunks": attr.bool(
       default = False,
     ),
-    "public_path": attr.string(
-      default = "",
+    "public_path": attr.string(),
+    "library_name": attr.string(),
+    "library_target": attr.string(
+      values = [
+        "var",
+        "assign",
+        "this",
+        "window",
+        "global",
+        "commonjs",
+        "commonjs2",
+        "amd",
+        "umd",
+        "jsonp",
+      ],
+      default = "umd",
     ),
     "_internal_packages": attr.label(
       default = Label("//internal:packages"),

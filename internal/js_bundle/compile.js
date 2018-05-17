@@ -10,6 +10,7 @@ const [
   entry,
   target,
   mode,
+  optionalLibrary,
   splitChunksStr,
   publicPath,
   loadersNpmPackagesDir,
@@ -18,6 +19,7 @@ const [
   outputBundleDir
 ] = process.argv;
 
+const [libraryName, libraryTarget] = optionalLibrary.split("/");
 const splitChunks = splitChunksStr === "1";
 
 webpack(
@@ -28,7 +30,13 @@ webpack(
     output: {
       filename: "bundle.js",
       path: path.resolve(outputBundleDir),
-      publicPath: publicPath || undefined
+      publicPath: publicPath || undefined,
+      ...(optionalLibrary
+        ? {
+            library: libraryName,
+            libraryTarget
+          }
+        : {})
     },
     mode,
     target,
