@@ -2,17 +2,18 @@ const child_process = require("child_process");
 const fs = require("fs-extra");
 const path = require("path");
 const webpack = require("webpack");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 const [
   nodePath,
   scriptPath,
   libBuildfilePath,
   entry,
+  htmlTemplatePath,
   target,
   mode,
   optionalLibrary,
   splitChunksStr,
-  publicPath,
   loadersNpmPackagesDir,
   installedNpmPackagesDir,
   compiledDir,
@@ -30,7 +31,7 @@ webpack(
     output: {
       filename: "bundle.js",
       path: path.resolve(outputBundleDir),
-      publicPath: publicPath || undefined,
+      publicPath: "/",
       ...(optionalLibrary
         ? {
             library: libraryName,
@@ -134,17 +135,18 @@ webpack(
     resolveLoader: {
       modules: [path.resolve(path.join(loadersNpmPackagesDir, "node_modules"))]
     },
-    plugins: splitChunks
-      ? [
-          // By default, Webpack splits chunks.
-        ]
-      : [
-          // If we don't have a public path, we can't split chunks because we
-          // wouldn't know where to load them from.
-          new webpack.optimize.LimitChunkCountPlugin({
-            maxChunks: 1
-          })
-        ]
+    plugins: [
+      new HtmlWebpackPlugin({
+        template: htmlTemplatePath,
+        inject: true
+      }),
+      // Chunk splitting is enabled by default.
+      ...(!splitChunks && [
+        new webpack.optimize.LimitChunkCountPlugin({
+          maxChunks: 1
+        })
+      ])
+    ]
   },
   (err, stats) => {
     // See https://webpack.js.org/api/node/#error-handling.

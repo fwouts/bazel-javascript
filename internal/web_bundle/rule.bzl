@@ -2,14 +2,13 @@ load("//internal/js_library:rule.bzl", "JsLibraryInfo")
 load("//internal/npm_packages:rule.bzl", "NpmPackagesInfo")
 
 def _web_bundle_impl(ctx):
-  if ctx.attr.split_chunks and not ctx.attr.public_path:
-    fail("public_path is required if split_chunks=1")
   ctx.actions.run_shell(
     inputs = [
       ctx.file._web_bundle_compile_script,
       ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
       ctx.attr.lib[JsLibraryInfo].npm_packages_installed_dir,
       ctx.attr.lib[JsLibraryInfo].full_src_dir,
+      ctx.file.html_template,
     ],
     outputs = [
       ctx.outputs.bundle_dir,
@@ -23,6 +22,8 @@ def _web_bundle_impl(ctx):
       ctx.attr.lib[JsLibraryInfo].build_file_path,
       # Entry point for Webpack (e.g. "main.ts").
       ctx.attr.entry,
+      # Template index.html for Webpack.
+      ctx.file.html_template.path,
       # Target for Webpack.
       ctx.attr.target,
       # Mode for Webpack.
@@ -31,8 +32,6 @@ def _web_bundle_impl(ctx):
       ctx.attr.library_name + "/" + ctx.attr.library_target if ctx.attr.library_name else "",
       # Enable split chunks or not.
       "1" if ctx.attr.split_chunks else "0",
-      # Public path for Webpack.
-      ctx.attr.public_path,
       # Directory containing internal NPM dependencies (for build tools).
       ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path,
       # Directory containing external NPM dependencies the code depends on.
@@ -74,7 +73,11 @@ web_bundle = rule(
     "split_chunks": attr.bool(
       default = False,
     ),
-    "public_path": attr.string(),
+    "html_template": attr.label(
+      allow_files = True,
+      single_file = True,
+      default = Label("//internal/web_bundle:default.index.html"),
+    ),
     "library_name": attr.string(),
     "library_target": attr.string(
       values = [

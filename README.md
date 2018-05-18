@@ -213,6 +213,7 @@ web_bundle(
   name,
   lib,
   entry,
+  html_template,
   target,
   mode = "none",
   split_chunks = 0,
@@ -250,6 +251,14 @@ Used to compile a `js_library` to a JavaScript bundle to include in an HTML page
         <p>
           For example if the <code>js_library</code> includes a single file <code>main.js</code>,
           entry should be set to <code>"main.js"</code>.
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>html_template</code></td>
+      <td>
+        <p>An HTML file template (optional).</p>
+        <p>The generated JavaScript bundle will be injected with a <code>&lt;script&gt;</code> tag.
         </p>
       </td>
     </tr>
