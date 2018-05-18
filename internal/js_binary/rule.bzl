@@ -4,10 +4,11 @@ load("//internal/npm_packages:rule.bzl", "NpmPackagesInfo")
 def _js_binary_impl(ctx):
   ctx.actions.run_shell(
     inputs = [
+      ctx.file._js_binary_compile_script,
       ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
       ctx.attr.lib[JsLibraryInfo].npm_packages_installed_dir,
       ctx.attr.lib[JsLibraryInfo].full_src_dir,
-    ] + ctx.files._js_binary_compile_script,
+    ],
     outputs = [
       ctx.outputs.executable_file,
     ],
