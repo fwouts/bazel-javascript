@@ -1,10 +1,27 @@
-const fs = require("fs-extra");
 const path = require("path");
 const webpack = require("webpack");
 
-const [nodePath, scriptPath, webpackConfigFilePath] = process.argv;
+const [
+  nodePath,
+  scriptPath,
+  htmlTemplatePath,
+  loadersNpmPackagesDir,
+  installedNpmPackagesDir,
+  sourceDir,
+  outputBundleDir,
+  webpackConfigFilePath
+] = process.argv;
 
-webpack(require(path.resolve(webpackConfigFilePath)), (err, stats) => {
+const configGenerator = require(path.resolve(webpackConfigFilePath));
+const config = configGenerator(
+  sourceDir,
+  outputBundleDir,
+  installedNpmPackagesDir,
+  loadersNpmPackagesDir,
+  htmlTemplatePath
+);
+
+webpack(config, (err, stats) => {
   // See https://webpack.js.org/api/node/#error-handling.
   if (err) {
     console.error(err.stack || err);

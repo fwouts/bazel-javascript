@@ -6,15 +6,10 @@ const [
   scriptPath,
   libBuildfilePath,
   entry,
-  htmlTemplatePath,
   target,
   mode,
   optionalLibrary,
   splitChunksStr,
-  loadersNpmPackagesDir,
-  installedNpmPackagesDir,
-  sourceDir,
-  outputBundleDir,
   webpackConfigPath
 ] = process.argv;
 
@@ -25,15 +20,21 @@ const config = `const path = require("path");
 const webpack = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 
-module.exports = {
-  entry: path.resolve("${path.join(
+module.exports = (
+  sourceDir,
+  outputBundleDir,
+  installedNpmPackagesDir,
+  loadersNpmPackagesDir,
+  htmlTemplatePath,
+) => ({
+  entry: (sourceDir.startsWith("/tmp/") ? "" : "./") + path.join(
     sourceDir,
-    path.dirname(libBuildfilePath),
-    entry
-  )}"),
+    path.dirname("${libBuildfilePath}"),
+    "${entry}",
+  ),
   output: {
     filename: "bundle.js",
-    path: path.resolve("${outputBundleDir}"),
+    path: path.resolve(outputBundleDir),
     publicPath: "/",
     ${
       optionalLibrary
@@ -137,17 +138,19 @@ module.exports = {
     )},
   resolve: {
     modules: [
-      path.resolve("${path.join(installedNpmPackagesDir, "node_modules")}")
+      path.join(installedNpmPackagesDir, "node_modules"),
+      // Necessary for webpack-hot-client with the dev server.
+      path.join(loadersNpmPackagesDir, "node_modules")
     ]
   },
   resolveLoader: {
     modules: [
-      path.resolve("${path.join(loadersNpmPackagesDir, "node_modules")}")
+      path.join(loadersNpmPackagesDir, "node_modules")
     ]
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: path.resolve("${htmlTemplatePath}"),
+      template: htmlTemplatePath,
       inject: true
     }),
     ${
@@ -159,7 +162,7 @@ module.exports = {
     }),`
     }
   ]
-};
+});
 `;
 
 fs.writeFileSync(webpackConfigPath, config, "utf8");
