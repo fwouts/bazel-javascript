@@ -1,4 +1,3 @@
-const child_process = require("child_process");
 const fs = require("fs-extra");
 const path = require("path");
 const ts = require("typescript");
@@ -131,43 +130,44 @@ if (fs.existsSync(path.join(installedNpmPackagesDir, "node_modules"))) {
   // contain the symbolic link, otherwise TypeScript gets confused.
   // I know, weird hack. If you have something better, let me know!
   fs.mkdirSync(path.join(destinationDir, "node_modules"));
+  const oldWorkingDir = process.cwd();
+  process.chdir(path.join(destinationDir, "node_modules"));
+  const newWorkingDir = process.cwd();
   for (const packageName of analyzedPackageNames) {
     if (packageName.indexOf("/") !== -1) {
       const [parentName, nestedPackageName] = packageName.split("/");
-      fs.ensureDirSync(path.join(destinationDir, "node_modules", parentName));
-      child_process.execSync(
-        `cd ${path.join(
-          destinationDir,
-          "node_modules",
-          parentName
-        )} && ln -s ${path.relative(
-          path.join(destinationDir, "node_modules", parentName),
+      fs.ensureDirSync(parentName);
+      process.chdir(parentName);
+      fs.symlinkSync(
+        path.relative(
+          path.join(newWorkingDir, parentName),
           path.join(
+            oldWorkingDir,
             installedNpmPackagesDir,
             "node_modules",
             parentName,
             nestedPackageName
           )
-        )} ${nestedPackageName}`,
-        {
-          stdio: "inherit"
-        }
+        ),
+        path.join(nestedPackageName)
       );
+      process.chdir("..");
     } else {
-      child_process.execSync(
-        `cd ${path.join(
-          destinationDir,
-          "node_modules"
-        )} && ln -s ${path.relative(
-          path.join(destinationDir, "node_modules"),
-          path.join(installedNpmPackagesDir, "node_modules", packageName)
-        )} ${packageName}`,
-        {
-          stdio: "inherit"
-        }
+      fs.symlinkSync(
+        path.relative(
+          newWorkingDir,
+          path.join(
+            oldWorkingDir,
+            installedNpmPackagesDir,
+            "node_modules",
+            packageName
+          )
+        ),
+        packageName
       );
     }
   }
+  process.chdir(oldWorkingDir);
 }
 
 const validFilePaths = new Set();
