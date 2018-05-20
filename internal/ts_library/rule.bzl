@@ -1,5 +1,10 @@
 load("@bazel_node//:defs.bzl", "JsLibraryInfo", "NpmPackagesInfo")
 
+TsLibraryInfo = provider(fields=[
+  # Directory containing the generated TypeScript definitions and compiled JavaScript.
+  "compiled_src_dir",
+])
+
 def _ts_library_impl(ctx):
   # Ensure that we depend on at most one npm_packages, since we don't want to
   # have conflicting package versions coming from separate node_modules
@@ -50,31 +55,59 @@ def _ts_library_impl(ctx):
       if JsLibraryInfo in dep
     ],
   )
-  # Create a directory that contains:
+
+  # Create two directories that contain:
   # - source files (including all internal dependencies)
   # - node_modules (symlinked to installed external dependencies directory)
+
+  # First version includes all dependencies' TypeScript definitions, which
+  # requires compiling everything up the tree (slow). Necessary to be able
+  # to compile TypeScript, including type verification.
   _ts_library_create_full_src(
     ctx,
     internal_deps,
     npm_packages,
+    ctx.outputs.compilation_src_dir,
+    True,
   )
-  # Compile the directory with `tsc`.
+
+  # Second version only includes dependencies' transpiled JavaScript code,
+  # which is a lot faster but does not do any type checking.
+  _ts_library_create_full_src(
+    ctx,
+    internal_deps,
+    npm_packages,
+    ctx.outputs.transpilation_src_dir,
+    False,
+  )
+  
+  # Compile the directory with `tsc` (slower but stricter).
   _ts_library_compile(
     ctx,
     npm_packages,
   )
+
+  # Transpile the directory with `tsc` (faster, no type checking).
+  _ts_library_transpile(
+    ctx,
+    npm_packages,
+  )
+
   return [
     JsLibraryInfo(
       build_file_path = ctx.build_file_path,
       srcs = [f.path for f in ctx.files.srcs],
-      full_src_dir = ctx.outputs.compiled_dir,
+      full_src_dir = ctx.outputs.transpiled_dir,
       internal_deps = internal_deps,
       npm_packages = extended_npm_packages,
       npm_packages_installed_dir = npm_packages[NpmPackagesInfo].installed_dir,
     ),
+    TsLibraryInfo(
+      compiled_src_dir = ctx.outputs.compiled_dir,
+    ),
   ]
 
-def _ts_library_create_full_src(ctx, internal_deps, npm_packages):
+def _ts_library_create_full_src(ctx, internal_deps, npm_packages, output_dir, for_compilation):
   ctx.actions.run_shell(
     inputs = [
       ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
@@ -82,10 +115,12 @@ def _ts_library_create_full_src(ctx, internal_deps, npm_packages):
       npm_packages[NpmPackagesInfo].installed_dir,
       ctx.file.tsconfig,
     ] + [
-      d[JsLibraryInfo].full_src_dir
+      d[TsLibraryInfo].compiled_src_dir
+      if for_compilation and TsLibraryInfo in d
+      else d[JsLibraryInfo].full_src_dir
       for d in internal_deps
     ] + ctx.files.srcs,
-    outputs = [ctx.outputs.full_src_dir],
+    outputs = [output_dir],
     command = "NODE_PATH=" + ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules node \"$@\"",
     use_default_shell_env = True,
     arguments = [
@@ -110,7 +145,11 @@ def _ts_library_create_full_src(ctx, internal_deps, npm_packages):
       # Source directories of the ts_library targets we depend on.
       ("|".join([
         (";".join(d[JsLibraryInfo].srcs)) + ":" +
-        d[JsLibraryInfo].full_src_dir.path
+        (
+          d[TsLibraryInfo].compiled_src_dir.path
+          if for_compilation and TsLibraryInfo in d
+          else d[JsLibraryInfo].full_src_dir.path
+        )
         for d in internal_deps
       ])),
       # List of source files, which will be processed ("import" statements
@@ -119,7 +158,7 @@ def _ts_library_create_full_src(ctx, internal_deps, npm_packages):
         f.path for f in ctx.files.srcs
       ])),
       # Directory in which to place the result.
-      ctx.outputs.full_src_dir.path,
+      output_dir.path,
     ],
   )
 
@@ -127,7 +166,7 @@ def _ts_library_compile(ctx, npm_packages):
   ctx.actions.run_shell(
     inputs = [
       ctx.file._ts_library_compile_script,
-      ctx.outputs.full_src_dir,
+      ctx.outputs.compilation_src_dir,
       ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
       npm_packages[NpmPackagesInfo].installed_dir,
     ],
@@ -138,10 +177,32 @@ def _ts_library_compile(ctx, npm_packages):
       # Run `node ts_library/compile.js`.
       ctx.file._ts_library_compile_script.path,
       # Directory in which the source code as well as tsconfig.json can be found.
-      ctx.outputs.full_src_dir.path,
+      ctx.outputs.compilation_src_dir.path,
       # Directory in which to generate the compiled JavaScript and TypeScript
       # definitions.
       ctx.outputs.compiled_dir.path,
+    ],
+  )
+
+def _ts_library_transpile(ctx, npm_packages):
+  ctx.actions.run_shell(
+    inputs = [
+      ctx.file._ts_library_transpile_script,
+      ctx.outputs.transpilation_src_dir,
+      ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
+      npm_packages[NpmPackagesInfo].installed_dir,
+    ],
+    outputs = [ctx.outputs.transpiled_dir],
+    command = "NODE_PATH=" + ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules node \"$@\"",
+    use_default_shell_env = True,
+    arguments = [
+      # Run `node ts_library/transpile.js`.
+      ctx.file._ts_library_transpile_script.path,
+      # Directory in which the source code as well as tsconfig.json can be found.
+      ctx.outputs.transpilation_src_dir.path,
+      # Directory in which to generate the transpiled JavaScript and TypeScript
+      # definitions.
+      ctx.outputs.transpiled_dir.path,
     ],
   )
 
@@ -179,12 +240,19 @@ ts_library = rule(
       single_file = True,
       default = Label("//internal/ts_library:compile.js"),
     ),
+    "_ts_library_transpile_script": attr.label(
+      allow_files = True,
+      single_file = True,
+      default = Label("//internal/ts_library:transpile.js"),
+    ),
     "_empty_npm_packages": attr.label(
       default = Label("@bazel_node//internal/npm_packages/empty:packages"),
     ),
   },
   outputs = {
+    "compilation_src_dir": "%{name}_compilation_src",
     "compiled_dir": "%{name}_compiled",
-    "full_src_dir": "%{name}_full_src",
+    "transpilation_src_dir": "%{name}_transpilation_src",
+    "transpiled_dir": "%{name}_transpiled",
   },
 )

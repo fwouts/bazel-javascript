@@ -5,4 +5,5 @@ exports_files([
   "create_full_src.js",
   "default_tsconfig.json",
   "rule.bzl",
+  "transpile.js",
 ])
