@@ -120,19 +120,22 @@ module.exports = (
       }
     ]
   },
-  // Some libraries import Node modules but don't use them in the browser.
-  // Tell Webpack to provide empty mocks for them so importing them works.
   node:
     ${JSON.stringify(
-      target.indexOf("node") === -1
-        ? {
-            dgram: "empty",
-            fs: "empty",
-            net: "empty",
-            tls: "empty",
-            child_process: "empty"
-          }
-        : {},
+      {
+        // Webpack complains when it encounters "module".
+        module: "empty",
+        // Some libraries import Node modules but don't use them in the browser.
+        // Tell Webpack to provide empty mocks for them so importing them works.
+        ...(target.indexOf("node") === -1 && {
+          dgram: "empty",
+          fs: "empty",
+          net: "empty",
+          tls: "empty",
+          child_process: "empty",
+          module: "empty"
+        })
+      },
       null,
       2
     )},
