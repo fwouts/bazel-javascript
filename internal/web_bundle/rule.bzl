@@ -79,34 +79,59 @@ def _web_bundle_impl(ctx):
 const fs = require("fs-extra");
 const path = require("path");
 const serve = require("webpack-serve");
+const chokidar = require("chokidar");
+
+// We cannot build directly from the source directory as Webpack struggles to
+// watch it correctly. Instead, we watch the source directory ourselves with
+// chokidar (below), and copy it whenever it changes.
+const bazelSrcDir = "{source_dir}";
+const srcDir = "devserver-src";
+
+// copySrcSoon() will ensures that copySrc() is only called at most once per
+// second.
+let copySoonTimeout = null;
+function copySrcSoon() {{
+  if (copySoonTimeout) {{
+    clearTimeout(copySoonTimeout);
+  }}
+  copySoonTimeout = setTimeout(copySrc, 1000);
+}}
+
+// copySrc() copies files from Bazel's source to our source, which will be
+// picked up by Webpack.
+function copySrc() {{
+  fs.copySync(bazelSrcDir, srcDir, {{
+    dereference: true,
+    overwrite: true,
+  }});
+}}
+
+// Note: path.dirname() is essential here. Watching the directory directly
+// does not work, probably because of the symlinks that Bazel shuffles around.
+chokidar.watch(path.dirname(bazelSrcDir), {{
+  ignoreInitial: true,
+  followSymlinks: true,
+}}).on("all", copySrcSoon);
+copySrc();
 
 const configGenerator = require(path.resolve("{webpack_config}"));
 const config = configGenerator(
-  "{source_dir}",
+  srcDir,
   "{output_bundle_dir}",
-  "{dependencies_packages_dir}",
+  path.resolve("{dependencies_packages_dir}"),
   "{internal_packages_dir}",
   "{html_template}",
 );
-
 serve({{
   config,
-}}).then(server => {{
-  server.on("build-started", ({{ compiler }}) => {{
-    compiler.hooks.watchRun.tapPromise("check-entry-exists", async () => {{
-      while (!fs.existsSync(config.entry[0])) {{
-        console.log("Waiting for config.entry[0] to be compiled...");
-        await new Promise(resolve => setTimeout(resolve, 1000));
-      }}
-    }})
-  }});
+  hot: true,
 }});
 """.format(
       webpack_config = webpack_config.short_path,
       # Directory containing the compiled source code of the js_library.
       source_dir = ctx.attr.lib[JsLibraryInfo].full_src_dir.short_path,
       # Directory in which to place the compiled JavaScript.
-      output_bundle_dir = ctx.outputs.bundle_dir.path,
+      output_bundle_dir = ctx.outputs.bundle_dir.short_path,
       # Directory containing external NPM dependencies the code depends on.
       dependencies_packages_dir = ctx.attr.lib[JsLibraryInfo].npm_packages_installed_dir.short_path,
       # Directory containing internal NPM dependencies (for build tools).

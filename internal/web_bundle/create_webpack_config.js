@@ -27,7 +27,7 @@ module.exports = (
   loadersNpmPackagesDir,
   htmlTemplatePath,
 ) => ({
-  entry: (sourceDir.startsWith("/tmp/") ? "" : "./") + path.join(
+  entry: (sourceDir.startsWith("/") ? "" : "./") + path.join(
     sourceDir,
     path.dirname("${libBuildfilePath}"),
     "${entry}",
@@ -57,12 +57,10 @@ module.exports = (
               {
                 loader: "css-loader",
                 options: {
-                  importLoaders: 1,
                   modules: true,
                   camelCase: true
                 }
-              },
-              "postcss-loader"
+              }
             ]
           },
           {
@@ -72,12 +70,11 @@ module.exports = (
               {
                 loader: "css-loader",
                 options: {
-                  importLoaders: 2,
+                  importLoaders: 1,
                   modules: true,
                   camelCase: true
                 }
               },
-              "postcss-loader",
               "sass-loader"
             ]
           },
@@ -85,13 +82,7 @@ module.exports = (
             test: /\\.css$/,
             use: [
               "style-loader",
-              {
-                loader: "css-loader",
-                options: {
-                  importLoaders: 1
-                }
-              },
-              "postcss-loader"
+              "css-loader"
             ]
           },
           {
@@ -101,10 +92,9 @@ module.exports = (
               {
                 loader: "css-loader",
                 options: {
-                  importLoaders: 2
+                  importLoaders: 1
                 }
               },
-              "postcss-loader",
               "sass-loader"
             ]
           },
