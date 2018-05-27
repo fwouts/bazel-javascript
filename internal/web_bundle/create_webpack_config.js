@@ -19,6 +19,9 @@ const splitChunks = splitChunksStr === "1";
 const config = `const path = require("path");
 const webpack = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 
 module.exports = (
   sourceDir,
@@ -45,7 +48,45 @@ module.exports = (
     }
   },
   mode: "${mode}",
+  bail: ${mode === "production" ? "true" : "false"},
   target: "${target}",
+  optimization: {
+    ${
+      mode === "production"
+        ? `minimizer: [
+      new UglifyJsPlugin({
+        uglifyOptions: {
+          parse: {
+            ecma: 8,
+          },
+          compress: {
+            ecma: 5,
+            warnings: false,
+            comparisons: false,
+          },
+          mangle: {
+            safari10: true,
+          },
+          output: {
+            ecma: 5,
+            comments: false,
+            ascii_only: true,
+          },
+        },
+        parallel: true,
+        cache: true,
+        sourceMap: true,
+      }),
+      new OptimizeCSSAssetsPlugin(),
+    ],`
+        : ""
+    }
+    splitChunks: {
+      chunks: 'all',
+      name: 'vendors',
+    },
+    runtimeChunk: true,
+  },
   module: {
     rules: [
       {
@@ -144,15 +185,42 @@ module.exports = (
   plugins: [
     new HtmlWebpackPlugin({
       template: htmlTemplatePath,
-      inject: true
+      inject: true,
+      ${
+        mode === "production"
+          ? `minify: {
+        removeComments: true,
+        collapseWhitespace: true,
+        removeRedundantAttributes: true,
+        useShortDoctype: true,
+        removeEmptyAttributes: true,
+        removeStyleLinkTypeAttributes: true,
+        keepClosingSlash: true,
+        minifyJS: true,
+        minifyCSS: true,
+        minifyURLs: true,
+      }`
+          : ""
+      }
     }),
+    new webpack.DefinePlugin({
+      NODE_ENV: "${mode}",
+    }),
+    ${
+      mode === "production"
+        ? `new MiniCssExtractPlugin({
+      filename: 'static/css/[name].[contenthash:8].css',
+      chunkFilename: 'static/css/[name].[contenthash:8].chunk.css',
+    }),`
+        : ""
+    }
     ${
       // Chunk splitting is enabled by default.
       splitChunks
-        ? ""
-        : `new webpack.optimize.LimitChunkCountPlugin({
+        ? `new webpack.optimize.LimitChunkCountPlugin({
       maxChunks: 1
     }),`
+        : ""
     }
   ]
 });

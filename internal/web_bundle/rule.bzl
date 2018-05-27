@@ -122,6 +122,12 @@ const config = configGenerator(
   "{internal_packages_dir}",
   "{html_template}",
 );
+
+if (config.mode === "production") {{
+  console.error("Development server is not available when mode is 'production'.");
+  process.exit(1);
+}}
+
 serve({{
   config,
   hot: true,
