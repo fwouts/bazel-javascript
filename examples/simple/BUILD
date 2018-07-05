@@ -1,6 +1,6 @@
 package(default_visibility = ["//visibility:public"])
 
-load("@bazel_node//:defs.bzl", "npm_packages", "js_binary")
+load("@bazel_javascript//:defs.bzl", "npm_packages", "js_binary")
 
 js_binary(
   name = "app",

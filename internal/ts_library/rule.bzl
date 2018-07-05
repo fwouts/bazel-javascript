@@ -1,4 +1,4 @@
-load("@bazel_node//:defs.bzl", "JsLibraryInfo", "NpmPackagesInfo")
+load("@bazel_javascript//:defs.bzl", "JsLibraryInfo", "NpmPackagesInfo")
 
 TsLibraryInfo = provider(fields=[
   # Directory containing the generated TypeScript definitions and compiled JavaScript.
@@ -80,7 +80,7 @@ def _ts_library_impl(ctx):
     ctx.outputs.transpilation_src_dir,
     False,
   )
-  
+
   # Compile the directory with `tsc` (slower but stricter).
   _ts_library_compile(
     ctx,
@@ -246,7 +246,7 @@ ts_library = rule(
       default = Label("//internal/ts_library:transpile.js"),
     ),
     "_empty_npm_packages": attr.label(
-      default = Label("@bazel_node//internal/npm_packages/empty:packages"),
+      default = Label("@bazel_javascript//internal/npm_packages/empty:packages"),
     ),
   },
   outputs = {

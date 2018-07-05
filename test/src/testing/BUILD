@@ -1,6 +1,6 @@
 package(default_visibility = ["//visibility:public"])
 
-load("@bazel_node//:defs.bzl", "js_test")
+load("@bazel_javascript//:defs.bzl", "js_test")
 load("@bazel_typescript//:defs.bzl", "ts_library")
 
 ts_library(

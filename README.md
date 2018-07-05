@@ -4,12 +4,12 @@
 
 - [ts_library](#ts_library)
 
-Also makes use of rules from [bazel-node](https://github.com/zenclabs/bazel-node):
-- [js_binary](https://github.com/zenclabs/bazel-node#js_binary)
-- [js_script](https://github.com/zenclabs/bazel-node#js_script)
-- [js_test](https://github.com/zenclabs/bazel-node#js_test)
-- [npm_packages](https://github.com/zenclabs/bazel-node#npm_packages)
-- [npm_binary](https://github.com/zenclabs/bazel-node#npm_binary)
+Also makes use of rules from [bazel-javascript](https://github.com/zenclabs/bazel-javascript):
+- [js_binary](https://github.com/zenclabs/bazel-javascript#js_binary)
+- [js_script](https://github.com/zenclabs/bazel-javascript#js_script)
+- [js_test](https://github.com/zenclabs/bazel-javascript#js_test)
+- [npm_packages](https://github.com/zenclabs/bazel-javascript#npm_packages)
+- [npm_binary](https://github.com/zenclabs/bazel-javascript#npm_binary)
 
 ## Overview
 
@@ -32,8 +32,8 @@ git_repository(
 )
 
 git_repository(
-  name = "bazel_node",
-  remote = "https://github.com/zenclabs/bazel-node.git",
+  name = "bazel_javascript",
+  remote = "https://github.com/zenclabs/bazel-javascript.git",
   tag = "0.0.14",
 )
 ```
@@ -74,7 +74,7 @@ Suppose you have the following directory structure:
 ```python
 package(default_visibility = ["//visibility:public"])
 
-load("@bazel_node//:defs.bzl", "js_binary", "npm_packages")
+load("@bazel_javascript//:defs.bzl", "js_binary", "npm_packages")
 
 js_binary(
   name = "app",
