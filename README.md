@@ -1,5 +1,7 @@
 # TypeScript rules for Bazel
 
+[![CircleCI](https://circleci.com/gh/zenclabs/bazel-typescript.svg?style=svg)](https://circleci.com/gh/zenclabs/bazel-typescript)
+
 ## Rules
 
 - [ts_library](#ts_library)
