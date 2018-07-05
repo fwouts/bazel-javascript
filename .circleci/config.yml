@@ -11,13 +11,13 @@ jobs:
     working_directory: ~/repo
 
     steps:
+      - checkout
+
       - run:
           command: |
             sudo apt-get install pkg-config zip g++ zlib1g-dev unzip python
             wget https://github.com/bazelbuild/bazel/releases/download/0.15.0/bazel-0.15.0-installer-darwin-x86_64.sh
             chmod +x bazel-0.15.0-installer-darwin-x86_64.sh
             sudo ./bazel-0.15.0-installer-darwin-x86_64.sh
-
-      - checkout
 
       - run: bazel build //...
