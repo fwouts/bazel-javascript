@@ -14,6 +14,7 @@ jobs:
       - checkout
 
       - run:
+          name: Install Bazel
           command: |
             sudo apt-get install pkg-config zip g++ zlib1g-dev unzip python
             BAZEL_VERSION=0.15.0
@@ -22,4 +23,10 @@ jobs:
             chmod +x $BAZEL_INSTALL_SCRIPT
             sudo ./$BAZEL_INSTALL_SCRIPT
 
-      - run: bazel build //...
+      - run:
+          name: Build
+          command: bazel build //...
+
+      - run:
+          name: Test
+          command: bazel test //...
