@@ -64,7 +64,7 @@ Suppose you have the following directory structure:
 ```python
 package(default_visibility = ["//visibility:public"])
 
-load("//:defs.bzl", "js_binary", "npm_packages")
+load("@bazel_javascript//:defs.bzl", "js_binary", "npm_packages")
 
 js_binary(
   name = "app",
@@ -92,7 +92,7 @@ console.log(GREETING);
 ```python
 package(default_visibility = ["//visibility:public"])
 
-load("//:defs.bzl", "js_library")
+load("@bazel_javascript//:defs.bzl", "js_library")
 
 js_library(
   name = "main",
@@ -120,7 +120,7 @@ export const GREETING = t.build();
 ```python
 package(default_visibility = ["//visibility:public"])
 
-load("//:defs.bzl", "js_library")
+load("@bazel_javascript//:defs.bzl", "js_library")
 
 js_library(
   name = "constants",
