@@ -102,7 +102,7 @@ console.log(GREETING);
 ```python
 package(default_visibility = ["//visibility:public"])
 
-load("//:defs.bzl", "ts_library")
+load("@bazel_typescript//:defs.bzl", "ts_library")
 
 ts_library(
   name = "main",
@@ -130,7 +130,7 @@ export const GREETING = t.build();
 ```python
 package(default_visibility = ["//visibility:public"])
 
-load("//:defs.bzl", "ts_library")
+load("@bazel_typescript//:defs.bzl", "ts_library")
 
 ts_library(
   name = "constants",
