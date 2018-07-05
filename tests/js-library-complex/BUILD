@@ -1,6 +1,6 @@
 package(default_visibility = ["//visibility:public"])
 
-load("@bazel_node//:defs.bzl", "js_library", "npm_packages")
+load("@bazel_javascript//:defs.bzl", "js_library", "npm_packages")
 
 npm_packages(
   name = "packages",

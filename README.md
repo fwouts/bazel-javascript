@@ -25,8 +25,8 @@ Next, create a `WORKSPACE` file in your project root containing:
 
 ```python
 git_repository(
-  name = "bazel_node",
-  remote = "https://github.com/zenclabs/bazel-node.git",
+  name = "bazel_javascript",
+  remote = "https://github.com/zenclabs/bazel-javascript.git",
   tag = "0.0.14",
 )
 ```
@@ -64,7 +64,7 @@ Suppose you have the following directory structure:
 ```python
 package(default_visibility = ["//visibility:public"])
 
-load("@bazel_node//:defs.bzl", "js_binary", "npm_packages")
+load("@bazel_javascript//:defs.bzl", "js_binary", "npm_packages")
 
 js_binary(
   name = "app",
@@ -92,7 +92,7 @@ console.log(GREETING);
 ```python
 package(default_visibility = ["//visibility:public"])
 
-load("@bazel_node//:defs.bzl", "js_library")
+load("@bazel_javascript//:defs.bzl", "js_library")
 
 js_library(
   name = "main",
@@ -120,7 +120,7 @@ export const GREETING = t.build();
 ```python
 package(default_visibility = ["//visibility:public"])
 
-load("@bazel_node//:defs.bzl", "js_library")
+load("@bazel_javascript//:defs.bzl", "js_library")
 
 js_library(
   name = "constants",

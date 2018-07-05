@@ -1,6 +1,6 @@
 package(default_visibility = ["//visibility:public"])
 
-load("@bazel_node//:defs.bzl", "js_library", "js_script", "js_test")
+load("@bazel_javascript//:defs.bzl", "js_library", "js_script", "js_test")
 
 # This is a script, producing an executable (bazel run).
 js_script(
