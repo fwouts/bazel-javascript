@@ -16,8 +16,10 @@ jobs:
       - run:
           command: |
             sudo apt-get install pkg-config zip g++ zlib1g-dev unzip python
-            wget https://github.com/bazelbuild/bazel/releases/download/0.15.0/bazel-0.15.0-installer-darwin-x86_64.sh
-            chmod +x bazel-0.15.0-installer-darwin-x86_64.sh
-            sudo ./bazel-0.15.0-installer-darwin-x86_64.sh
+            BAZEL_VERSION=0.15.0
+            BAZEL_INSTALL_SCRIPT=bazel-$BAZEL_VERSION-installer-linux-x86_64.sh
+            wget https://github.com/bazelbuild/bazel/releases/download/$BAZEL_VERSION/$BAZEL_INSTALL_SCRIPT
+            chmod +x $BAZEL_INSTALL_SCRIPT
+            sudo ./$BAZEL_INSTALL_SCRIPT
 
       - run: bazel build //...
