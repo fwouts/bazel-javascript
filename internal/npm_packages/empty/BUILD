@@ -1,6 +1,6 @@
 package(default_visibility = ["//visibility:public"])
 
-load("@bazel_javascript//:defs.bzl", "npm_packages")
+load("//:defs.bzl", "npm_packages")
 
 # This rule is used by ts_library targets that don't depend on any npm_packages
 # targets (because they don't use any external NPM packages).

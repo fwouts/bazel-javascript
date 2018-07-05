@@ -1,6 +1,6 @@
 package(default_visibility = ["//visibility:public"])
 
-load("@bazel_javascript//:defs.bzl", "npm_binary")
+load("//:defs.bzl", "npm_binary")
 
 npm_binary(
   name = "cli",

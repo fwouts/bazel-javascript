@@ -1,6 +1,6 @@
 package(default_visibility = ["//visibility:public"])
 
-load("@bazel_javascript//:defs.bzl", "js_library")
+load("//:defs.bzl", "js_library")
 
 js_library(
   name = "main",

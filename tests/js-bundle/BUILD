@@ -1,6 +1,6 @@
 package(default_visibility = ["//visibility:public"])
 
-load("@bazel_javascript//:defs.bzl", "web_bundle")
+load("//:defs.bzl", "web_bundle")
 
 web_bundle(
   name = "bundle",
