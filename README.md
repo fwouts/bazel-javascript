@@ -1,5 +1,7 @@
 # JavaScript rules for Bazel
 
+[![CircleCI](https://circleci.com/gh/zenclabs/bazel-javascript/tree/master.svg?style=svg)](https://circleci.com/gh/zenclabs/bazel-javascript/tree/master)
+
 ## Rules
 
 - [js_library](#js_library)
