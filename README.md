@@ -34,7 +34,7 @@ git_repository(
 git_repository(
   name = "bazel_javascript",
   remote = "https://github.com/zenclabs/bazel-javascript.git",
-  tag = "0.0.14",
+  tag = "0.0.15",
 )
 ```
 
