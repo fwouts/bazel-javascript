@@ -6,4 +6,5 @@ web_bundle(
   name = "bundle",
   lib = "//tests/js-bundle/src:main",
   entry = "main.js",
+  target = "node"
 )
