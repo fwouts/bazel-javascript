@@ -57,7 +57,6 @@ const [
   destinationDir
 ] = process.argv;
 
-const buildfileDir = path.dirname(buildfilePath);
 const required = new Set(joinedRequires.split("|"));
 const internalDeps = joinedInternalDeps.split("|");
 const srcs = joinedSrcs.split("|");
@@ -68,10 +67,9 @@ const packageJson = fs.readFileSync(
   path.join(installedNpmPackagesDir, "package.json")
 );
 const packageDefinition = JSON.parse(packageJson);
-const deps = {
-  ...(packageDefinition.dependencies || {}),
-  ...(packageDefinition.devDependencies || {})
-};
+const deps = {};
+Object.assign(deps, packageDefinition.dependencies || {});
+Object.assign(deps, packageDefinition.devDependencies || {});
 for (const name of required) {
   if (!name) {
     // Occurs when there are no dependencies.
@@ -348,16 +346,18 @@ Make sure to specify requires = ["${packageName}"] in ${targetLabel}.
   fs.writeFileSync(destinationFilePath, updatedFile, "utf8");
 }
 
+const compilerOptions = {};
+Object.assign(compilerOptions, originalTsConfig.compilerOptions || {});
+Object.assign(compilerOptions, {
+  moduleResolution: "node",
+  declaration: true,
+  rootDir: "."
+});
 fs.writeFileSync(
   path.join(destinationDir, "tsconfig.json"),
   JSON.stringify(
     {
-      compilerOptions: {
-        ...(originalTsConfig.compilerOptions || {}),
-        moduleResolution: "node",
-        declaration: true,
-        rootDir: "."
-      },
+      compilerOptions,
       files: srcs.filter(src => src.endsWith(".ts") || src.endsWith(".tsx"))
     },
     null,
