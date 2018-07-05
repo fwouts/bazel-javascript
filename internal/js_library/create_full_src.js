@@ -67,10 +67,9 @@ const packageJson = fs.readFileSync(
   path.join(installedNpmPackagesDir, "package.json")
 );
 const packageDefinition = JSON.parse(packageJson);
-const deps = {
-  ...(packageDefinition.dependencies || {}),
-  ...(packageDefinition.devDependencies || {})
-};
+const deps = {};
+Object.assign(deps, packageDefinition.dependencies || {});
+Object.assign(deps, packageDefinition.devDependencies || {});
 for (const name of required) {
   if (!name) {
     // Occurs when there are no dependencies.
