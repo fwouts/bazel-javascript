@@ -5,7 +5,7 @@ def _web_bundle_impl(ctx):
   webpack_config = ctx.actions.declare_file(ctx.label.name + ".webpack.config.js")
 
   # Create the Webpack config file.
-  ctx.actions.run_shell(
+  ctx.actions.run(
     inputs = [
       ctx.file._web_bundle_create_webpack_config_script,
       ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
@@ -16,8 +16,10 @@ def _web_bundle_impl(ctx):
     outputs = [
       webpack_config,
     ],
-    command = "NODE_PATH=" + ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules node \"$@\"",
-    use_default_shell_env = True,
+    executable = ctx.file._internal_nodejs,
+    env = {
+      "NODE_PATH": ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules"
+    },
     arguments = [
       # Run `node web_bundle/create_webpack_config.js`.
       ctx.file._web_bundle_create_webpack_config_script.path,
@@ -39,7 +41,7 @@ def _web_bundle_impl(ctx):
   )
 
   # Compile using the Webpack config.
-  ctx.actions.run_shell(
+  ctx.actions.run(
     inputs = [
       ctx.file._web_bundle_compile_script,
       ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
@@ -51,8 +53,10 @@ def _web_bundle_impl(ctx):
     outputs = [
       ctx.outputs.bundle_dir,
     ],
-    command = "NODE_PATH=" + ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules node \"$@\"",
-    use_default_shell_env = True,
+    executable = ctx.file._internal_nodejs,
+    env = {
+      "NODE_PATH": ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules"
+    },
     arguments = [
       # Run `node web_bundle/compile.js`.
       ctx.file._web_bundle_compile_script.path,
@@ -149,7 +153,7 @@ serve({{
   ctx.actions.write(
     output = ctx.outputs.devserver,
     is_executable = True,
-    content = "NODE_PATH=" + ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.short_path + "/node_modules node " + webpack_devserver_js.short_path,
+    content = "NODE_PATH=" + ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.short_path + "/node_modules " + ctx.file._internal_nodejs.path + " " + webpack_devserver_js.short_path,
   )
 
   return [
@@ -157,6 +161,7 @@ serve({{
       executable = ctx.outputs.devserver,
       runfiles = ctx.runfiles(
         files = [
+          ctx.file._internal_nodejs,
           ctx.file._web_bundle_compile_script,
           webpack_devserver_js,
           ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
@@ -219,6 +224,11 @@ web_bundle_internal = rule(
         "jsonp",
       ],
       default = "umd",
+    ),
+    "_internal_nodejs": attr.label(
+      allow_files = True,
+      single_file = True,
+      default = Label("@nodejs//:node"),
     ),
     "_internal_packages": attr.label(
       default = Label("//internal:packages"),

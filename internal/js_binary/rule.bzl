@@ -2,7 +2,7 @@ load("//internal/js_library:rule.bzl", "JsLibraryInfo")
 load("//internal/npm_packages:rule.bzl", "NpmPackagesInfo")
 
 def _js_binary_impl(ctx):
-  ctx.actions.run_shell(
+  ctx.actions.run(
     inputs = [
       ctx.file._js_binary_compile_script,
       ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
@@ -12,8 +12,10 @@ def _js_binary_impl(ctx):
     outputs = [
       ctx.outputs.executable_file,
     ],
-    command = "NODE_PATH=" + ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules node \"$@\"",
-    use_default_shell_env = True,
+    executable = ctx.file._internal_nodejs,
+    env = {
+      "NODE_PATH": ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules"
+    },
     arguments = [
       # Run `node js_binary/compile.js`.
       ctx.file._js_binary_compile_script.path,
@@ -51,6 +53,11 @@ js_binary = rule(
         "production",
       ],
       default = "none",
+    ),
+    "_internal_nodejs": attr.label(
+      allow_files = True,
+      single_file = True,
+      default = Label("@nodejs//:node"),
     ),
     "_internal_packages": attr.label(
       default = Label("//internal:packages"),
