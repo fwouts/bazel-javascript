@@ -1,26 +1,26 @@
 # If you choose to copy this example, make sure to use the git_repository()
 # rules below instead.
-local_repository(
-  name = "bazel_typescript",
-  path = "../..",
-)
-
-local_repository(
-  name = "bazel_javascript",
-  path = "../../../bazel-javascript",
-)
-
-# git_repository(
+# local_repository(
 #   name = "bazel_typescript",
-#   remote = "https://github.com/zenclabs/bazel-typescript.git",
-#   tag = "0.0.26",
+#   path = "../..",
 # )
 
-# git_repository(
+# local_repository(
 #   name = "bazel_javascript",
-#   remote = "https://github.com/zenclabs/bazel-javascript.git",
-#   tag = "0.0.17",
+#   path = "../../../bazel-javascript",
 # )
+
+git_repository(
+  name = "bazel_typescript",
+  remote = "https://github.com/zenclabs/bazel-typescript.git",
+  tag = "0.0.26",
+)
+
+git_repository(
+  name = "bazel_javascript",
+  remote = "https://github.com/zenclabs/bazel-javascript.git",
+  tag = "0.0.17",
+)
 
 git_repository(
     name = "build_bazel_rules_nodejs",
