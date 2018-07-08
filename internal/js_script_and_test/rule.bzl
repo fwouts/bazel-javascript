@@ -16,7 +16,7 @@ def _js_script_impl(ctx):
   # performance by copy-pasting node_modules with hundreds of packages.
   #
   # Also generate a shell script that will run `yarn start`.
-  ctx.actions.run_shell(
+  ctx.actions.run(
     inputs = [
       ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
       ctx.attr.lib[JsLibraryInfo].npm_packages_installed_dir,
@@ -27,8 +27,10 @@ def _js_script_impl(ctx):
       ctx.outputs.compiled_dir,
       ctx.outputs.executable_file,
     ],
-    command = "NODE_PATH=" + ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules node \"$@\"",
-    use_default_shell_env = True,
+    executable = ctx.file._internal_nodejs,
+    env = {
+      "NODE_PATH": ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules"
+    },
     arguments = [
       # Run `node js_script/compile.js`.
       ctx.file._js_script_compile_script.path,
@@ -70,6 +72,11 @@ js_script = rule(
     "lib": attr.label(
       providers = [JsLibraryInfo],
     ),
+    "_internal_nodejs": attr.label(
+      allow_files = True,
+      single_file = True,
+      default = Label("@nodejs//:node"),
+    ),
     "_internal_packages": attr.label(
       default = Label("//internal:packages"),
     ),
@@ -94,6 +101,11 @@ js_test = rule(
     "cmd": attr.string(),
     "lib": attr.label(
       providers = [JsLibraryInfo],
+    ),
+    "_internal_nodejs": attr.label(
+      allow_files = True,
+      single_file = True,
+      default = Label("@nodejs//:node"),
     ),
     "_internal_packages": attr.label(
       default = Label("//internal:packages"),

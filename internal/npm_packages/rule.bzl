@@ -3,15 +3,14 @@ NpmPackagesInfo = provider(fields=[
 ])
 
 def _npm_packages_impl(ctx):
-  ctx.actions.run_shell(
+  ctx.actions.run(
     inputs = [
       ctx.file._npm_packages_install,
       ctx.file.package_json,
       ctx.file.yarn_lock,
     ],
     outputs = [ctx.outputs.installed_dir],
-    command = "node \"$@\"",
-    use_default_shell_env = True,
+    executable = ctx.file._internal_nodejs,
     arguments = [
       # Run `node npm_packages/install.js`.
       ctx.file._npm_packages_install.path,
@@ -39,6 +38,11 @@ npm_packages = rule(
     "yarn_lock": attr.label(
       allow_files = True,
       single_file = True,
+    ),
+    "_internal_nodejs": attr.label(
+      allow_files = True,
+      single_file = True,
+      default = Label("@nodejs//:node"),
     ),
     "_npm_packages_install": attr.label(
       allow_files = True,

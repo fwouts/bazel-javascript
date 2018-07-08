@@ -89,7 +89,7 @@ def _js_library_impl(ctx):
   ]
 
 def _js_library_create_full_src(ctx, internal_deps, npm_packages):
-  ctx.actions.run_shell(
+  ctx.actions.run(
     inputs = [
       ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
       ctx.file._js_library_create_full_src_script,
@@ -99,8 +99,10 @@ def _js_library_create_full_src(ctx, internal_deps, npm_packages):
       for d in internal_deps
     ] + ctx.files.srcs,
     outputs = [ctx.outputs.full_src_dir],
-    command = "NODE_PATH=" + ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules node \"$@\"",
-    use_default_shell_env = True,
+    executable = ctx.file._internal_nodejs,
+    env = {
+      "NODE_PATH": ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules"
+    },
     arguments = [
       # Run `node process.js`.
       ctx.file._js_library_create_full_src_script.path,
@@ -135,7 +137,7 @@ def _js_library_create_full_src(ctx, internal_deps, npm_packages):
   )
 
 def _js_library_compile(ctx, npm_packages):
-  ctx.actions.run_shell(
+  ctx.actions.run(
     inputs = [
       ctx.file._js_library_compile_script,
       ctx.outputs.full_src_dir,
@@ -143,8 +145,10 @@ def _js_library_compile(ctx, npm_packages):
       npm_packages[NpmPackagesInfo].installed_dir,
     ],
     outputs = [ctx.outputs.compiled_dir],
-    command = "NODE_PATH=" + ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules node \"$@\"",
-    use_default_shell_env = True,
+    executable = ctx.file._internal_nodejs,
+    env = {
+      "NODE_PATH": ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules"
+    },
     arguments = [
       # Run `node js_library/compile.js`.
       ctx.file._js_library_compile_script.path,
@@ -173,6 +177,11 @@ js_library = rule(
     ),
     "_internal_packages": attr.label(
       default = Label("//internal:packages"),
+    ),
+    "_internal_nodejs": attr.label(
+      allow_files = True,
+      single_file = True,
+      default = Label("@nodejs//:node"),
     ),
     "_js_library_create_full_src_script": attr.label(
       allow_files = True,
