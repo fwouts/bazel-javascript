@@ -1,0 +1,27 @@
+package(default_visibility = ["//visibility:public"])
+
+load("//:defs.bzl", "npm_packages", "web_bundle")
+
+web_bundle(
+  name = "app-bundle-dev",
+  lib = "//tests/examples/react-app/src:index",
+  entry = "index.js",
+  mode = "development",
+  target = "web",
+  html_template = "//tests/examples/react-app/public:index.html",
+)
+
+web_bundle(
+  name = "app-bundle-prod",
+  lib = "//tests/examples/react-app/src:index",
+  entry = "index.js",
+  mode = "production",
+  target = "web",
+  html_template = "//tests/examples/react-app/public:index.html",
+)
+
+npm_packages(
+  name = "packages",
+  package_json = ":package.json",
+  yarn_lock = ":yarn.lock",
+)
