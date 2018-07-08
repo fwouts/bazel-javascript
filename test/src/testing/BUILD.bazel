@@ -8,6 +8,7 @@ ts_library(
   srcs = [
     "sum.ts",
   ],
+  tsconfig = "//test:tsconfig.json",
 )
 
 ts_library(
@@ -23,6 +24,7 @@ ts_library(
     "jest",
     "@types/jest",
   ],
+  tsconfig = "//test:tsconfig.json",
 )
 
 js_test(
