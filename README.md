@@ -66,14 +66,14 @@ Suppose you have the following directory structure:
 ```
 [workspace]/
   WORKSPACE
-  BUILD
+  BUILD.bazel
   package.json
   yarn.lock
   src/
-    BUILD
+    BUILD.bazel
     main.ts
     util/
-      BUILD
+      BUILD.bazel
       constants.ts
 ```
 
@@ -90,7 +90,7 @@ Suppose you have the following directory structure:
 }
 ```
 
-`BUILD`
+`BUILD.bazel`
 
 ```python
 package(default_visibility = ["//visibility:public"])
@@ -118,7 +118,7 @@ import { GREETING } from "./util/constants";
 console.log(GREETING);
 ```
 
-`src/BUILD`
+`src/BUILD.bazel`
 
 ```python
 package(default_visibility = ["//visibility:public"])
@@ -146,7 +146,7 @@ t.append("Hello ", process.argv[2] || "Daniel");
 export const GREETING = t.build();
 ```
 
-`src/util/BUILD`
+`src/util/BUILD.bazel`
 
 ```python
 package(default_visibility = ["//visibility:public"])

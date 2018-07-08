@@ -135,7 +135,7 @@ def _ts_library_create_full_src(ctx, internal_deps, npm_packages, output_dir, fo
       # Directory containing node_modules/ with all external NPM packages
       # installed.
       npm_packages[NpmPackagesInfo].installed_dir.path,
-      # BUILD file path
+      # BUILD.bazel file path
       ctx.build_file_path,
       # tsconfig.json path.
       ctx.file.tsconfig.path,
