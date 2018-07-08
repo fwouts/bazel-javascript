@@ -30,7 +30,7 @@ Next, create a `WORKSPACE` file in your project root containing:
 git_repository(
   name = "bazel_typescript",
   remote = "https://github.com/zenclabs/bazel-typescript.git",
-  tag = "0.0.24",
+  tag = "0.0.25",
 )
 
 git_repository(
