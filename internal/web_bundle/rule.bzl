@@ -23,7 +23,7 @@ def _web_bundle_impl(ctx):
     arguments = [
       # Run `node web_bundle/create_webpack_config.js`.
       ctx.file._web_bundle_create_webpack_config_script.path,
-      # Path of the directory containing the lib's BUILD file.
+      # Path of the directory containing the lib's BUILD.bazel file.
       ctx.attr.lib[JsLibraryInfo].build_file_path,
       # Entry point for Webpack (e.g. "main.ts").
       ctx.attr.entry,

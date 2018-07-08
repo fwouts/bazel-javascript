@@ -19,7 +19,7 @@ def _js_binary_impl(ctx):
     arguments = [
       # Run `node js_binary/compile.js`.
       ctx.file._js_binary_compile_script.path,
-      # Path of the directory containing the lib's BUILD file.
+      # Path of the directory containing the lib's BUILD.bazel file.
       ctx.attr.lib[JsLibraryInfo].build_file_path,
       # Entry point for Webpack (e.g. "main.ts").
       ctx.attr.entry,

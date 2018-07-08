@@ -1,7 +1,7 @@
 load("//internal/npm_packages:rule.bzl", "NpmPackagesInfo")
 
 JsLibraryInfo = provider(fields=[
-  # Path of the BUILD file relative to the workspace root.
+  # Path of the BUILD.bazel file relative to the workspace root.
   "build_file_path",
   # Directory containing the JavaScript files (and potentially other assets).
   "full_src_dir",
@@ -113,7 +113,7 @@ def _js_library_create_full_src(ctx, internal_deps, npm_packages):
       # Directory containing node_modules/ with all external NPM packages
       # installed.
       npm_packages[NpmPackagesInfo].installed_dir.path,
-      # BUILD file path.
+      # BUILD.bazel file path.
       ctx.build_file_path,
       # List of NPM package names used by the source files.
       ("|".join([
