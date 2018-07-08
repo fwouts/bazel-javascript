@@ -108,7 +108,7 @@ def _ts_library_impl(ctx):
   ]
 
 def _ts_library_create_full_src(ctx, internal_deps, npm_packages, output_dir, for_compilation):
-  ctx.actions.run_shell(
+  ctx.actions.run(
     inputs = [
       ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
       ctx.file._ts_library_create_full_src_script,
@@ -121,8 +121,10 @@ def _ts_library_create_full_src(ctx, internal_deps, npm_packages, output_dir, fo
       for d in internal_deps
     ] + ctx.files.srcs,
     outputs = [output_dir],
-    command = "NODE_PATH=" + ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules node \"$@\"",
-    use_default_shell_env = True,
+    executable = ctx.file._internal_nodejs,
+    env = {
+      "NODE_PATH": ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules"
+    },
     arguments = [
       # Run `node create_full_src.js`.
       ctx.file._ts_library_create_full_src_script.path,
@@ -163,7 +165,7 @@ def _ts_library_create_full_src(ctx, internal_deps, npm_packages, output_dir, fo
   )
 
 def _ts_library_compile(ctx, npm_packages):
-  ctx.actions.run_shell(
+  ctx.actions.run(
     inputs = [
       ctx.file._ts_library_compile_script,
       ctx.outputs.compilation_src_dir,
@@ -171,8 +173,10 @@ def _ts_library_compile(ctx, npm_packages):
       npm_packages[NpmPackagesInfo].installed_dir,
     ],
     outputs = [ctx.outputs.compiled_dir],
-    command = "NODE_PATH=" + ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules node \"$@\"",
-    use_default_shell_env = True,
+    executable = ctx.file._internal_nodejs,
+    env = {
+      "NODE_PATH": ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules"
+    },
     arguments = [
       # Run `node ts_library/compile.js`.
       ctx.file._ts_library_compile_script.path,
@@ -185,7 +189,7 @@ def _ts_library_compile(ctx, npm_packages):
   )
 
 def _ts_library_transpile(ctx, npm_packages):
-  ctx.actions.run_shell(
+  ctx.actions.run(
     inputs = [
       ctx.file._ts_library_transpile_script,
       ctx.outputs.transpilation_src_dir,
@@ -193,8 +197,10 @@ def _ts_library_transpile(ctx, npm_packages):
       npm_packages[NpmPackagesInfo].installed_dir,
     ],
     outputs = [ctx.outputs.transpiled_dir],
-    command = "NODE_PATH=" + ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules node \"$@\"",
-    use_default_shell_env = True,
+    executable = ctx.file._internal_nodejs,
+    env = {
+      "NODE_PATH": ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules"
+    },
     arguments = [
       # Run `node ts_library/transpile.js`.
       ctx.file._ts_library_transpile_script.path,
@@ -226,6 +232,11 @@ ts_library = rule(
       allow_files = [".json"],
       single_file = True,
       default = Label("//internal/ts_library:default_tsconfig.json"),
+    ),
+    "_internal_nodejs": attr.label(
+      allow_files = True,
+      single_file = True,
+      default = Label("@nodejs//:node"),
     ),
     "_internal_packages": attr.label(
       default = Label("//internal:packages"),
