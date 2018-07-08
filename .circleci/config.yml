@@ -25,20 +25,12 @@ jobs:
       - run:
           name: Build
           command: bazel build //...
-      - run:
-          name: Test
-          command: bazel test //... --test_output=streamed
-      - run:
-          name: Test (clean state)
-          command: |
-            bazel test //test/... --test_output=streamed
       - run: bazel clean
       - run:
-          name: Test (node_modules installed separately)
+          name: Build react-app with node_modules already installed
           command: |
             # Install node_modules into tests/examples/react-app to give Node the opportunity to
             # get confused.
             cd tests/examples/react-app
             yarn install
             bazel build ...
-
