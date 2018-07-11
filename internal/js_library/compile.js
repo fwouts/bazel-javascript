@@ -10,6 +10,7 @@ fs.copySync(fullSrcDir, destinationDir, {
   filter: name => {
     return (
       path.basename(name) !== "node_modules" &&
+      !name.endsWith(".es6") &&
       !name.endsWith(".js") &&
       !name.endsWith(".jsx")
     );

@@ -156,7 +156,7 @@ for (const internalDep of internalDeps) {
     validFilePaths.add(
       path.join(
         path.dirname(src),
-        src.endsWith(".js") || src.endsWith(".jsx")
+        src.endsWith(".es6") || src.endsWith(".js") || src.endsWith(".jsx")
           ? path.parse(src).name
           : path.basename(src)
       )
@@ -182,6 +182,7 @@ Missing file ${src} required by ${targetLabel}.
   const destinationFilePath = path.join(destinationDir, src);
   fs.ensureDirSync(path.dirname(destinationFilePath));
   if (
+    !destinationFilePath.endsWith(".es6") &&
     !destinationFilePath.endsWith(".js") &&
     !destinationFilePath.endsWith(".jsx")
   ) {
@@ -223,7 +224,7 @@ Missing file ${src} required by ${targetLabel}.
           // extension will have been omitted, or it could be an asset such
           // as a CSS stylesheet, in which case the extension does not need
           // to be appended.
-          const candidateEndings = [".js", ".jsx", ""];
+          const candidateEndings = [".es6", ".js", ".jsx", ""];
           let foundMatch = false;
           for (const candidateEnding of candidateEndings) {
             if (srcsSet.has(importPathFromWorkspace + candidateEnding)) {
