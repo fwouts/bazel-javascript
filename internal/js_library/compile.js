@@ -21,7 +21,7 @@ fs.copySync(fullSrcDir, destinationDir, {
 child_process.execSync(
   `${
     process.env.NODE_PATH
-  }/.bin/babel ${fullSrcDir} --presets env,stage-2,react --plugins transform-es2015-modules-commonjs --ignore node_modules --out-dir ${destinationDir}`,
+  }/.bin/babel ${fullSrcDir} --presets env,stage-2,react --plugins transform-decorators-legacy,transform-es2015-modules-commonjs --ignore node_modules --out-dir ${destinationDir}`,
   {
     stdio: "inherit"
   }
