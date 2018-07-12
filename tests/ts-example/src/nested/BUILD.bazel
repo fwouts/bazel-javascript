@@ -9,7 +9,7 @@ ts_library(
   ],
   deps = [
     ":nodeps",
-    "//test/src/testing:sum",
+    "//tests/ts-example/src/testing:sum",
     "//test:packages",
   ],
   requires = [

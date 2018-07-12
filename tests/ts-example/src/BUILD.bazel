@@ -25,6 +25,6 @@ ts_library(
     "logger.ts",
   ],
   deps = [
-    "//test/src/nested:constants",
+    "//tests/ts-example/src/nested:constants",
   ]
 )
