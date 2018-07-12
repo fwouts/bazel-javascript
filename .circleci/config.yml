@@ -24,10 +24,10 @@ jobs:
             sudo ./$BAZEL_INSTALL_SCRIPT
       - run:
           name: Build
-          command: bazel build //test/...
+          command: bazel build //tests/...
       - run:
           name: Test
-          command: bazel test //test/... --test_output=streamed
+          command: bazel test //tests/... --test_output=streamed
       - run:
           name: Example (React)
           command: |
