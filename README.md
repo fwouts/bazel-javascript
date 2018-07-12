@@ -1,4 +1,4 @@
-# JavaScript rules for Bazel
+# JavaScript and TypeScript rules for Bazel
 
 [![CircleCI](https://circleci.com/gh/zenclabs/bazel-javascript/tree/master.svg?style=svg)](https://circleci.com/gh/zenclabs/bazel-javascript/tree/master)
 
@@ -7,6 +7,7 @@
 - [js_library](#js_library)
 - [web_bundle](#js_binary)
 - [js_binary](#js_binary)
+- [ts_library](#ts_library)
 - [js_script](#js_script)
 - [js_test](#js_test)
 - [npm_packages](#npm_packages)
@@ -16,8 +17,9 @@
 
 If you're not already familiar with [Bazel](https://bazel.build), install it first.
 
-These Node rules for Bazel are separate from the [official Google
-implementation](https://github.com/bazelbuild/rules_nodejs).
+These rules allow you to set up a clean, modular and reusable build infrastructure for your JavaScript and TypeScript code.
+
+Read through an introduction [here](https://docs.google.com/presentation/d/17fQw44C0tzyH8ywWMNmQ4Pvf4Q_pmsjfDYf2MyTKV5I/edit#slide=id.p).
 
 ## Installation
 
@@ -26,7 +28,7 @@ First, install [Bazel](https://docs.bazel.build/versions/master/install.html) an
 Next, create a `WORKSPACE` file in your project root containing:
 
 ```python
-# Required for access to js_library, js_test, web_bundle, etc.
+# Required for access to js_library, ts_library, js_test, web_bundle, etc.
 git_repository(
   name = "bazel_javascript",
   remote = "https://github.com/zenclabs/bazel-javascript.git",
@@ -84,7 +86,7 @@ Suppose you have the following directory structure:
 ```python
 package(default_visibility = ["//visibility:public"])
 
-load("@bazel_javascript//:defs.bzl", "js_binary", "npm_packages")
+load("//:defs.bzl", "js_binary", "npm_packages")
 
 js_binary(
   name = "app",
@@ -112,7 +114,7 @@ console.log(GREETING);
 ```python
 package(default_visibility = ["//visibility:public"])
 
-load("@bazel_javascript//:defs.bzl", "js_library")
+load("//:defs.bzl", "js_library")
 
 js_library(
   name = "main",
@@ -140,7 +142,7 @@ export const GREETING = t.build();
 ```python
 package(default_visibility = ["//visibility:public"])
 
-load("@bazel_javascript//:defs.bzl", "js_library")
+load("//:defs.bzl", "js_library")
 
 js_library(
   name = "constants",
@@ -220,6 +222,66 @@ Used to represent a set of JavaScript files and their dependencies.
         <p>A list of required NPM module names (optional).</p>
         <p>
           This must include any NPM module that the source files directly depend on.
+        </p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+### ts_library
+
+```python
+ts_library(name, srcs, deps = [], requires = [], tsconfig = ...)
+```
+
+Used to generate the compiled JavaScript and declaration files for a set of
+TypeScript source files.
+
+<table>
+  <thead>
+    <tr>
+      <th colspan="2">Attributes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>name</code></td>
+      <td>
+        <p>A unique name for this rule (required).</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>srcs</code></td>
+      <td>
+        <p>A list of source files (required).</p>
+        <p>You may include non-TypeScript files, which will be copy-pasted as is.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>deps</code></td>
+      <td>
+        <p>A list of labels (optional).</p>
+        <p>
+          This could be any other <code>ts_library</code> targets, or at most one <code>npm_packages</code> target.
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>requires</code></td>
+      <td>
+        <p>A list of required NPM module names (optional).</p>
+        <p>
+          This must include any NPM module that the source files directly depend on.
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td><code>tsconfig</code></td>
+      <td>
+        <p>A custom TypeScript config file (optional).</p>
+        <p>
+          Only compiler options will be used. Some options such as
+          <code>paths</code> will be overridden.
         </p>
       </td>
     </tr>
@@ -345,7 +407,7 @@ Used to compile a `js_library` to a JavaScript bundle to include in an HTML page
 
 ### js_binary
 
-Identical to `web_bundle`, but produces an executable JavaScript file (using Node).
+Similar to `web_bundle`, but produces an executable JavaScript file (using Node).
 
 ### js_script
 

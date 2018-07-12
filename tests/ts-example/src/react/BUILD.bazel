@@ -1,0 +1,59 @@
+package(default_visibility = ["//visibility:public"])
+
+load("//:defs.bzl", "js_script")
+load("//:defs.bzl", "ts_library")
+
+js_script(
+  name = "storybook-run",
+  cmd = "start-storybook -p 9001 -c $LIB_DIR/.storybook",
+  lib = ":storybook",
+)
+
+ts_library(
+  name = "storybook",
+  srcs = [
+    ".storybook/config.ts",
+  ],
+  deps = [
+    ":component_story",
+    "//tests/ts-example:packages",
+  ],
+  requires = [
+    "@storybook/react",
+    "@types/storybook__react",
+  ],
+)
+
+ts_library(
+  name = "component_story",
+  srcs = [
+    "component.story.tsx",
+  ],
+  deps = [
+    ":component",
+    "//tests/ts-example:packages",
+  ],
+  requires = [
+    "@storybook/react",
+    "@types/storybook__react",
+    "react",
+    "@types/react",
+  ],
+)
+
+ts_library(
+  name = "component",
+  srcs = [
+    "component1.tsx",
+    "component1.css",
+    "component2.tsx",
+    "component2.css",
+  ],
+  deps = [
+    "//tests/ts-example:packages",
+  ],
+  requires = [
+    "react",
+    "@types/react",
+  ]
+)
