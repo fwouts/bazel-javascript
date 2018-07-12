@@ -21,7 +21,4 @@ js_library(
     "//tests/js-library-complex/nested/deep:d",
     "//tests/js-library-complex:packages",
   ],
-  requires = [
-    "textbuilder",
-  ],
 )

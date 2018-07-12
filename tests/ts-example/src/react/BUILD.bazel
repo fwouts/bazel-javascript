@@ -18,10 +18,6 @@ ts_library(
     ":component_story",
     "//tests/ts-example:packages",
   ],
-  requires = [
-    "@storybook/react",
-    "@types/storybook__react",
-  ],
 )
 
 ts_library(
@@ -32,12 +28,6 @@ ts_library(
   deps = [
     ":component",
     "//tests/ts-example:packages",
-  ],
-  requires = [
-    "@storybook/react",
-    "@types/storybook__react",
-    "react",
-    "@types/react",
   ],
 )
 
@@ -52,8 +42,4 @@ ts_library(
   deps = [
     "//tests/ts-example:packages",
   ],
-  requires = [
-    "react",
-    "@types/react",
-  ]
 )

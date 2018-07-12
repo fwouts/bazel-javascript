@@ -152,9 +152,6 @@ js_library(
   deps = [
     "//:packages",
   ],
-  requires = [
-    "textbuilder",
-  ],
 )
 ```
 
@@ -181,7 +178,6 @@ js_library(
   name,
   srcs,
   deps = [],
-  requires = [],
 )
 ```
 
@@ -216,22 +212,13 @@ Used to represent a set of JavaScript files and their dependencies.
         </p>
       </td>
     </tr>
-    <tr>
-      <td><code>requires</code></td>
-      <td>
-        <p>A list of required NPM module names (optional).</p>
-        <p>
-          This must include any NPM module that the source files directly depend on.
-        </p>
-      </td>
-    </tr>
   </tbody>
 </table>
 
 ### ts_library
 
 ```python
-ts_library(name, srcs, deps = [], requires = [], tsconfig = ...)
+ts_library(name, srcs, deps = [], tsconfig = ...)
 ```
 
 Used to generate the compiled JavaScript and declaration files for a set of
@@ -263,15 +250,6 @@ TypeScript source files.
         <p>A list of labels (optional).</p>
         <p>
           This could be any other <code>ts_library</code> targets, or at most one <code>npm_packages</code> target.
-        </p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>requires</code></td>
-      <td>
-        <p>A list of required NPM module names (optional).</p>
-        <p>
-          This must include any NPM module that the source files directly depend on.
         </p>
       </td>
     </tr>

@@ -12,9 +12,6 @@ ts_library(
     "//tests/ts-example/src/testing:sum",
     "//tests/ts-example:packages",
   ],
-  requires = [
-    "textbuilder",
-  ],
   tsconfig = "//tests/ts-example:tsconfig.json",
 )
 

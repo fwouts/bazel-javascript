@@ -29,8 +29,6 @@ def _js_library_impl(ctx):
       dep.label
       for dep in direct_npm_packages
     ]))
-  if len(direct_npm_packages) == 0 and len(ctx.attr.requires) > 0:
-    fail("js_library requires packages but does not depend on an npm_packages target.")
   extended_npm_packages = depset(
     direct = direct_npm_packages,
     transitive = [
@@ -108,19 +106,7 @@ def _js_library_create_full_src(ctx, internal_deps, npm_packages):
       # Run `node process.js`.
       ctx.file._js_library_create_full_src_script.path,
       # Label of the build target (for helpful errors).
-      "//" + ctx.label.package + ":" + ctx.label.name,
-       # Label of the package.json target (for helpful errors).
       "//" + npm_packages.label.package + ":" + npm_packages.label.name,
-      # Directory containing node_modules/ with all external NPM packages
-      # installed.
-      npm_packages[NpmPackagesInfo].installed_dir.path,
-      # BUILD.bazel file path.
-      ctx.build_file_path,
-      # List of NPM package names used by the source files.
-      ("|".join([
-        p
-        for p in ctx.attr.requires
-      ])),
       # List of aliases (extra available package names).
       ("|".join([
         name + ":" + aliases[name] for name in aliases
@@ -175,9 +161,6 @@ js_library = rule(
         [JsLibraryInfo],
         [NpmPackagesInfo],
       ],
-      default = [],
-    ),
-    "requires": attr.string_list(
       default = [],
     ),
     "_internal_packages": attr.label(

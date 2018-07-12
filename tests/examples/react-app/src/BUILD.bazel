@@ -13,10 +13,6 @@ js_library(
     ":serviceworker",
     "//tests/examples/react-app:packages",
   ],
-  requires = [
-    "react",
-    "react-dom",
-  ],
 )
 
 js_library(
@@ -28,9 +24,6 @@ js_library(
   ],
   deps = [
     "//tests/examples/react-app:packages",
-  ],
-  requires = [
-    "react",
   ],
 )
 

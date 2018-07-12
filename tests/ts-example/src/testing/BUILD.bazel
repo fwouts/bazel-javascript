@@ -20,10 +20,6 @@ ts_library(
     "//tests/ts-example:packages",
     ":sum",
   ],
-  requires = [
-    "jest",
-    "@types/jest",
-  ],
   tsconfig = "//tests/ts-example:tsconfig.json",
 )
 
