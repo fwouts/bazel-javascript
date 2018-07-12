@@ -89,6 +89,7 @@ def _js_library_impl(ctx):
   ]
 
 def _js_library_create_full_src(ctx, internal_deps, npm_packages):
+  aliases = npm_packages[NpmPackagesInfo].aliases
   ctx.actions.run(
     inputs = [
       ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
@@ -119,6 +120,10 @@ def _js_library_create_full_src(ctx, internal_deps, npm_packages):
       ("|".join([
         p
         for p in ctx.attr.requires
+      ])),
+      # List of aliases (extra available package names).
+      ("|".join([
+        name + ":" + aliases[name] for name in aliases
       ])),
       # Source directories of the js_library targets we depend on.
       ("|".join([

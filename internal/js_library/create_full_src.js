@@ -51,6 +51,7 @@ const [
   installedNpmPackagesDir,
   buildfilePath,
   joinedRequires,
+  joinedAliases,
   joinedInternalDeps,
   joinedSrcs,
   destinationDir
@@ -58,6 +59,13 @@ const [
 
 const buildfileDir = path.dirname(buildfilePath);
 const required = new Set(joinedRequires.split("|"));
+const aliases = joinedAliases
+  .split("|")
+  .map(joinedAlias => joinedAlias.split(":", 2))
+  .reduce((acc, [name, path]) => {
+    acc[name] = path;
+    return acc;
+  }, {});
 const internalDeps = joinedInternalDeps.split("|");
 const srcs = joinedSrcs.split("|");
 
@@ -73,6 +81,10 @@ Object.assign(deps, packageDefinition.devDependencies || {});
 for (const name of required) {
   if (!name) {
     // Occurs when there are no dependencies.
+    continue;
+  }
+  if (aliases[name]) {
+    // This is an alias, it doesn't need to correspond to a real package.
     continue;
   }
   if (!(name in deps)) {
@@ -200,7 +212,16 @@ Missing file ${src} required by ${targetLabel}.
   for (const statement of sourceFile.statements) {
     // TODO: Also handle require statements.
     if (statement.kind === ts.SyntaxKind.ImportDeclaration) {
-      const importFrom = statement.moduleSpecifier.text;
+      let importFrom = statement.moduleSpecifier.text;
+      let ignoreMissingMatch = false;
+      if (aliases[importFrom]) {
+        importFrom = aliases[importFrom];
+        // For now, we don't require rules to define explicit dependencies for aliases.
+        ignoreMissingMatch = true;
+        if (importFrom.startsWith("//")) {
+          importFrom = "@/" + importFrom.substr(2);
+        }
+      }
       if (
         importFrom.startsWith("./") ||
         importFrom.startsWith("../") ||
@@ -239,6 +260,10 @@ Missing file ${src} required by ${targetLabel}.
             // stage.
             replaceWith =
               "./" + path.relative(path.dirname(src), importPathFromWorkspace);
+          } else if (ignoreMissingMatch) {
+            // Pretend that we've found a match.
+            replaceWith =
+              "./" + path.relative(path.dirname(src), importPathFromWorkspace);
           } else {
             console.error(`
 Could not find a match for import "${importFrom}".
@@ -261,7 +286,7 @@ Are you missing a source file or a dependency in ${targetLabel}?
         }
         if (!required.has(packageName) && !NODE_MODULES.has(packageName)) {
           console.error(`
-Found an import statement referring to an undeclared dependency: "${packageName}".
+Found an import statement referring to an undeclared dependency: "${importFrom}".
 Make sure to specify requires = ["${packageName}"] in ${targetLabel}.
 `);
           process.exit(1);
