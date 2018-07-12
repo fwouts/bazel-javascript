@@ -28,13 +28,3 @@ jobs:
       - run:
           name: Test
           command: bazel test //tests/... --test_output=streamed
-      - run:
-          name: Example (React)
-          command: |
-            cd examples/react
-            bazel build //...
-      - run:
-          name: Example (simple)
-          command: |
-            cd examples/simple
-            bazel build //...
