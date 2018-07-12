@@ -207,7 +207,8 @@ Missing file ${src} required by ${targetLabel}.
     path.basename(src),
     sourceText,
     ts.ScriptTarget.Latest,
-    true
+    true,
+    ts.ScriptKind.JSX
   );
   for (const statement of sourceFile.statements) {
     // TODO: Also handle require statements.
