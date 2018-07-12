@@ -290,6 +290,10 @@ Missing file ${src} required by ${targetLabel}.
           // Found a match.
           replaceWith =
             "./" + path.relative(path.dirname(src), importPathFromWorkspace);
+        } else if (validFilePaths.has(importPathFromWorkspace + "/index")) {
+          // Found a match (index of a directory).
+          replaceWith =
+            "./" + path.relative(path.dirname(src), importPathFromWorkspace);
         } else {
           // This must be a local import (in the same target).
           // It could either be a TypeScript import, in which case the
@@ -303,6 +307,20 @@ Missing file ${src} required by ${targetLabel}.
               // Good, the file exists.
               foundMatch = true;
               break;
+            }
+          }
+          if (!foundMatch) {
+            // Try index too.
+            for (const candidateEnding of candidateEndings) {
+              if (
+                srcsSet.has(
+                  importPathFromWorkspace + "/index" + candidateEnding
+                )
+              ) {
+                // Good, the file exists.
+                foundMatch = true;
+                break;
+              }
             }
           }
           if (foundMatch) {
