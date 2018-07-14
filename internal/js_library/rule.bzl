@@ -73,6 +73,7 @@ def _js_library_impl(ctx):
   )
   _js_library_compile(
     ctx,
+    internal_deps,
     npm_packages,
   )
   return [
@@ -127,13 +128,16 @@ def _js_library_create_full_src(ctx, internal_deps, npm_packages):
     ],
   )
 
-def _js_library_compile(ctx, npm_packages):
+def _js_library_compile(ctx, internal_deps, npm_packages):
   ctx.actions.run(
     inputs = [
       ctx.file._js_library_compile_script,
       ctx.outputs.full_src_dir,
       ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
       npm_packages[NpmPackagesInfo].installed_dir,
+    ] + [
+      d[JsLibraryInfo].full_src_dir
+      for d in internal_deps
     ],
     outputs = [ctx.outputs.compiled_dir],
     executable = ctx.file._internal_nodejs,
@@ -147,6 +151,10 @@ def _js_library_compile(ctx, npm_packages):
       ctx.outputs.full_src_dir.path,
       # Directory in which to output the compiled JavaScript.
       ctx.outputs.compiled_dir.path,
+      # List of source files, excluding source files from dependencies.
+      ("|".join([
+        f.path for f in ctx.files.srcs
+      ])),
     ],
   )
 

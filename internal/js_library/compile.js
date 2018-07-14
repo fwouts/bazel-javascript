@@ -1,21 +1,17 @@
 const fs = require("fs-extra");
 const path = require("path");
 const babel = require("babel-core");
+const { safeSymlink } = require("../common/symlink");
 
-const [nodePath, scriptPath, fullSrcDir, destinationDir] = process.argv;
+const [
+  nodePath,
+  scriptPath,
+  fullSrcDir,
+  destinationDir,
+  joinedSrcs
+] = process.argv;
 
-// Copy over any non-JavaScript files (e.g. CSS assets) and internal modules.
-fs.copySync(fullSrcDir, destinationDir, {
-  dereference: true,
-  filter: name => {
-    return (
-      path.basename(name) !== "node_modules" &&
-      !name.endsWith(".es6") &&
-      !name.endsWith(".js") &&
-      !name.endsWith(".jsx")
-    );
-  }
-});
+const srcs = new Set(joinedSrcs.split("|"));
 
 // Compile with Babel.
 transformDir(".");
@@ -24,13 +20,17 @@ function transformDir(dirRelativePath) {
   for (const fileName of fs.readdirSync(
     path.join(fullSrcDir, dirRelativePath)
   )) {
-    const srcFilePath = path.join(fullSrcDir, dirRelativePath, fileName);
+    const relativeFilePath = path.join(dirRelativePath, fileName);
+    const srcFilePath = path.join(fullSrcDir, relativeFilePath);
+    let destFilePath = path.join(destinationDir, relativeFilePath);
+    fs.ensureDirSync(path.dirname(destFilePath));
     if (fs.lstatSync(srcFilePath).isDirectory()) {
-      transformDir(path.join(dirRelativePath, fileName));
+      transformDir(relativeFilePath);
     } else if (
-      fileName.endsWith(".es6") ||
-      fileName.endsWith(".js") ||
-      fileName.endsWith(".jsx")
+      srcs.has(relativeFilePath) &&
+      (fileName.endsWith(".es6") ||
+        fileName.endsWith(".js") ||
+        fileName.endsWith(".jsx"))
     ) {
       const transformed = babel.transformFileSync(srcFilePath, {
         plugins: [
@@ -43,9 +43,16 @@ function transformDir(dirRelativePath) {
       if (!transformed.code) {
         throw new Error(`Could not compile ${srcFilePath}.`);
       }
-      const destFilePath = path.join(destinationDir, dirRelativePath, fileName);
-      fs.ensureDirSync(path.dirname(destFilePath));
+      if (!destFilePath.endsWith(".js")) {
+        destFilePath =
+          destFilePath.substr(0, destFilePath.lastIndexOf(".")) + ".js";
+      }
       fs.writeFileSync(destFilePath, transformed.code, "utf8");
+    } else {
+      // Symlink any file that:
+      // - isn't a source file of this package; or
+      // - is not a JavaScript file (e.g. CSS assets).
+      safeSymlink(srcFilePath, destFilePath);
     }
   }
 }

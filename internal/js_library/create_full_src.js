@@ -1,6 +1,7 @@
 const fs = require("fs-extra");
 const path = require("path");
 const ts = require("typescript");
+const { safeSymlink } = require("../common/symlink");
 
 const [
   nodePath,
@@ -45,10 +46,8 @@ for (const internalDep of internalDeps) {
           : path.basename(src)
       )
     );
+    safeSymlink(path.join(compiledDir, src), path.join(destinationDir, src));
   }
-  fs.copySync(compiledDir, destinationDir, {
-    dereference: true
-  });
 }
 
 // Copy source code.
@@ -71,7 +70,7 @@ Missing file ${src} required by ${targetLabel}.
     !destinationFilePath.endsWith(".jsx")
   ) {
     // Assets and other non-JavaScript files should simply be copied.
-    fs.copySync(src, destinationFilePath);
+    safeSymlink(src, destinationFilePath);
     continue;
   }
   const sourceText = fs.readFileSync(src, "utf8");

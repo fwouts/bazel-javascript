@@ -1,6 +1,7 @@
 const fs = require("fs-extra");
 const path = require("path");
 const ts = require("typescript");
+const { safeSymlink } = require("../common/symlink");
 
 const [
   nodePath,
@@ -17,16 +18,10 @@ const internalDeps = joinedInternalDeps.split("|");
 const srcs = joinedSrcs.split("|");
 
 fs.mkdirSync(destinationDir);
-const oldWorkingDir = process.cwd();
-process.chdir(destinationDir);
-fs.symlinkSync(
-  path.relative(
-    destinationDir,
-    path.join(installedNpmPackagesDir, "node_modules")
-  ),
-  "node_modules"
+safeSymlink(
+  path.join(installedNpmPackagesDir, "node_modules"),
+  path.join(destinationDir, "node_modules")
 );
-process.chdir(oldWorkingDir);
 
 const validFilePaths = new Set();
 

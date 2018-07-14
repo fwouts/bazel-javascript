@@ -1,20 +1,12 @@
 const fs = require("fs-extra");
 const path = require("path");
 const ts = require("typescript");
+const { safeSymlink } = require("../common/symlink");
 
 const [nodePath, scriptPath, fullSrcDir, destinationDir] = process.argv;
 
 // Copy over any non-TypeScript files (e.g. CSS assets).
-fs.copySync(fullSrcDir, destinationDir, {
-  dereference: true,
-  filter: name => {
-    return (
-      path.basename(name) !== "node_modules" &&
-      !name.endsWith(".ts") &&
-      !name.endsWith(".tsx")
-    );
-  }
-});
+symlinkNonTypeScriptFiles(".");
 
 // Transpile with TypeScript.
 const config = JSON.parse(
@@ -41,6 +33,27 @@ function transpile(src) {
         continue;
       }
       transpile(path.join(src, f));
+    }
+  }
+}
+
+function symlinkNonTypeScriptFiles(dirRelativePath) {
+  for (const fileName of fs.readdirSync(
+    path.join(fullSrcDir, dirRelativePath)
+  )) {
+    const relativeFilePath = path.join(dirRelativePath, fileName);
+    const srcFilePath = path.join(fullSrcDir, relativeFilePath);
+    let destFilePath = path.join(destinationDir, relativeFilePath);
+    fs.ensureDirSync(path.dirname(destFilePath));
+    if (fs.lstatSync(srcFilePath).isDirectory()) {
+      symlinkNonTypeScriptFiles(relativeFilePath);
+    } else if (
+      fileName !== "node_modules" &&
+      !fileName.endsWith(".ts") &&
+      !fileName.endsWith(".tsx")
+    ) {
+      // Symlink any file that isn't a TypeScript file (e.g. precompile JS or CSS assets).
+      safeSymlink(srcFilePath, destFilePath);
     }
   }
 }
