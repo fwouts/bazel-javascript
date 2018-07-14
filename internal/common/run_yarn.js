@@ -1,12 +1,9 @@
 const child_process = require("child_process");
 const fs = require("fs");
 
-const CACHE_PATH = "/tmp/bazel_node_modules_cache";
+const CACHE_PATH = "./node_modules_cache";
 
 function runYarn(cwd, command = "") {
-  if (!fs.existsSync(CACHE_PATH)) {
-    fs.mkdirSync(CACHE_PATH);
-  }
   child_process.execSync(yarnShellCommand(cwd, command), {
     stdio: "inherit"
   });
