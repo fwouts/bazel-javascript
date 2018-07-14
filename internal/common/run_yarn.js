@@ -9,7 +9,7 @@ function runYarn(cwd, command = "") {
 function yarnShellCommand(cwd, command = "") {
   // Don't use the shared cache or touch the lockfile.
   // See https://github.com/yarnpkg/yarn/issues/986.
-  return `yarn --cwd ${cwd} --ignore-scripts --frozen-lockfile ${command}`;
+  return `yarn --cwd ${cwd} --ignore-scripts --cache-folder /tmp/bazel_node_modules_cache --frozen-lockfile ${command}`;
 }
 
 module.exports = {
