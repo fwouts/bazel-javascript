@@ -101,11 +101,15 @@ module.exports = (
       ],`
           : ""
       }
-      splitChunks: {
+      ${
+        splitChunks
+          ? `splitChunks: {
         chunks: 'all',
         name: 'vendors',
       },
-      runtimeChunk: true,
+      runtimeChunk: true,`
+          : ""
+      }
     },
     module: {
       rules: [
