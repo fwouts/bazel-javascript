@@ -6,6 +6,7 @@ const [
   scriptPath,
   libBuildfilePath,
   entry,
+  outputFileName,
   target,
   mode,
   optionalLibrary,
@@ -56,7 +57,7 @@ module.exports = (
       "${entry}",
     ),
     output: {
-      filename: "bundle.js",
+      filename: "${outputFileName}",
       path: path.resolve(outputBundleDir),
       ${
         optionalLibrary

@@ -27,6 +27,8 @@ def _web_bundle_impl(ctx):
       ctx.attr.lib[JsLibraryInfo].build_file_path,
       # Entry point for Webpack (e.g. "main.ts").
       ctx.attr.entry,
+      # Output file name (e.g. "bundle.js").
+      ctx.attr.output,
       # Target for Webpack.
       ctx.attr.target,
       # Mode for Webpack.
@@ -181,6 +183,9 @@ web_bundle_internal = rule(
       providers = [JsLibraryInfo],
     ),
     "entry": attr.string(),
+    "output": attr.string(
+      default = "bundle.js",
+    ),
     "target": attr.string(
       values = [
         "async-node",

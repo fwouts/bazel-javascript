@@ -315,6 +315,13 @@ Used to compile a `js_library` to a JavaScript bundle to include in an HTML page
       </td>
     </tr>
     <tr>
+      <td><code>output</code></td>
+      <td>
+        <p>The name of the JS file(s) to generate (optional).</p>
+        <p>By default, the name will be <code>bundle.js</code>.</p>
+      </td>
+    </tr>
+    <tr>
       <td><code>html_template</code></td>
       <td>
         <p>An HTML file template (optional).</p>
