@@ -32,10 +32,14 @@ webpack(config, (err, stats) => {
   }
   const info = stats.toJson();
   if (stats.hasErrors()) {
-    console.error(info.errors);
+    for (const error of info.errors) {
+      console.log(error);
+    }
     process.exit(1);
   }
   if (stats.hasWarnings()) {
-    console.warn(info.warnings);
+    for (const error of info.warnings) {
+      console.warn(error);
+    }
   }
 });
