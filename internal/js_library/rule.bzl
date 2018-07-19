@@ -158,6 +158,7 @@ js_library = rule(
   attrs = {
     "srcs": attr.label_list(
       allow_files = True,
+      mandatory = True,
     ),
     "deps": attr.label_list(
       providers = [

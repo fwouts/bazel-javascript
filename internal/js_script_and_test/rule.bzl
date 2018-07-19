@@ -98,9 +98,12 @@ js_script = rule(
 js_test = rule(
   implementation = _js_script_impl,
   attrs = {
-    "cmd": attr.string(),
+    "cmd": attr.string(
+      mandatory = True,
+    ),
     "lib": attr.label(
       providers = [JsLibraryInfo],
+      mandatory = True,
     ),
     "_internal_nodejs": attr.label(
       allow_files = True,

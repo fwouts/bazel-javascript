@@ -44,8 +44,11 @@ js_binary = rule(
   attrs = {
     "lib": attr.label(
       providers = [JsLibraryInfo],
+      mandatory = True,
     ),
-    "entry": attr.string(),
+    "entry": attr.string(
+      mandatory = True,
+    ),
     "mode": attr.string(
       values = [
         "none",

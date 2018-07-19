@@ -34,10 +34,12 @@ npm_packages = rule(
     "package_json": attr.label(
       allow_files = True,
       single_file = True,
+      mandatory = True,
     ),
     "yarn_lock": attr.label(
       allow_files = True,
       single_file = True,
+      mandatory = True,
     ),
     "_internal_nodejs": attr.label(
       allow_files = True,

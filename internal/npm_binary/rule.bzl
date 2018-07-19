@@ -27,8 +27,11 @@ npm_binary = rule(
   attrs = {
     "install": attr.label(
       providers = [NpmPackagesInfo],
+      mandatory = True,
     ),
-    "binary": attr.string(),
+    "binary": attr.string(
+      mandatory = True,
+    ),
   },
   outputs = {
     "bin": "%{name}.sh"
