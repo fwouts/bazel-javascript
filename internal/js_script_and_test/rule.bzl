@@ -20,7 +20,7 @@ def _js_script_impl(ctx):
     inputs = [
       ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
       ctx.attr.lib[JsLibraryInfo].npm_packages_installed_dir,
-      ctx.attr.lib[JsLibraryInfo].full_src_dir,
+      ctx.attr.lib[JsLibraryInfo].compiled_javascript_dir,
       ctx.file._js_script_compile_script,
     ],
     outputs = [
@@ -42,7 +42,7 @@ def _js_script_impl(ctx):
       # Same path required in short form for the shell script.
       ctx.attr.lib[JsLibraryInfo].npm_packages_installed_dir.short_path,
       # Compiled directory of the js_library we depend on.
-      ctx.attr.lib[JsLibraryInfo].full_src_dir.path,
+      ctx.attr.lib[JsLibraryInfo].compiled_javascript_dir.path,
       # Directory in which to create package.json and copy sources.
       ctx.outputs.compiled_dir.path,
       # Same path required in short form for the shell script.

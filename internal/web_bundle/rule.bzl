@@ -10,7 +10,7 @@ def _web_bundle_impl(ctx):
       ctx.file._web_bundle_create_webpack_config_script,
       ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
       ctx.attr.lib[JsLibraryInfo].npm_packages_installed_dir,
-      ctx.attr.lib[JsLibraryInfo].full_src_dir,
+      ctx.attr.lib[JsLibraryInfo].compiled_javascript_dir,
     ],
     outputs = [
       webpack_config,
@@ -47,7 +47,7 @@ def _web_bundle_impl(ctx):
       ctx.file._web_bundle_compile_script,
       ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
       ctx.attr.lib[JsLibraryInfo].npm_packages_installed_dir,
-      ctx.attr.lib[JsLibraryInfo].full_src_dir,
+      ctx.attr.lib[JsLibraryInfo].compiled_javascript_dir,
       webpack_config,
     ] + ctx.files.html_template,
     outputs = [
@@ -67,7 +67,7 @@ def _web_bundle_impl(ctx):
       # Directory containing external NPM dependencies the code depends on.
       ctx.attr.lib[JsLibraryInfo].npm_packages_installed_dir.path,
       # Directory containing the compiled source code of the js_library.
-      ctx.attr.lib[JsLibraryInfo].full_src_dir.path,
+      ctx.attr.lib[JsLibraryInfo].compiled_javascript_dir.path,
       # Directory in which to place the compiled JavaScript.
       ctx.outputs.bundle_dir.path,
       # Path of the webpack config file.
@@ -139,7 +139,7 @@ serve({{
 """.format(
       webpack_config = webpack_config.short_path,
       # Directory containing the compiled source code of the js_library.
-      source_dir = ctx.attr.lib[JsLibraryInfo].full_src_dir.short_path,
+      source_dir = ctx.attr.lib[JsLibraryInfo].compiled_javascript_dir.short_path,
       # Directory in which to place the compiled JavaScript.
       output_bundle_dir = ctx.outputs.bundle_dir.short_path,
       # Directory containing external NPM dependencies the code depends on.
@@ -166,7 +166,7 @@ serve({{
           webpack_devserver_js,
           ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
           ctx.attr.lib[JsLibraryInfo].npm_packages_installed_dir,
-          ctx.attr.lib[JsLibraryInfo].full_src_dir,
+          ctx.attr.lib[JsLibraryInfo].compiled_javascript_dir,
           webpack_config,
         ] + ctx.files.html_template
       ),

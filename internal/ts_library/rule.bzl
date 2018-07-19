@@ -102,7 +102,7 @@ def _ts_library_impl(ctx):
     JsLibraryInfo(
       build_file_path = ctx.build_file_path,
       javascript_source_files = [_compiled_extension(f.path) for f in ctx.files.srcs],
-      full_src_dir = ctx.outputs.transpiled_dir,
+      compiled_javascript_dir = ctx.outputs.transpiled_dir,
       internal_deps = internal_deps,
       npm_packages = extended_npm_packages,
       npm_packages_installed_dir = npm_packages[NpmPackagesInfo].installed_dir,
@@ -132,7 +132,7 @@ def _ts_library_create_full_src(ctx, internal_deps, npm_packages, output_dir, fo
     ] + [
       d[TsLibraryInfo].original_typescript_dir
       if for_compilation and TsLibraryInfo in d
-      else d[JsLibraryInfo].full_src_dir
+      else d[JsLibraryInfo].compiled_javascript_dir
       for d in internal_deps
     ] + ctx.files.srcs,
     outputs = [output_dir],
@@ -161,7 +161,7 @@ def _ts_library_create_full_src(ctx, internal_deps, npm_packages, output_dir, fo
         (
           d[TsLibraryInfo].original_typescript_dir.path
           if for_compilation and TsLibraryInfo in d
-          else d[JsLibraryInfo].full_src_dir.path
+          else d[JsLibraryInfo].compiled_javascript_dir.path
         )
         for d in internal_deps
       ])),
@@ -185,7 +185,7 @@ def _ts_library_compile(ctx, internal_deps, npm_packages):
     ] + [
       d[TsLibraryInfo].original_typescript_dir
       if TsLibraryInfo in d
-      else d[JsLibraryInfo].full_src_dir
+      else d[JsLibraryInfo].compiled_javascript_dir
       for d in internal_deps
     ],
     outputs = [ctx.outputs.compiled_dir],
@@ -212,7 +212,7 @@ def _ts_library_transpile(ctx, internal_deps, npm_packages):
       ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
       npm_packages[NpmPackagesInfo].installed_dir,
     ] + [
-      d[JsLibraryInfo].full_src_dir
+      d[JsLibraryInfo].compiled_javascript_dir
       for d in internal_deps
     ],
     outputs = [ctx.outputs.transpiled_dir],

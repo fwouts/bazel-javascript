@@ -4,7 +4,7 @@ JsLibraryInfo = provider(fields=[
   # Path of the BUILD.bazel file relative to the workspace root.
   "build_file_path",
   # Directory containing the JavaScript files (and potentially other assets).
-  "full_src_dir",
+  "compiled_javascript_dir",
   # Source files provided as input.
   "javascript_source_files",
   # Other js_library targets depended upon.
@@ -79,8 +79,8 @@ def _js_library_impl(ctx):
   return [
     JsLibraryInfo(
       build_file_path = ctx.build_file_path,
-      full_src_dir = ctx.outputs.compiled_dir,
       javascript_source_files = [_compiled_extension(f.path) for f in ctx.files.srcs],
+      compiled_javascript_dir = ctx.outputs.compiled_dir,
       internal_deps = internal_deps,
       npm_packages = extended_npm_packages,
       npm_packages_installed_dir = npm_packages[NpmPackagesInfo].installed_dir,
@@ -100,10 +100,10 @@ def _js_library_create_full_src(ctx, internal_deps, npm_packages):
       ctx.file._js_library_create_full_src_script,
       npm_packages[NpmPackagesInfo].installed_dir,
     ] + [
-      d[JsLibraryInfo].full_src_dir
+      d[JsLibraryInfo].compiled_javascript_dir
       for d in internal_deps
     ] + ctx.files.srcs,
-    outputs = [ctx.outputs.full_src_dir],
+    outputs = [ctx.outputs.compiled_javascript_dir],
     executable = ctx.file._internal_nodejs,
     env = {
       "NODE_PATH": ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules"
@@ -116,7 +116,7 @@ def _js_library_create_full_src(ctx, internal_deps, npm_packages):
       # Source directories of the js_library targets we depend on.
       ("|".join([
         (";".join(d[JsLibraryInfo].javascript_source_files)) + ":" +
-        d[JsLibraryInfo].full_src_dir.path
+        d[JsLibraryInfo].compiled_javascript_dir.path
         for d in internal_deps
       ])),
       # List of source files, which will be processed ("import" statements
@@ -125,7 +125,7 @@ def _js_library_create_full_src(ctx, internal_deps, npm_packages):
         f.path for f in ctx.files.srcs
       ])),
       # Directory in which to place the result.
-      ctx.outputs.full_src_dir.path,
+      ctx.outputs.compiled_javascript_dir.path,
     ],
   )
 
@@ -133,11 +133,11 @@ def _js_library_compile(ctx, internal_deps, npm_packages):
   ctx.actions.run(
     inputs = [
       ctx.file._js_library_compile_script,
-      ctx.outputs.full_src_dir,
+      ctx.outputs.compiled_javascript_dir,
       ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
       npm_packages[NpmPackagesInfo].installed_dir,
     ] + [
-      d[JsLibraryInfo].full_src_dir
+      d[JsLibraryInfo].compiled_javascript_dir
       for d in internal_deps
     ],
     outputs = [ctx.outputs.compiled_dir],
@@ -149,7 +149,7 @@ def _js_library_compile(ctx, internal_deps, npm_packages):
       # Run `node js_library/compile.js`.
       ctx.file._js_library_compile_script.path,
       # Directory in which the source code can be found.
-      ctx.outputs.full_src_dir.path,
+      ctx.outputs.compiled_javascript_dir.path,
       # Directory in which to output the compiled JavaScript.
       ctx.outputs.compiled_dir.path,
       # List of source files, excluding source files from dependencies.
@@ -197,6 +197,6 @@ js_library = rule(
   },
   outputs = {
     "compiled_dir": "%{name}_compiled",
-    "full_src_dir": "%{name}_full_src",
+    "compiled_javascript_dir": "%{name}_full_src",
   },
 )
