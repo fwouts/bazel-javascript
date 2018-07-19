@@ -28,8 +28,6 @@ def _web_bundle_impl(ctx):
       ctx.attr.entry,
       # Output file name (e.g. "bundle.js").
       ctx.attr.output,
-      # Target for Webpack.
-      ctx.attr.target,
       # Mode for Webpack.
       ctx.attr.mode,
       # Library for Webpack (optional).
@@ -178,22 +176,13 @@ web_bundle_internal = rule(
   attrs = {
     "lib": attr.label(
       providers = [JsLibraryInfo],
+      mandatory = True,
     ),
-    "entry": attr.string(),
+    "entry": attr.string(
+      mandatory = True,
+    ),
     "output": attr.string(
       default = "bundle.js",
-    ),
-    "target": attr.string(
-      values = [
-        "async-node",
-        "node",
-        "electron-main",
-        "electron-renderer",
-        "node",
-        "node-webkit",
-        "web",
-        "webworker",
-      ],
     ),
     "mode": attr.string(
       values = [

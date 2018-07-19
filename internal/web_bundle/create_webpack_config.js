@@ -7,7 +7,6 @@ const [
   libBuildfilePath,
   entry,
   outputFileName,
-  target,
   mode,
   optionalLibrary,
   splitChunksStr,
@@ -69,7 +68,7 @@ module.exports = (
     },
     mode: "${mode}",
     bail: ${mode === "production" ? "true" : "false"},
-    target: "${target}",
+    target: "web",
     optimization: {
       ${
         mode === "production"
@@ -175,28 +174,18 @@ module.exports = (
         }
       ]
     },
-    node:
-      ${JSON.stringify(
-        target.indexOf("node") !== -1
-          ? {
-              // Webpack complains when it encounters "module".
-              module: "empty"
-            }
-          : {
-              // Webpack complains when it encounters "module".
-              module: "empty",
-              // Some libraries import Node modules but don't use them in the browser.
-              // Tell Webpack to provide empty mocks for them so importing them works.
-              dgram: "empty",
-              fs: "empty",
-              net: "empty",
-              tls: "empty",
-              child_process: "empty",
-              module: "empty"
-            },
-        null,
-        2
-      )},
+    node: {
+      // Webpack complains when it encounters "module".
+      module: "empty",
+      // Some libraries import Node modules but don't use them in the browser.
+      // Tell Webpack to provide empty mocks for them so importing them works.
+      dgram: "empty",
+      fs: "empty",
+      net: "empty",
+      tls: "empty",
+      child_process: "empty",
+      module: "empty"
+    },
     resolve: {
       modules: [
         path.join(installedNpmPackagesDir, "node_modules"),

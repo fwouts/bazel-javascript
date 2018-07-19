@@ -7,7 +7,6 @@ web_bundle(
   lib = "//tests/examples/react-app/src:index",
   entry = "index.js",
   mode = "development",
-  target = "web",
   html_template = "//tests/examples/react-app/public:index.html",
 )
 
@@ -16,7 +15,6 @@ web_bundle(
   lib = "//tests/examples/react-app/src:index",
   entry = "index.js",
   mode = "production",
-  target = "web",
   html_template = "//tests/examples/react-app/public:index.html",
 )
 

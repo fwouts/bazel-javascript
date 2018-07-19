@@ -7,5 +7,4 @@ web_bundle(
   lib = "//tests/js-bundle/src:main",
   entry = "main.js",
   output = "app.js",
-  target = "node",
 )
