@@ -37,7 +37,7 @@ module.exports = (
   if (!fs.existsSync(loadersNpmPackagesDir)) {
     throw new Error(\`Missing loaders npm_modules directory: \${loadersNpmPackagesDir}\`)
   }
-  if (!fs.existsSync(htmlTemplatePath)) {
+  if (htmlTemplatePath && !fs.existsSync(htmlTemplatePath)) {
     throw new Error(\`Missing HTML template: \${htmlTemplatePath}\`)
   }
 
@@ -210,26 +210,29 @@ module.exports = (
       ]
     },
     plugins: [
-      new HtmlWebpackPlugin({
-        template: htmlTemplatePath,
-        inject: true,
-        ${
-          mode === "production"
-            ? `minify: {
-          removeComments: true,
-          collapseWhitespace: true,
-          removeRedundantAttributes: true,
-          useShortDoctype: true,
-          removeEmptyAttributes: true,
-          removeStyleLinkTypeAttributes: true,
-          keepClosingSlash: true,
-          minifyJS: true,
-          minifyCSS: true,
-          minifyURLs: true,
-        }`
-            : ""
-        }
-      }),
+      ...(htmlTemplatePath
+        ? [new HtmlWebpackPlugin({
+          template: htmlTemplatePath,
+          inject: true,
+          ${
+            mode === "production"
+              ? `minify: {
+            removeComments: true,
+            collapseWhitespace: true,
+            removeRedundantAttributes: true,
+            useShortDoctype: true,
+            removeEmptyAttributes: true,
+            removeStyleLinkTypeAttributes: true,
+            keepClosingSlash: true,
+            minifyJS: true,
+            minifyCSS: true,
+            minifyURLs: true,
+          }`
+              : ""
+          }
+        })]
+        : []
+      ),
       new webpack.DefinePlugin({
         NODE_ENV: "${mode}",
       }),

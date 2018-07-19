@@ -11,7 +11,6 @@ def _web_bundle_impl(ctx):
       ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
       ctx.attr.lib[JsLibraryInfo].npm_packages_installed_dir,
       ctx.attr.lib[JsLibraryInfo].full_src_dir,
-      ctx.file.html_template,
     ],
     outputs = [
       webpack_config,
@@ -49,9 +48,8 @@ def _web_bundle_impl(ctx):
       ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
       ctx.attr.lib[JsLibraryInfo].npm_packages_installed_dir,
       ctx.attr.lib[JsLibraryInfo].full_src_dir,
-      ctx.file.html_template,
       webpack_config,
-    ],
+    ] + ctx.files.html_template,
     outputs = [
       ctx.outputs.bundle_dir,
     ],
@@ -63,7 +61,7 @@ def _web_bundle_impl(ctx):
       # Run `node web_bundle/compile.js`.
       ctx.file._web_bundle_compile_script.path,
       # Template index.html for Webpack.
-      ctx.file.html_template.path,
+      ctx.file.html_template.path if ctx.file.html_template else "",
       # Directory containing internal NPM dependencies (for build tools).
       ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path,
       # Directory containing external NPM dependencies the code depends on.
@@ -149,7 +147,7 @@ serve({{
       # Directory containing internal NPM dependencies (for build tools).
       internal_packages_dir = ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.short_path,
       # Template index.html for Webpack.
-      html_template = ctx.file.html_template.short_path,
+      html_template = ctx.file.html_template.short_path if ctx.file.html_template else "",
     ),
   )
   ctx.actions.write(
@@ -169,9 +167,8 @@ serve({{
           ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
           ctx.attr.lib[JsLibraryInfo].npm_packages_installed_dir,
           ctx.attr.lib[JsLibraryInfo].full_src_dir,
-          ctx.file.html_template,
           webpack_config,
-        ],
+        ] + ctx.files.html_template
       ),
     ),
   ]
@@ -212,7 +209,6 @@ web_bundle_internal = rule(
     "html_template": attr.label(
       allow_files = True,
       single_file = True,
-      default = Label("//internal/web_bundle:default.index.html"),
     ),
     "library_name": attr.string(),
     "library_target": attr.string(
