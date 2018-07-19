@@ -79,13 +79,19 @@ def _js_library_impl(ctx):
   return [
     JsLibraryInfo(
       build_file_path = ctx.build_file_path,
-      javascript_source_files = [f.path for f in ctx.files.srcs],
       full_src_dir = ctx.outputs.compiled_dir,
+      javascript_source_files = [_compiled_extension(f.path) for f in ctx.files.srcs],
       internal_deps = internal_deps,
       npm_packages = extended_npm_packages,
       npm_packages_installed_dir = npm_packages[NpmPackagesInfo].installed_dir,
     ),
   ]
+
+def _compiled_extension(path):
+  if path.endswith('.es6') or path.endswith('.jsx'):
+    return path[:-4] + '.js'
+  else:
+    return path
 
 def _js_library_create_full_src(ctx, internal_deps, npm_packages):
   ctx.actions.run(
