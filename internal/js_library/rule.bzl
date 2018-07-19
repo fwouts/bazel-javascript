@@ -6,7 +6,7 @@ JsLibraryInfo = provider(fields=[
   # Directory containing the JavaScript files (and potentially other assets).
   "full_src_dir",
   # Source files provided as input.
-  "srcs",
+  "javascript_source_files",
   # Other js_library targets depended upon.
   "internal_deps",
   # Depset of npm_packages depended upon (at most one element).
@@ -79,7 +79,7 @@ def _js_library_impl(ctx):
   return [
     JsLibraryInfo(
       build_file_path = ctx.build_file_path,
-      srcs = [f.path for f in ctx.files.srcs],
+      javascript_source_files = [f.path for f in ctx.files.srcs],
       full_src_dir = ctx.outputs.compiled_dir,
       internal_deps = internal_deps,
       npm_packages = extended_npm_packages,
@@ -88,7 +88,6 @@ def _js_library_impl(ctx):
   ]
 
 def _js_library_create_full_src(ctx, internal_deps, npm_packages):
-  aliases = npm_packages[NpmPackagesInfo].aliases
   ctx.actions.run(
     inputs = [
       ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
@@ -108,13 +107,9 @@ def _js_library_create_full_src(ctx, internal_deps, npm_packages):
       ctx.file._js_library_create_full_src_script.path,
       # Label of the build target (for helpful errors).
       "//" + npm_packages.label.package + ":" + npm_packages.label.name,
-      # List of aliases (extra available package names).
-      ("|".join([
-        name + ":" + aliases[name] for name in aliases
-      ])),
       # Source directories of the js_library targets we depend on.
       ("|".join([
-        (";".join(d[JsLibraryInfo].srcs)) + ":" +
+        (";".join(d[JsLibraryInfo].javascript_source_files)) + ":" +
         d[JsLibraryInfo].full_src_dir.path
         for d in internal_deps
       ])),

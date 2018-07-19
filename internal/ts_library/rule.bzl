@@ -2,8 +2,12 @@ load("//internal/js_library:rule.bzl", "JsLibraryInfo")
 load("//internal/npm_packages:rule.bzl", "NpmPackagesInfo")
 
 TsLibraryInfo = provider(fields=[
+  # Directory containing the TypeScript files (and potentially other assets).
+  "original_typescript_dir",
+  # Source files provided as input.
+  "typescript_source_files",
   # Directory containing the generated TypeScript definitions and compiled JavaScript.
-  "compiled_src_dir",
+  "compiled_typescript_dir",
 ])
 
 def _ts_library_impl(ctx):
@@ -83,28 +87,40 @@ def _ts_library_impl(ctx):
   # Compile the directory with `tsc` (slower but stricter).
   _ts_library_compile(
     ctx,
+    internal_deps,
     npm_packages,
   )
 
   # Transpile the directory with `tsc` (faster, no type checking).
   _ts_library_transpile(
     ctx,
+    internal_deps,
     npm_packages,
   )
 
   return [
     JsLibraryInfo(
       build_file_path = ctx.build_file_path,
-      srcs = [f.path for f in ctx.files.srcs],
+      javascript_source_files = [_compiled_extension(f.path) for f in ctx.files.srcs],
       full_src_dir = ctx.outputs.transpiled_dir,
       internal_deps = internal_deps,
       npm_packages = extended_npm_packages,
       npm_packages_installed_dir = npm_packages[NpmPackagesInfo].installed_dir,
     ),
     TsLibraryInfo(
-      compiled_src_dir = ctx.outputs.compiled_dir,
+      original_typescript_dir = ctx.outputs.compilation_src_dir,
+      compiled_typescript_dir = ctx.outputs.compiled_dir,
+      typescript_source_files = [f.path for f in ctx.files.srcs],
     ),
   ]
+
+def _compiled_extension(path):
+  if path.endswith('.tsx'):
+    return path[:-4] + '.js'
+  elif path.endswith('.ts'):
+    return path[:-3] + '.js'
+  else:
+    return path
 
 def _ts_library_create_full_src(ctx, internal_deps, npm_packages, output_dir, for_compilation):
   ctx.actions.run(
@@ -114,7 +130,7 @@ def _ts_library_create_full_src(ctx, internal_deps, npm_packages, output_dir, fo
       npm_packages[NpmPackagesInfo].installed_dir,
       ctx.file.tsconfig,
     ] + [
-      d[TsLibraryInfo].compiled_src_dir
+      d[TsLibraryInfo].original_typescript_dir
       if for_compilation and TsLibraryInfo in d
       else d[JsLibraryInfo].full_src_dir
       for d in internal_deps
@@ -136,9 +152,14 @@ def _ts_library_create_full_src(ctx, internal_deps, npm_packages, output_dir, fo
       ctx.file.tsconfig.path,
       # Source directories of the ts_library targets we depend on.
       ("|".join([
-        (";".join(d[JsLibraryInfo].srcs)) + ":" +
+        (";".join(
+          d[TsLibraryInfo].typescript_source_files
+          if for_compilation and TsLibraryInfo in d
+          else d[JsLibraryInfo].javascript_source_files
+        )) +
+        ":" +
         (
-          d[TsLibraryInfo].compiled_src_dir.path
+          d[TsLibraryInfo].original_typescript_dir.path
           if for_compilation and TsLibraryInfo in d
           else d[JsLibraryInfo].full_src_dir.path
         )
@@ -154,13 +175,18 @@ def _ts_library_create_full_src(ctx, internal_deps, npm_packages, output_dir, fo
     ],
   )
 
-def _ts_library_compile(ctx, npm_packages):
+def _ts_library_compile(ctx, internal_deps, npm_packages):
   ctx.actions.run(
     inputs = [
       ctx.file._ts_library_compile_script,
       ctx.outputs.compilation_src_dir,
       ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
       npm_packages[NpmPackagesInfo].installed_dir,
+    ] + [
+      d[TsLibraryInfo].original_typescript_dir
+      if TsLibraryInfo in d
+      else d[JsLibraryInfo].full_src_dir
+      for d in internal_deps
     ],
     outputs = [ctx.outputs.compiled_dir],
     executable = ctx.file._internal_nodejs,
@@ -178,13 +204,16 @@ def _ts_library_compile(ctx, npm_packages):
     ],
   )
 
-def _ts_library_transpile(ctx, npm_packages):
+def _ts_library_transpile(ctx, internal_deps, npm_packages):
   ctx.actions.run(
     inputs = [
       ctx.file._ts_library_transpile_script,
       ctx.outputs.transpilation_src_dir,
       ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
       npm_packages[NpmPackagesInfo].installed_dir,
+    ] + [
+      d[JsLibraryInfo].full_src_dir
+      for d in internal_deps
     ],
     outputs = [ctx.outputs.transpiled_dir],
     executable = ctx.file._internal_nodejs,

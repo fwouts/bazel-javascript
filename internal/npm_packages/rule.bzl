@@ -1,6 +1,5 @@
 NpmPackagesInfo = provider(fields=[
   "installed_dir",
-  "aliases",
 ])
 
 def _npm_packages_impl(ctx):
@@ -26,7 +25,6 @@ def _npm_packages_impl(ctx):
   return [
     NpmPackagesInfo(
       installed_dir = ctx.outputs.installed_dir,
-      aliases = ctx.attr.aliases,
     ),
   ]
 
@@ -40,9 +38,6 @@ npm_packages = rule(
     "yarn_lock": attr.label(
       allow_files = True,
       single_file = True,
-    ),
-    "aliases": attr.string_dict(
-      default = {},
     ),
     "_internal_nodejs": attr.label(
       allow_files = True,
