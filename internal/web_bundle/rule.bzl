@@ -116,15 +116,25 @@ function copySrcSoon() {{
 // copySrc() copies files from Bazel's source to our source, which will be
 // picked up by Webpack.
 function copySrc() {{
-  fs.copySync(bazelSrcDir, srcDir, {{
-    dereference: true,
-    overwrite: true,
-  }});
+  if (!fs.existsSync(bazelSrcDir)) {{
+    // Try again later.
+    console.warn("Source directory is gone, trying again soon...");
+    copySrcSoon();
+    return;
+  }}
+  try {{
+    fs.copySync(bazelSrcDir, srcDir, {{
+      dereference: true,
+      overwrite: true,
+    }});
+    console.log("Source directory updated successfully.")
+  }} catch (e) {{
+    console.warn("Error copying, trying again soon...");
+    copySrcSoon();
+  }}
 }}
 
-// Note: path.dirname() is essential here. Watching the directory directly
-// does not work, probably because of the symlinks that Bazel shuffles around.
-chokidar.watch(path.dirname(bazelSrcDir), {{
+chokidar.watch(bazelSrcDir, {{
   ignoreInitial: true,
   followSymlinks: true,
 }}).on("all", copySrcSoon);
