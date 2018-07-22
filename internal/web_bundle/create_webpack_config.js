@@ -22,6 +22,8 @@ const path = require("path");
 
 module.exports = (
   sourceDir,
+  aliases,
+  env,
   outputBundleDir,
   installedNpmPackagesDir,
   loadersNpmPackagesDir,
@@ -187,6 +189,7 @@ module.exports = (
       module: "empty"
     },
     resolve: {
+      alias: aliases,
       modules: [
         path.join(installedNpmPackagesDir, "node_modules"),
         // Necessary for webpack-hot-client with the dev server.
@@ -223,6 +226,7 @@ module.exports = (
         : []
       ),
       new webpack.DefinePlugin({
+        "process.env": env,
         NODE_ENV: "${mode}",
       }),
       ${

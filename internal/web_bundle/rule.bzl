@@ -1,4 +1,5 @@
 load("//internal/js_library:rule.bzl", "JsLibraryInfo")
+load("//internal/js_module:rule.bzl", "JsModuleInfo")
 load("//internal/npm_packages:rule.bzl", "NpmPackagesInfo")
 
 def _web_bundle_impl(ctx):
@@ -47,6 +48,9 @@ def _web_bundle_impl(ctx):
       ctx.attr.lib[JsLibraryInfo].npm_packages_installed_dir,
       ctx.attr.lib[JsLibraryInfo].compiled_javascript_dir,
       webpack_config,
+    ] + [
+      module[JsLibraryInfo].compiled_javascript_dir
+      for module in ctx.attr.modules
     ] + ctx.files.html_template,
     outputs = [
       ctx.outputs.bundle_dir,
@@ -66,6 +70,14 @@ def _web_bundle_impl(ctx):
       ctx.attr.lib[JsLibraryInfo].npm_packages_installed_dir.path,
       # Directory containing the compiled source code of the js_library.
       ctx.attr.lib[JsLibraryInfo].compiled_javascript_dir.path,
+      # Modules to expose to Webpack through aliases.
+      ("|".join([
+        module[JsModuleInfo].name + ":" + module[JsLibraryInfo].compiled_javascript_dir.path + '/' + _strip_buildfile(module[JsLibraryInfo].build_file_path) + ('/' + module[JsModuleInfo].single_file if module[JsModuleInfo].single_file else '') for module in ctx.attr.modules
+      ])),
+      # Environment variables to set in compiled JavaScript.
+      ("|".join([
+        key + ":" + value for key, value in ctx.attr.env.items()
+      ])),
       # Directory in which to place the compiled JavaScript.
       ctx.outputs.bundle_dir.path,
       # Path of the webpack config file.
@@ -88,6 +100,8 @@ const chokidar = require("chokidar");
 // chokidar (below), and copy it whenever it changes.
 const bazelSrcDir = "{source_dir}";
 const srcDir = "devserver-src";
+const aliases = {{{aliases}}};
+const env = {{{env}}};
 
 // copySrcSoon() will ensures that copySrc() is only called at most once per
 // second.
@@ -119,6 +133,8 @@ copySrc();
 const configGenerator = require(path.resolve("{webpack_config}"));
 const config = configGenerator(
   srcDir,
+  aliases,
+  env,
   "{output_bundle_dir}",
   path.resolve("{dependencies_packages_dir}"),
   "{internal_packages_dir}",
@@ -130,7 +146,7 @@ if (config.mode === "production") {{
   process.exit(1);
 }}
 
-serve({{
+serve({{}}, {{
   config,
   hot: true,
 }});
@@ -138,6 +154,14 @@ serve({{
       webpack_config = webpack_config.short_path,
       # Directory containing the compiled source code of the js_library.
       source_dir = ctx.attr.lib[JsLibraryInfo].compiled_javascript_dir.short_path,
+      # Modules to expose to Webpack through aliases.
+      aliases = (",".join([
+        "'" + module[JsModuleInfo].name + "': path.resolve('" + module[JsLibraryInfo].compiled_javascript_dir.short_path + '/' + _strip_buildfile(module[JsLibraryInfo].build_file_path) + ('/' + module[JsModuleInfo].single_file if module[JsModuleInfo].single_file else '') + "')" for module in ctx.attr.modules
+      ])),
+      # Environment variables to set in compiled JavaScript.
+      env = (",".join([
+        "'" + key + "': JSON.stringify('" + value + "')" for key, value in ctx.attr.env.items()
+      ])),
       # Directory in which to place the compiled JavaScript.
       output_bundle_dir = ctx.outputs.bundle_dir.short_path,
       # Directory containing external NPM dependencies the code depends on.
@@ -166,10 +190,21 @@ serve({{
           ctx.attr.lib[JsLibraryInfo].npm_packages_installed_dir,
           ctx.attr.lib[JsLibraryInfo].compiled_javascript_dir,
           webpack_config,
+        ] + [
+          module[JsLibraryInfo].compiled_javascript_dir
+          for module in ctx.attr.modules
         ] + ctx.files.html_template
       ),
     ),
   ]
+
+def _strip_buildfile(path):
+  if path.endswith('/BUILD.bazel'):
+    return path[:-12]
+  elif path.endswith('/BUILD'):
+    return path[:-6]
+  else:
+    return path
 
 web_bundle_internal = rule(
   implementation=_web_bundle_impl,
@@ -178,6 +213,10 @@ web_bundle_internal = rule(
       providers = [JsLibraryInfo],
       mandatory = True,
     ),
+    "modules": attr.label_list(
+      providers = [JsModuleInfo],
+    ),
+    "env": attr.string_dict(),
     "entry": attr.string(
       mandatory = True,
     ),
