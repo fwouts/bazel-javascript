@@ -5,6 +5,12 @@
     "moduleResolution": "node",
     "declaration": true,
     "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
     "jsx": "react",
     "allowSyntheticDefaultImports": true
   }
