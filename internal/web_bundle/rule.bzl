@@ -3,42 +3,7 @@ load("//internal/js_module:rule.bzl", "JsModuleInfo")
 load("//internal/npm_packages:rule.bzl", "NpmPackagesInfo")
 
 def _web_bundle_impl(ctx):
-  webpack_config = ctx.actions.declare_file(ctx.label.name + ".webpack.config.js")
-
-  # Create the Webpack config file.
-  ctx.actions.run(
-    inputs = [
-      ctx.file._web_bundle_create_webpack_config_script,
-      ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
-      ctx.attr.lib[JsLibraryInfo].npm_packages_installed_dir,
-      ctx.attr.lib[JsLibraryInfo].compiled_javascript_dir,
-    ],
-    outputs = [
-      webpack_config,
-    ],
-    executable = ctx.file._internal_nodejs,
-    env = {
-      "NODE_PATH": ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules"
-    },
-    arguments = [
-      # Run `node web_bundle/create_webpack_config.js`.
-      ctx.file._web_bundle_create_webpack_config_script.path,
-      # Path of the directory containing the lib's BUILD.bazel file.
-      ctx.attr.lib[JsLibraryInfo].build_file_path,
-      # Entry point for Webpack (e.g. "main.ts").
-      ctx.attr.entry,
-      # Output file name (e.g. "bundle.js").
-      ctx.attr.output,
-      # Mode for Webpack.
-      ctx.attr.mode,
-      # Library for Webpack (optional).
-      ctx.attr.library_name + "/" + ctx.attr.library_target if ctx.attr.library_name else "",
-      # Enable split chunks or not.
-      "1" if ctx.attr.split_chunks else "0",
-      # Path where to create the Webpack config.
-      webpack_config.path,
-    ],
-  )
+  webpack_config = _create_webpack_config(ctx)
 
   # Compile using the Webpack config.
   ctx.actions.run(
@@ -84,6 +49,9 @@ def _web_bundle_impl(ctx):
       webpack_config.path,
     ],
   )
+
+def _web_bundle_dev_server_impl(ctx):
+  webpack_config = _create_webpack_config(ctx)
 
   # Serve using Webpack development server.
   webpack_devserver_js = ctx.actions.declare_file(ctx.label.name + ".serve.js")
@@ -172,8 +140,8 @@ serve({{}}, {{
       env = (",".join([
         "'" + key + "': JSON.stringify('" + value + "')" for key, value in ctx.attr.env.items()
       ])),
-      # Directory in which to place the compiled JavaScript.
-      output_bundle_dir = ctx.outputs.bundle_dir.short_path,
+      # Unused output bundle directory.
+      output_bundle_dir = "",
       # Directory containing external NPM dependencies the code depends on.
       dependencies_packages_dir = ctx.attr.lib[JsLibraryInfo].npm_packages_installed_dir.short_path,
       # Directory containing internal NPM dependencies (for build tools).
@@ -216,9 +184,48 @@ def _strip_buildfile(path):
   else:
     return path
 
-web_bundle_internal = rule(
-  implementation=_web_bundle_impl,
-  attrs = {
+def _create_webpack_config(ctx):
+  webpack_config = ctx.actions.declare_file(ctx.label.name + ".webpack.config.js")
+
+  # Create the Webpack config file.
+  ctx.actions.run(
+    inputs = [
+      ctx.file._web_bundle_create_webpack_config_script,
+      ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
+      ctx.attr.lib[JsLibraryInfo].npm_packages_installed_dir,
+      ctx.attr.lib[JsLibraryInfo].compiled_javascript_dir,
+    ],
+    outputs = [
+      webpack_config,
+    ],
+    executable = ctx.file._internal_nodejs,
+    env = {
+      "NODE_PATH": ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules"
+    },
+    arguments = [
+      # Run `node web_bundle/create_webpack_config.js`.
+      ctx.file._web_bundle_create_webpack_config_script.path,
+      # Path of the directory containing the lib's BUILD.bazel file.
+      ctx.attr.lib[JsLibraryInfo].build_file_path,
+      # Entry point for Webpack (e.g. "main.ts").
+      ctx.attr.entry,
+      # Output file name (e.g. "bundle.js").
+      ctx.attr.output,
+      # Mode for Webpack.
+      ctx.attr.mode,
+      # Library for Webpack (optional).
+      ctx.attr.library_name + "/" + ctx.attr.library_target if ctx.attr.library_name else "",
+      # Enable split chunks or not.
+      "1" if ctx.attr.split_chunks else "0",
+      # Path where to create the Webpack config.
+      webpack_config.path,
+    ],
+  )
+
+  return webpack_config
+
+# Shared attributes between bundle and devserver rules.
+_ATTRS = {
     "lib": attr.label(
       providers = [JsLibraryInfo],
       mandatory = True,
@@ -282,16 +289,33 @@ web_bundle_internal = rule(
       single_file = True,
       default = Label("//internal/web_bundle:create_webpack_config.js"),
     ),
-  },
+  }
+
+_web_bundle = rule(
+  implementation=_web_bundle_impl,
+  attrs = _ATTRS,
   outputs = {
     "bundle_dir": "%{name}_bundle",
+  },
+)
+
+_web_bundle_dev_server = rule(
+  implementation=_web_bundle_dev_server_impl,
+  attrs = _ATTRS,
+  outputs = {
     "devserver": "%{name}_devserver",
   },
   executable = True,
 )
 
-def web_bundle(tags = [], **kwargs):
-  web_bundle_internal(
+def web_bundle(name, tags = [], **kwargs):
+  _web_bundle(
+    name = name,
+    tags = tags,
+    **kwargs
+  )
+  _web_bundle_dev_server(
+    name = name + "_server",
     tags = tags + [
       "ibazel_notify_changes",
       "ibazel_live_reload",
