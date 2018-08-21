@@ -1,0 +1,49 @@
+# Note: We use a local version of bazel-javascript rules here.
+#
+# You should remove this and use the remote version below instead.
+local_repository(
+  name = "bazel_javascript",
+  path = "../..",
+)
+
+# git_repository(
+#     name = "bazel_javascript",
+#     remote = "https://github.com/zenclabs/bazel-javascript.git",
+#     tag = <use the latest tag>,
+# )
+
+git_repository(
+    name = "build_bazel_rules_nodejs",
+    remote = "https://github.com/bazelbuild/rules_nodejs.git",
+    tag = "0.10.0",
+)
+
+load("@build_bazel_rules_nodejs//:defs.bzl", "node_repositories")
+
+node_repositories(
+    package_json = [],
+)
+
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "io_bazel_rules_docker",
+    sha256 = "5d64414477ffe87b16e248986c0731aee821ea3d626121cfeeec4ef7096812ca",
+    strip_prefix = "rules_docker-0.5.0",
+    urls = ["https://github.com/bazelbuild/rules_docker/archive/v0.5.0.tar.gz"],
+)
+
+load(
+    "@io_bazel_rules_docker//container:container.bzl",
+    "container_pull",
+    container_repositories = "repositories",
+)
+
+container_repositories()
+
+container_pull(
+    name = "node_alpine_image",
+    registry = "index.docker.io",
+    repository = "library/node",
+    tag = "8.11.3-alpine",
+)

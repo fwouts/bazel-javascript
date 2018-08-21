@@ -34,3 +34,9 @@ jobs:
             cd tests/examples/react-app
             yarn install
             bazel build ...
+      - run:
+          name: Build Dockerized TypeScript Node example
+          command: |
+            cd examples/node-typescript-app
+            bazel build //...
+            bazel run //services/my-service:image
