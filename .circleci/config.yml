@@ -23,18 +23,18 @@ jobs:
             wget https://github.com/bazelbuild/bazel/releases/download/$BAZEL_VERSION/$BAZEL_INSTALL_SCRIPT
             chmod +x $BAZEL_INSTALL_SCRIPT
             sudo ./$BAZEL_INSTALL_SCRIPT
-      # - run:
-      #     name: Build
-      #     command: bazel build //...
-      # - run: bazel clean
-      # - run:
-      #     name: Build react-app with node_modules already installed
-      #     command: |
-      #       # Install node_modules into tests/examples/react-app to give Node the opportunity to
-      #       # get confused.
-      #       cd tests/examples/react-app
-      #       yarn install
-      #       bazel build ...
+      - run:
+          name: Build
+          command: bazel build //...
+      - run: bazel clean
+      - run:
+          name: Build react-app with node_modules already installed
+          command: |
+            # Install node_modules into tests/examples/react-app to give Node the opportunity to
+            # get confused.
+            cd tests/examples/react-app
+            yarn install
+            bazel build ...
       - run:
           name: Build Dockerized TypeScript Node example
           command: |
