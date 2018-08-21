@@ -41,3 +41,4 @@ jobs:
             cd examples/node-typescript-app
             bazel build //...
             bazel run //services/my-service:image
+            docker run -t -p 3000:3000 bazel/services/my-service:image
