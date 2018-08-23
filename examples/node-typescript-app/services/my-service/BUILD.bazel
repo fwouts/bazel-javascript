@@ -17,9 +17,9 @@ container_image(
   cmd = [
     "sh",
     "-c",
-    # Rebuild node-sass, since it may not have been downloaded by Bazel with the right architecture.
+    # Rebuild packages such as node-sass, since they may not have been downloaded by Bazel with the right architecture.
     # Ideally, this should be done when the image is built, not when it's run. Does rules_docker allow this?
-    "npm rebuild node-sass && " +
+    "npm rebuild && " +
     "node -r source-map-support/register server/server_compiled/services/my-service/server/server.js",
   ],
   ports = [
