@@ -1,0 +1,39 @@
+package(default_visibility = ["//visibility:public"])
+
+load("@io_bazel_rules_docker//container:container.bzl", "container_image", "container_push")
+
+container_image(
+  name = "image",
+  base = "//services/base-image:service",
+  data_path = ".",
+  directory = "/app",
+  files = [
+    "//:packages",
+    "//services/my-service/server:server_compiled",
+  ],
+  symlinks = {
+    "/app/node_modules": "/app/packages_installed_dir/node_modules",
+  },
+  cmd = [
+    "sh",
+    "-c",
+    # Rebuild packages such as node-sass, since they may not have been downloaded by Bazel with the right architecture.
+    # Ideally, this should be done when the image is built, not when it's run. Does rules_docker allow this?
+    "npm rebuild && " +
+    "node -r source-map-support/register server/server_compiled/services/my-service/server/server.js",
+  ],
+  ports = [
+    "3000",
+  ],
+  stamp = True,
+)
+
+container_push(
+  name = "publish",
+  format = "Docker",
+  image = ":image",
+  registry = "my.repo.com",
+  repository = "my-service",
+  stamp = True,
+  tag = "{BUILD_USER}",
+)

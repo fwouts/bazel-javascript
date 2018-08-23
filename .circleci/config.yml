@@ -12,6 +12,7 @@ jobs:
 
     steps:
       - checkout
+      - setup_remote_docker
 
       - run:
           name: Install Bazel
@@ -34,3 +35,10 @@ jobs:
             cd tests/examples/react-app
             yarn install
             bazel build ...
+      - run:
+          name: Build Dockerized TypeScript Node example
+          command: |
+            cd examples/node-typescript-app
+            bazel build //...
+            bazel run //services/my-service:image
+            docker run -d -p 3000:3000 bazel/services/my-service:image
