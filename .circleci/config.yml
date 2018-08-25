@@ -3,11 +3,11 @@
 # Check https://circleci.com/docs/2.0/language-javascript/ for more details
 #
 version: 2
-job_configuration: *job_configuration
+job_configuration: &job_configuration
   docker:
     - image: circleci/node:8.11.3
   working_directory: ~/repo
-install_bazel: *install_bazel
+install_bazel: &install_bazel
   - run:
       name: Install Bazel
       command: |
