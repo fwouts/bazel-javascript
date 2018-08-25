@@ -276,7 +276,6 @@ web_bundle(
   lib,
   entry,
   html_template,
-  target,
   mode = "none",
   split_chunks = 0,
   public_path = "",
@@ -337,15 +336,6 @@ Used to compile a `js_library` to a JavaScript bundle to include in an HTML page
         <p>Configuration mode for webpack (default <code>none</code>).</p>
         <p>
           See <a href="https://webpack.js.org/concepts/mode">Webpack documentation</a> for details.
-        </p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>target</code></td>
-      <td>
-        <p>Target for webpack (required, you most likely need <code>web</code> or <code>node</code>).</p>
-        <p>
-          See <a href="https://webpack.js.org/concepts/targets">Webpack documentation</a> for details.
         </p>
       </td>
     </tr>
