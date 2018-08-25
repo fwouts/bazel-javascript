@@ -33,6 +33,14 @@ http_archive(
     urls = ["https://github.com/bazelbuild/rules_docker/archive/v0.5.0.tar.gz"],
 )
 
+# Import bazel_source ourselves, to work around checksum issues
+# https://github.com/bazelbuild/rules_docker/issues/500
+http_archive(
+    name = "bazel_source",
+    sha256 = "46dfffac884ccd51fcb493dd86463cb8c21be949fdb17634ca37805fd544beae",
+    urls = [("https://releases.bazel.build/0.17.0/rc1/bazel-0.17.0rc1-dist.zip")],
+)
+
 load(
     "@io_bazel_rules_docker//container:container.bzl",
     "container_pull",
