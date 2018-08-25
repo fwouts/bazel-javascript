@@ -3,30 +3,34 @@
 # Check https://circleci.com/docs/2.0/language-javascript/ for more details
 #
 version: 2
+job_configuration: *job_configuration
+  docker:
+    - image: circleci/node:8.11.3
+  working_directory: ~/repo
+install_bazel: *install_bazel
+  - run:
+      name: Install Bazel
+      command: |
+        sudo apt-get install pkg-config zip g++ zlib1g-dev unzip python
+        BAZEL_VERSION=0.15.0
+        BAZEL_INSTALL_SCRIPT=bazel-$BAZEL_VERSION-installer-linux-x86_64.sh
+        wget https://github.com/bazelbuild/bazel/releases/download/$BAZEL_VERSION/$BAZEL_INSTALL_SCRIPT
+        chmod +x $BAZEL_INSTALL_SCRIPT
+        sudo ./$BAZEL_INSTALL_SCRIPT
 jobs:
   build:
-    docker:
-      - image: circleci/node:8.11.3
-
-    working_directory: ~/repo
-
+    <<: *job_configuration
     steps:
       - checkout
-      - setup_remote_docker
-
-      - run:
-          name: Install Bazel
-          command: |
-            sudo apt-get install pkg-config zip g++ zlib1g-dev unzip python
-            BAZEL_VERSION=0.15.0
-            BAZEL_INSTALL_SCRIPT=bazel-$BAZEL_VERSION-installer-linux-x86_64.sh
-            wget https://github.com/bazelbuild/bazel/releases/download/$BAZEL_VERSION/$BAZEL_INSTALL_SCRIPT
-            chmod +x $BAZEL_INSTALL_SCRIPT
-            sudo ./$BAZEL_INSTALL_SCRIPT
+      - *install_bazel
       - run:
           name: Build
           command: bazel build //...
-      - run: bazel clean
+  build_with_node_modules_preinstalled:
+    <<: *job_configuration
+    steps:
+      - checkout
+      - *install_bazel
       - run:
           name: Build react-app with node_modules already installed
           command: |
@@ -35,6 +39,12 @@ jobs:
             cd tests/examples/react-app
             yarn install
             bazel build ...
+  build_dockerized_example:
+    <<: *job_configuration
+    steps:
+      - checkout
+      - setup_remote_docker
+      - *install_bazel
       - run:
           name: Build Dockerized TypeScript Node example
           command: |
@@ -42,3 +52,10 @@ jobs:
             bazel build //...
             bazel run //services/my-service:image
             docker run -d -p 3000:3000 bazel/services/my-service:image
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build
+      - build_with_node_modules_preinstalled
+      - build_dockerized_example
