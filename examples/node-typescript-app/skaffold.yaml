@@ -1,0 +1,14 @@
+apiVersion: skaffold/v1alpha2
+kind: Config
+build:
+  artifacts:
+    - imageName: my.repo.com/my-service
+      workspace: .
+      bazel:
+        target: //services/my-service:image.tar
+  local: {}
+deploy:
+  helm:
+    releases:
+      - name: my-service
+        chartPath: helm/my-service
