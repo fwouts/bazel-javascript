@@ -12,7 +12,8 @@ helm chart enables you to add something to kubernetes with minimal work.
 
 To use helm you need to [initialize helm and install tiller
 into your kubernetes cluster](https://docs.helm.sh/using_helm/#quickstart).
-Helm's Tiller Server manages the helm charts that are deployed in your
+Helm's Tiller Server manages the Helm Charts that are deployed in your
 cluster.
 
-The chart in my-service is a default chart that was created using the helm cli: `helm create`
+The chart in my-service is a default chart that was created using the helm
+cli: `helm create my-service`
