@@ -12,3 +12,4 @@ deploy:
     releases:
       - name: my-service
         chartPath: helm/my-service
+        valuesFilePath: helm/my-service/values.yaml
