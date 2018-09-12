@@ -6,8 +6,7 @@ replicaCount: 1
 
 image:
   name: my-service
-  repository: my.repo.com/my-service
-  tag: latest
+  imageName: my.repo.com/my-service
   pullPolicy: IfNotPresent
 
 nameOverride: ""
