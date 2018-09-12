@@ -15,6 +15,10 @@ A few things worth noting:
 ## Deploying to Kubernetes
 
 You can use [skaffold](https://github.com/GoogleContainerTools/skaffold) to
-deploy this app to kubernetes.
+deploy this app to kubernetes. To run skaffold, you will need
+[kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) and
+[helm](https://helm.sh/) installed. For a simple local development
+environment you can install docker and [enable
+kubernetes](https://docs.docker.com/docker-for-mac/#kubernetes).
 
 To get at the app you can run `kubectl port-forward service/my-service 3000:3000`
