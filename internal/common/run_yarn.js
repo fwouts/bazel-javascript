@@ -1,5 +1,5 @@
 const child_process = require("child_process");
-const fs = require("fs");
+const path = require("path");
 
 const CACHE_PATH = "./node_modules_cache";
 
@@ -12,7 +12,8 @@ function runYarn(cwd, command = "") {
 function yarnShellCommand(cwd, command = "") {
   // Don't use the shared cache or touch the lockfile.
   // See https://github.com/yarnpkg/yarn/issues/986.
-  return `yarn --cwd ${cwd} --cache-folder ${CACHE_PATH} --frozen-lockfile ${command}`;
+  const cachePath = path.resolve(cwd, CACHE_PATH);
+  return `yarn --cwd ${cwd} --cache-folder ${cachePath} --frozen-lockfile ${command}`;
 }
 
 module.exports = {
