@@ -19,9 +19,9 @@ app.use(async ctx => {
   ctx.body += "\n" + renderedCss.css.toString("utf8");
   // Just for fun, add a small chance of crashing. This allows us to check whether stack
   // traces are readable.
-  if (Math.random() < 0.1) {
-    throw new Error("Random crash.");
-  }
+  // if (Math.random() < 0.1) {
+  //   throw new Error("Random crash.");
+  // }
 });
 
 app.listen(3000, () => console.log("Server is ready."));
