@@ -38,7 +38,7 @@ jobs:
             # get confused.
             cd tests/examples/react-app
             yarn install
-            bazel build ...
+            bazel build //tests/examples/react-app/...
   build_dockerized_example:
     <<: *job_configuration
     steps:
