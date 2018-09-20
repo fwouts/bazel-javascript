@@ -26,19 +26,6 @@ jobs:
       - run:
           name: Build
           command: bazel build //...
-  build_with_node_modules_preinstalled:
-    <<: *job_configuration
-    steps:
-      - checkout
-      - *install_bazel
-      - run:
-          name: Build react-app with node_modules already installed
-          command: |
-            # Install node_modules into tests/examples/react-app to give Node the opportunity to
-            # get confused.
-            cd tests/examples/react-app
-            yarn install
-            bazel build ...
   build_dockerized_example:
     <<: *job_configuration
     steps:
@@ -69,10 +56,23 @@ jobs:
             cd examples/react-storybook-typescript
             bazel build //...
             cd -
+  build_react_app_with_node_modules_preinstalled:
+    <<: *job_configuration
+    steps:
+      - checkout
+      - *install_bazel
+      - run:
+          name: Build React example with node_modules already installed
+          command: |
+            # Install node_modules to give Node the opportunity to get confused.
+            cd examples/react-app-javascript
+            yarn install
+            bazel build ...
 workflows:
   version: 2
   build_and_test:
     jobs:
       - build
-      - build_with_node_modules_preinstalled
+      - build_react_examples
+      - build_react_app_with_node_modules_preinstalled
       - build_dockerized_example
