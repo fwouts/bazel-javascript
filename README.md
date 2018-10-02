@@ -44,6 +44,13 @@ git_repository(
     tag = "0.14.2",
 )
 
+# Required by build_bazel_rules_nodejs.
+git_repository(
+    name = "bazel_skylib",
+    remote = "https://github.com/bazelbuild/bazel-skylib.git",
+    tag = "0.5.0",
+)
+
 load("@build_bazel_rules_nodejs//:defs.bzl", "node_repositories")
 
 # By default, the Node and Yarn versions you have installed locally will be
