@@ -12,7 +12,7 @@ install_bazel: &install_bazel
     name: Install Bazel
     command: |
       sudo apt-get install pkg-config zip g++ zlib1g-dev unzip python
-      BAZEL_VERSION=0.17.1
+      BAZEL_VERSION=0.17.2
       BAZEL_INSTALL_SCRIPT=bazel-$BAZEL_VERSION-installer-linux-x86_64.sh
       wget https://github.com/bazelbuild/bazel/releases/download/$BAZEL_VERSION/$BAZEL_INSTALL_SCRIPT
       chmod +x $BAZEL_INSTALL_SCRIPT
@@ -26,19 +26,6 @@ jobs:
       - run:
           name: Build
           command: bazel build //...
-  build_with_node_modules_preinstalled:
-    <<: *job_configuration
-    steps:
-      - checkout
-      - *install_bazel
-      - run:
-          name: Build react-app with node_modules already installed
-          command: |
-            # Install node_modules into tests/examples/react-app to give Node the opportunity to
-            # get confused.
-            cd tests/examples/react-app
-            yarn install
-            bazel build ...
   build_dockerized_example:
     <<: *job_configuration
     steps:
@@ -52,10 +39,40 @@ jobs:
             bazel build //...
             bazel run //services/my-service:image
             docker run -d -p 3000:3000 bazel/services/my-service:image
+  build_react_examples:
+    <<: *job_configuration
+    steps:
+      - checkout
+      - *install_bazel
+      - run:
+          name: Build React examples
+          command: |
+            cd examples/react-app-javascript
+            bazel build //...
+            cd -
+            cd examples/react-app-typescript
+            bazel build //...
+            cd -
+            cd examples/react-storybook-typescript
+            bazel build //...
+            cd -
+  build_react_app_with_node_modules_preinstalled:
+    <<: *job_configuration
+    steps:
+      - checkout
+      - *install_bazel
+      - run:
+          name: Build React example with node_modules already installed
+          command: |
+            # Install node_modules to give Node the opportunity to get confused.
+            cd examples/react-app-javascript
+            yarn install
+            bazel build ...
 workflows:
   version: 2
   build_and_test:
     jobs:
       - build
-      - build_with_node_modules_preinstalled
+      - build_react_examples
+      - build_react_app_with_node_modules_preinstalled
       - build_dockerized_example

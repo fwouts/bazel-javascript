@@ -1,0 +1,17 @@
+package(default_visibility = ["//visibility:public"])
+
+load("@bazel_javascript//:defs.bzl", "npm_packages", "js_script")
+
+exports_files(["tsconfig.json"])
+
+js_script(
+  name = "storybook-run",
+  cmd = "start-storybook -p 9001 -c $LIB_DIR/.storybook",
+  lib = "//src:storybook",
+)
+
+npm_packages(
+  name = "packages",
+  package_json = ":package.json",
+  yarn_lock = ":yarn.lock",
+)

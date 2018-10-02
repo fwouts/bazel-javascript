@@ -1,0 +1,25 @@
+package(default_visibility = ["//visibility:public"])
+
+load("@bazel_javascript//:defs.bzl", "npm_packages", "web_bundle")
+
+web_bundle(
+  name = "app-bundle-dev",
+  lib = "//src",
+  entry = "index.js",
+  mode = "development",
+  html_template = "//public:index.html",
+)
+
+web_bundle(
+  name = "app-bundle-prod",
+  lib = "//src",
+  entry = "index.js",
+  mode = "production",
+  html_template = "//public:index.html",
+)
+
+npm_packages(
+  name = "packages",
+  package_json = ":package.json",
+  yarn_lock = ":yarn.lock",
+)

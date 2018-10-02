@@ -64,6 +64,7 @@ Object.assign(compilerOptions, {
   declaration: true,
   rootDir: "."
 });
+delete compilerOptions.allowJs;
 fs.writeFileSync(
   path.join(destinationDir, "tsconfig.json"),
   JSON.stringify(

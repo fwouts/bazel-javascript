@@ -1,21 +1,23 @@
 package(default_visibility = ["//visibility:public"])
 
-load("//:defs.bzl", "npm_packages", "web_bundle")
+load("@bazel_javascript//:defs.bzl", "npm_packages", "web_bundle")
+
+exports_files(["tsconfig.json"])
 
 web_bundle(
   name = "app-bundle-dev",
-  lib = "//tests/examples/react-app/src:index",
+  lib = "//src",
   entry = "index.js",
   mode = "development",
-  html_template = "//tests/examples/react-app/public:index.html",
+  html_template = "//public:index.html",
 )
 
 web_bundle(
   name = "app-bundle-prod",
-  lib = "//tests/examples/react-app/src:index",
+  lib = "//src",
   entry = "index.js",
   mode = "production",
-  html_template = "//tests/examples/react-app/public:index.html",
+  html_template = "//public:index.html",
 )
 
 npm_packages(
