@@ -6,4 +6,5 @@ ts_library(
   name = "shared-package",
   srcs = glob(["**/*.ts"]),
   tsconfig = "//:tsconfig.json",
+  deps = ["//:packages"],
 )
