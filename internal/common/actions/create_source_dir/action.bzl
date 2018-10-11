@@ -23,9 +23,6 @@ def create_source_dir(js, js_source, create_dir):
     script_args = js.script_args(js, js._create_source_dir_js)
     script_args.add("--into", create_dir)
     script_args.add("--from", js.package_path)
-    print(library.all_sources)
-    print(library.module_paths)
-    print(library.all_modules)
 
     for gen_script in gen_scripts:
       if type(gen_script) == type(""):

@@ -148,7 +148,6 @@ def _js_library_info(js, attr = None):
         attr = js.attr
 
     # The srcs should contain what has been explicitly added for a rule
-    srcs_attr = getattr(attr, "srcs", [])
     src_files = js._ctx.files.srcs
 
     # The deps is list of labels that should have providers that we can get sources from
@@ -161,7 +160,6 @@ def _js_library_info(js, attr = None):
 
     # Iterate through the deps to add them to their correct JsLibrary attributes
     for dep in deps_attr:
-      print(dep)
       if JsLibraryInfo in dep:
         dep_js_library = dep[JsLibraryInfo]
         # The dependency is another JsLibrary
