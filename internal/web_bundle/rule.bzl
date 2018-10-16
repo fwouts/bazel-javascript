@@ -60,7 +60,6 @@ def _web_bundle_dev_server_impl(ctx):
     content = """
 const fs = require("fs-extra");
 const path = require("path");
-const serve = require("webpack-serve");
 const chokidar = require("chokidar");
 
 // We cannot build directly from the source directory as Webpack struggles to
