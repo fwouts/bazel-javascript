@@ -123,10 +123,25 @@ if (config.mode === "production") {{
   process.exit(1);
 }}
 
-serve({{}}, {{
-  config,
-  hot: true,
+const webpack = require('webpack');
+const WebpackDevServer = require('webpack-dev-server');
+const port = 8080;
+
+var options = require(path.resolve("{dev_server_options}"));
+options.publicPath = config.output.publicPath;
+
+const server = new WebpackDevServer(webpack(config), options);
+
+server.listen(port, 'localhost', function (err) {{
+  if (err) {{
+    console.log(err);
+  }} else {{
+    console.log('WebpackDevServer listening at localhost:', port);
+  }}
 }});
+
+
+
 """.format(
       webpack_config = webpack_config.short_path,
       # Directory containing the compiled source code of the js_library.
@@ -147,6 +162,7 @@ serve({{}}, {{
       internal_packages_dir = ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.short_path,
       # Template index.html for Webpack.
       html_template = ctx.file.html_template.short_path if ctx.file.html_template else "",
+      dev_server_options = ctx.attr.lib[JsLibraryInfo].compiled_javascript_dir.short_path + "/" + ctx.file.dev_server_options.short_path,
     ),
   )
   ctx.actions.write(
@@ -269,6 +285,11 @@ _ATTRS = {
         "jsonp",
       ],
       default = "umd",
+    ),
+    "dev_server_options": attr.label(
+      allow_files = True,
+      single_file = True,
+      default = Label("//internal/web_bundle:dev_server_options.js"),
     ),
     "_internal_nodejs": attr.label(
       allow_files = True,
