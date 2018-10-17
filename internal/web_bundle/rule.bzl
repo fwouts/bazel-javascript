@@ -217,6 +217,8 @@ def _create_webpack_config(ctx):
       ctx.attr.library_name + "/" + ctx.attr.library_target if ctx.attr.library_name else "",
       # Enable split chunks or not.
       "1" if ctx.attr.split_chunks else "0",
+      # Public path of web assets
+      ctx.attr.public_path,
       # Path where to create the Webpack config.
       webpack_config.path,
     ],
@@ -250,6 +252,9 @@ _ATTRS = {
     ),
     "split_chunks": attr.bool(
       default = False,
+    ),
+    "public_path": attr.string(
+      default = "/",
     ),
     "html_template": attr.label(
       allow_files = True,
