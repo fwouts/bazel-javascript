@@ -10,7 +10,8 @@ const [
   mode,
   optionalLibrary,
   splitChunksStr,
-  webpackConfigPath
+  publicPath,
+  webpackConfigPath,
 ] = process.argv;
 
 const [libraryName, libraryTarget] = optionalLibrary.split("/");
@@ -60,6 +61,7 @@ module.exports = (
     output: {
       filename: "${outputFileName}",
       path: path.resolve(outputBundleDir),
+      publicPath: "${publicPath}",
       ${
         optionalLibrary
           ? `library: "${libraryName}",
