@@ -1,3 +1,6 @@
+def _map_modules(js_module_info):
+  return "%s:%s".format(js_module_info.module_root, js_module_info.module_name)
+
 def create_source_dir(js, js_source, create_dir):
     """Creates a directory with the sources described in the JsSource object
 
@@ -37,7 +40,7 @@ def create_source_dir(js, js_source, create_dir):
 
     script_args.add_all(library.all_sources, format_each = "s:%s")
     script_args.add_all(library.module_paths, format_each = "mrs:%s/node_modules/")
-    script_args.add_all(library.all_modules , format_each = "m:%s")
+    script_args.add_all(library.all_modules , map_each = _map_modules, format_each = "m:%s")
 
     inputs = depset(
       direct = direct_inputs,

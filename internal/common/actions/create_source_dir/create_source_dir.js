@@ -38,6 +38,7 @@ BazelAction(
   async args => {
     const { current_target, workspace_name, package_path, from, into } = args;
     const sources = ensureArray(args._);
+    console.log(sources);
     const nodeModulesPath = path.join(into, "node_modules");
     const package = {
       workspace: workspace_name,
@@ -79,6 +80,10 @@ BazelAction(
               );
             }
           }
+        } else {
+          const fromModuleDir = parsed.path;
+          const moduleName = path.basename(parsed.path);
+          makeSymlink(fromModuleDir, path.join(nodeModulesPath, moduleName));
         }
       } else if (parsed.symlink) {
         makeSymlink(parsed.path, path.join(into, parsed.path));
