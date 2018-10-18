@@ -33,9 +33,9 @@ JsLibraryInfo = provider(
         "all_sources",
         # Entire paths to add to npm modules (eg. a node_modules path)
         "module_paths",
-        # Depset of JsModule that this library depends on
+        # Modules that  are depended upon directly
         "modules",
-        # All modules that this library depends on
+        # Transitive module dependencies
         "all_modules",
     ],
 )
@@ -56,7 +56,7 @@ JsSourceInfo = provider(fields = [
 """Source that will be used either directly or for transpilation to javascript
 """
 
-JsModule = provider(
+JsModuleInfo = provider(
     fields = [
         # The root of the workspace
         "workspace_name",
@@ -171,8 +171,12 @@ def _js_library_info(js, attr = None):
       elif NpmPackagesInfo in dep:
         # The dependency is a node_modules directory installed by npm_packages
         module_paths.append(dep[NpmPackagesInfo].installed_dir)
-        
 
+      if JsModuleInfo in dep:
+        dep_js_module = dep[JsModuleInfo]
+        direct_modules.append(dep_js_module)
+        transitive_modules.append(dep_js_module.all_modules)
+        
     all_src_files = depset(
         direct = src_files,
         transitive = transitive_sources,
@@ -204,6 +208,13 @@ def _library_to_source_info(js, library, gen_scripts = None):
         library = library,
     )
 
+def _library_to_module_info(js, library, module_root, module_name):
+    return JsModuleInfo(
+        workspace_name = js.workspace_name,
+        all_modules = library.all_modules,
+        module_root = module_root,
+        module_name = module_name,
+    )
 
 def _script_args(js, script_file):
     """Create Args object that can be used with js.run_js()
@@ -264,6 +275,7 @@ def js_context(ctx, attr = None):
         # Fields
         workspace_name = ctx.workspace_name,
         package_path = ctx.label.package,
+        module_name = getattr(attr, "module_name", None),
         _ctx = ctx,
         _internal_nodejs = _internal_nodejs,
         _internal_packages = _internal_packages,
@@ -280,4 +292,5 @@ def js_context(ctx, attr = None):
         script_args = _script_args,
         library_info = _js_library_info,
         library_to_source_info = _library_to_source_info,
+        library_to_module_info = _library_to_module_info,
     )
