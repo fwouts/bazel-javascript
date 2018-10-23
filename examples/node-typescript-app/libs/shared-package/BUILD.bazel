@@ -3,9 +3,9 @@ package(default_visibility = ["//visibility:public"])
 load("@bazel_javascript//:defs.bzl", "ts_library")
 
 ts_library(
-  name = "shared-package",
-  module_name = "shared-package",
-  srcs = glob(["**/*.ts"]),
-  tsconfig = "//:tsconfig.json",
-  deps = ["//:packages"],
+    name = "shared-package",
+    srcs = glob(["**/*.ts"]),
+    module_name = "shared-package",
+    tsconfig = "//:tsconfig.json",
+    deps = ["//:packages"],
 )
