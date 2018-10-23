@@ -32,11 +32,15 @@ JsLibraryInfo = provider(
         # All source files provided as input
         "all_sources",
         # Entire paths to add to npm modules (eg. a node_modules path)
-        "module_paths",
+        "node_modules_dirs",
         # Modules that  are depended upon directly
-        "modules",
+        "dep_modules",
         # Transitive module dependencies
-        "all_modules",
+        "all_dep_modules",
+        # The target directories for the dependent modules
+        "dep_module_targets",
+        # The target directories for the transitive and directly dependent modules
+        "all_dep_module_targets",
     ],
 )
 """Metadata about an individual js library.
@@ -48,7 +52,7 @@ as: module dependencies, source files, paths to merge into node_modules.
 JsSourceInfo = provider(fields = [
     # The source js files
     "srcs",
-    # List of scripts to output 
+    # List of scripts to output
     "gen_scripts",
     # The library rule that generated this source
     "library",
@@ -60,12 +64,18 @@ JsModuleInfo = provider(
     fields = [
         # The root of the workspace
         "workspace_name",
-        # The root of the module
+        # The root directory of the module
         "module_root",
         # Name that will be used for non-relative imports
         "module_name",
-        # Transitive dependencies for this module
-        "all_modules",
+        # Modules that this module directly depends on
+        "dep_modules",
+        # All modules that this module and its dependencies require
+        "all_dep_modules",
+        # The target directories for the dependent modules
+        "dep_module_targets",
+        # The target directories for the transitive and directly dependent modules
+        "all_dep_module_targets",
     ],
 )
 """ Wraps a JsLibrary with a package_name for nonrelative imports
@@ -76,8 +86,8 @@ nonrelative imports
 
 JsModuleMap = provider(
     fields = [
-        "module_map"
-    ]
+        "module_map",
+    ],
 )
 
 ###############################################################################
@@ -154,46 +164,61 @@ def _js_library_info(js, attr = None):
     deps_attr = getattr(attr, "deps", [])
 
     transitive_sources = []
-    direct_modules = []
-    transitive_modules = []
-    module_paths = []
+    node_modules_dirs = []
+    dep_modules = []
+    transitive_dep_modules = []
+    dep_module_targets = []
+    transitive_dep_module_targets = []
 
     # Iterate through the deps to add them to their correct JsLibrary attributes
     for dep in deps_attr:
-      if JsLibraryInfo in dep:
-        dep_js_library = dep[JsLibraryInfo]
-        # The dependency is another JsLibrary
-        transitive_sources.append(dep_js_library.all_sources)
-        transitive_modules.append(dep_js_library.all_modules)
-      elif hasattr(dep, "tags") and "NODE_MODULES_MARKER" in getattr(dep, "tags"):
-        # The dependency is a module defined by rules_nodejs
-        direct_modules += dep
-      elif NpmPackagesInfo in dep:
-        # The dependency is a node_modules directory installed by npm_packages
-        module_paths.append(dep[NpmPackagesInfo].installed_dir)
+        if JsLibraryInfo in dep:
+            dep_js_library = dep[JsLibraryInfo]
 
-      if JsModuleInfo in dep:
-        dep_js_module = dep[JsModuleInfo]
-        direct_modules.append(dep_js_module)
-        transitive_modules.append(dep_js_module.all_modules)
-        
+            # The dependency is another JsLibrary
+            transitive_sources.append(dep_js_library.all_sources)
+            transitive_dep_modules.append(dep_js_library.all_dep_modules)
+        elif JsModuleInfo in dep:
+            dep_js_module = dep[JsModuleInfo]
+            transitive_dep_modules.append(dep_js_module.all_dep_modules)
+            transitive_dep_module_targets.append(dep_js_module.all_dep_module_targets)
+        elif hasattr(dep, "tags") and "NODE_MODULES_MARKER" in getattr(dep, "tags"):
+            # The dependency is a module defined by rules_nodejs
+            direct_modules += dep
+
+        if JsModuleInfo in dep:
+            dep_js_module = dep[JsModuleInfo]
+            dep_module_targets.append(dep_js_module.module_root)
+            dep_modules.append(dep_js_module)
+
+        if NpmPackagesInfo in dep:
+            # The dependency is a node_modules directory installed by npm_packages
+            node_modules_dirs.append(dep[NpmPackagesInfo].installed_dir)
+
     all_src_files = depset(
         direct = src_files,
         transitive = transitive_sources,
     )
 
-    all_modules = depset(
-        direct = direct_modules,
-        transitive = transitive_modules,
+    all_dep_modules = depset(
+        direct = dep_modules,
+        transitive = transitive_dep_modules,
+    )
+
+    all_dep_module_targets = depset(
+        direct = dep_module_targets,
+        transitive = transitive_dep_module_targets,
     )
 
     return JsLibraryInfo(
         package_path = js.package_path,
         srcs = src_files,
         all_sources = all_src_files,
-        module_paths = module_paths,
-        modules = direct_modules,
-        all_modules = all_modules,
+        node_modules_dirs = node_modules_dirs,
+        dep_modules = dep_modules,
+        all_dep_modules = all_dep_modules,
+        dep_module_targets = dep_module_targets,
+        all_dep_module_targets = all_dep_module_targets,
     )
 
 def _library_to_source_info(js, library, gen_scripts = None):
@@ -211,7 +236,8 @@ def _library_to_source_info(js, library, gen_scripts = None):
 def _library_to_module_info(js, library, module_root, module_name):
     return JsModuleInfo(
         workspace_name = js.workspace_name,
-        all_modules = library.all_modules,
+        all_dep_modules = library.all_dep_modules,
+        all_dep_module_targets = library.all_dep_module_targets,
         module_root = module_root,
         module_name = module_name,
     )

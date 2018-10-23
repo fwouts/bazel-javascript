@@ -6,8 +6,8 @@ def create_source_dir(js, js_source, create_dir):
 
     Args:
       js: JsContext object
-      js_source_provider: JsSource object describing the sources to symlink in the directory
-      source_dir: File object to populate with the sources (eg. ctx.outputs.compilation_src_dir)
+      js_source: JsSource object describing the sources to symlink in the directory
+      create_dir: File object to populate with the sources (eg. ctx.outputs.compilation_src_dir)
 
     Returns:
       Array with JsSource provider in it
@@ -19,7 +19,7 @@ def create_source_dir(js, js_source, create_dir):
       gen_scripts += js_source.gen_scripts
 
     direct_inputs = []
-    direct_inputs += library.module_paths
+    direct_inputs += library.node_modules_dirs
     transitive_inputs = [library.all_sources]
     # Depset with all of the sources in it
 
@@ -39,12 +39,12 @@ def create_source_dir(js, js_source, create_dir):
         script_args.add(argValue)
 
     script_args.add_all(library.all_sources, format_each = "s:%s")
-    script_args.add_all(library.module_paths, format_each = "mrs:%s/node_modules/")
-    script_args.add_all(library.all_modules , map_each = _map_modules, format_each = "m:%s")
+    script_args.add_all(library.node_modules_dirs, format_each = "mrs:%s/node_modules/")
+    script_args.add_all(library.all_dep_modules, map_each = _map_modules, format_each = "m:%s")
 
     inputs = depset(
       direct = direct_inputs,
-      transitive = [library.all_sources, library.all_modules],
+      transitive = [library.all_sources, library.all_dep_module_targets],
     )
 
     js.run_js(js, inputs = inputs, outputs = [create_dir], script = js._create_source_dir_js, script_args = script_args)
