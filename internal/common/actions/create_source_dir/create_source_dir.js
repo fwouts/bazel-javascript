@@ -24,7 +24,7 @@ const { BazelAction, ensureArray } = require("../run_js/BazelAction");
  * mr: Recursive module (add all the modules to node_modules)
  * g: Generate (run the passed in script to generate source files
  *
- * eg. node create_source_dir.js -s file/to/symlink.
+ * eg. node create_source_dir.js s:file/to/symlink.
  */
 BazelAction(
   {
