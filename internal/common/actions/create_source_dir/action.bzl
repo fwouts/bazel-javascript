@@ -1,5 +1,5 @@
 def _map_modules(js_module_info):
-  return "%s:%s".format(js_module_info.module_root, js_module_info.module_name)
+  return "%s:%s" % (js_module_info.module_root.path, js_module_info.module_name)
 
 def create_source_dir(js, js_source, create_dir):
     """Creates a directory with the sources described in the JsSource object
@@ -44,7 +44,7 @@ def create_source_dir(js, js_source, create_dir):
 
     inputs = depset(
       direct = direct_inputs,
-      transitive = transitive_inputs,
+      transitive = [library.all_sources, library.all_modules],
     )
 
     js.run_js(js, inputs = inputs, outputs = [create_dir], script = js._create_source_dir_js, script_args = script_args)

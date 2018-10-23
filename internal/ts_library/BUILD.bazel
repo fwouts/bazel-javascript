@@ -1,10 +1,10 @@
 package(default_visibility = ["//visibility:public"])
 
 exports_files([
-  "compile.js",
-  "create_full_src.js",
-  "default_tsconfig.json",
-  "rule.bzl",
-  "transpile.js",
-  "tsconfig.gen.js",
+    "compile.js",
+    "create_full_src.js",
+    "default_tsconfig.json",
+    "rule.bzl",
+    "transpile.js",
+    "tsconfig.gen.js",
 ])
