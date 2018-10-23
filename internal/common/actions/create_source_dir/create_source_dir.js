@@ -38,7 +38,7 @@ BazelAction(
   async args => {
     const { current_target, workspace_name, package_path, from, into } = args;
     const sources = ensureArray(args._);
-    console.log(sources);
+    // console.log(sources);
     const nodeModulesPath = path.join(into, "node_modules");
     const package = {
       workspace: workspace_name,
