@@ -50,7 +50,6 @@ BazelAction(
 
     const populateFiles = async source => {
       const parsed = parseSource(source);
-      console.dir(parsed);
       /**
        * Node Module Population
        */
