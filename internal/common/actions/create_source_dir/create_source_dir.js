@@ -82,7 +82,9 @@ BazelAction(
           }
         } else {
           const fromModuleDir = parsed.path;
-          const moduleName = path.basename(parsed.path);
+          const moduleName = parsed.params[0]
+            ? parsed.params[0]
+            : path.basename(parsed.path);
           makeSymlink(fromModuleDir, path.join(nodeModulesPath, moduleName));
         }
       } else if (parsed.symlink) {
