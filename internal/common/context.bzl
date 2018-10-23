@@ -23,6 +23,7 @@ JsContext = provider()
 
 JsLibraryInfo = provider(
     fields = [
+        "js",
         # The label that produced the JsLibrary
         "label",
         # Path of the BUILD.bazel file relative to the workspace root.
@@ -50,6 +51,7 @@ as: module dependencies, source files, paths to merge into node_modules.
 """
 
 JsSourceInfo = provider(fields = [
+    "js",
     # The source js files
     "srcs",
     # List of scripts to output
@@ -62,6 +64,7 @@ JsSourceInfo = provider(fields = [
 
 JsModuleInfo = provider(
     fields = [
+        "js",
         # The root of the workspace
         "workspace_name",
         # The root directory of the module
@@ -211,6 +214,7 @@ def _js_library_info(js, attr = None):
     )
 
     return JsLibraryInfo(
+        js = js,
         package_path = js.package_path,
         srcs = src_files,
         all_sources = all_src_files,
@@ -228,6 +232,7 @@ def _library_to_source_info(js, library, gen_scripts = None):
     """
 
     return JsSourceInfo(
+        js = js,
         srcs = library.all_sources,
         gen_scripts = gen_scripts,
         library = library,
@@ -235,6 +240,7 @@ def _library_to_source_info(js, library, gen_scripts = None):
 
 def _library_to_module_info(js, library, module_root, module_name):
     return JsModuleInfo(
+        js = js,
         workspace_name = js.workspace_name,
         all_dep_modules = library.all_dep_modules,
         all_dep_module_targets = library.all_dep_module_targets,
