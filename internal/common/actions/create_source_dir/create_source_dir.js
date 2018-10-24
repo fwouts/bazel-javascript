@@ -21,7 +21,8 @@ const { BazelAction, ensureArray } = require("../run_js/BazelAction");
  * r: Recurse
  *   rs:./some/dir/
  * m: Module (put it in node_modules)
- * mr: Recursive module (add all the modules to node_modules)
+ * mrs: Recursive module (add all the modules to node_modules)
+ *   mrs:some/node_modules
  * g: Generate (run the passed in script to generate source files
  *
  * eg. node create_source_dir.js s:file/to/symlink.
@@ -38,7 +39,6 @@ BazelAction(
   async args => {
     const { current_target, workspace_name, package_path, from, into } = args;
     const sources = ensureArray(args._);
-    // console.log(sources);
     const nodeModulesPath = path.join(into, "node_modules");
     const package = {
       workspace: workspace_name,
@@ -92,13 +92,6 @@ BazelAction(
         await makeGeneratedFiles(package, into, parsed.path, parsed.params);
       }
     };
-
-    // console.log(`Current Target: ${current_target}`);
-    // console.log(`Target Source Path: ${from}`);
-    // console.log(`Copying into: ${into}`);
-    // console.log(`Running in [${process.cwd()}]`);
-    // console.log(`Environment is: ${JSON.stringify(process.env, null, 2)}`);
-    // console.log(`Will create [${into}] for populating`);
 
     for (const source of sources) {
       await populateFiles(source);
