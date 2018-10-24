@@ -68,6 +68,20 @@ jobs:
             cd examples/react-app-javascript
             yarn install
             bazel build ...
+  buildifier-check:
+    docker:
+      - image: circleci/golang:1.9
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - run:
+          name: Install Buildifier
+          command: |
+            go get github.com/bazelbuild/buildtools/buildifier
+      - run:
+          name: Buildifier check
+          command: |
+            buildifier -showlog -mode=check $(find . -type f \( -iname BUILD -or -iname BUILD.bazel -or -iname "*.bzl" \))
   prettier-check:
     <<: *job_configuration
     steps:
@@ -94,4 +108,5 @@ workflows:
       - build_react_examples
       - build_react_app_with_node_modules_preinstalled
       - build_dockerized_example
+      - buildifier-check
       - prettier-check
