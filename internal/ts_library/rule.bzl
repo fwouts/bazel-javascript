@@ -53,14 +53,6 @@ def _ts_library_impl(ctx):
 
     return providers
 
-def _compiled_extension(path):
-    if path.endswith(".tsx"):
-        return path[:-4] + ".js"
-    elif path.endswith(".ts"):
-        return path[:-3] + ".js"
-    else:
-        return path
-
 ts_library = rule(
     implementation = _ts_library_impl,
     attrs = dict(JS_LIBRARY_ATTRIBUTES, **{
