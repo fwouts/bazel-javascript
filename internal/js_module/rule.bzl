@@ -1,8 +1,8 @@
 load("//internal/js_library:rule.bzl", "JsLibraryInfo")
 
-JsModuleInfo = provider(fields=[
-  "name",
-  "single_file",
+JsModuleInfo = provider(fields = [
+    "name",
+    "single_file",
 ])
 
 def _js_module_impl(ctx):
@@ -15,12 +15,12 @@ def _js_module_impl(ctx):
   ]
 
 js_module = rule(
-  implementation = _js_module_impl,
-  attrs = {
-    "lib": attr.label(
-      providers = [JsLibraryInfo],
-      mandatory = True,
-    ),
-    "single_file": attr.string()
-  }
+    attrs = {
+        "lib": attr.label(
+            providers = [JsLibraryInfo],
+            mandatory = True,
+        ),
+        "single_file": attr.string(),
+    },
+    implementation = _js_module_impl,
 )

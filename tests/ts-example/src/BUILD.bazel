@@ -4,27 +4,27 @@ load("//:defs.bzl", "js_binary")
 load("//:defs.bzl", "ts_library")
 
 js_binary(
-  name = "app",
-  lib = ":main",
-  entry = "main.js",
+    name = "app",
+    entry = "main.js",
+    lib = ":main",
 )
 
 ts_library(
-  name = "main",
-  srcs = [
-    "main.ts",
-  ],
-  deps = [
-    ":logger",
-  ]
+    name = "main",
+    srcs = [
+        "main.ts",
+    ],
+    deps = [
+        ":logger",
+    ],
 )
 
 ts_library(
-  name = "logger",
-  srcs = [
-    "logger.ts",
-  ],
-  deps = [
-    "//tests/ts-example/src/nested:constants",
-  ]
+    name = "logger",
+    srcs = [
+        "logger.ts",
+    ],
+    deps = [
+        "//tests/ts-example/src/nested:constants",
+    ],
 )

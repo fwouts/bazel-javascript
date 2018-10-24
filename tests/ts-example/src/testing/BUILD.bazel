@@ -4,27 +4,27 @@ load("//:defs.bzl", "js_test")
 load("//:defs.bzl", "ts_library")
 
 ts_library(
-  name = "sum",
-  srcs = [
-    "sum.ts",
-  ],
-  tsconfig = "//tests/ts-example:tsconfig.json",
+    name = "sum",
+    srcs = [
+        "sum.ts",
+    ],
+    tsconfig = "//tests/ts-example:tsconfig.json",
 )
 
 ts_library(
-  name = "sum_test_lib",
-  srcs = [
-    "sum.spec.ts",
-  ],
-  deps = [
-    "//tests/ts-example:packages",
-    ":sum",
-  ],
-  tsconfig = "//tests/ts-example:tsconfig.json",
+    name = "sum_test_lib",
+    srcs = [
+        "sum.spec.ts",
+    ],
+    tsconfig = "//tests/ts-example:tsconfig.json",
+    deps = [
+        ":sum",
+        "//tests/ts-example:packages",
+    ],
 )
 
 js_test(
-  name = "sum_test",
-  cmd = "jest sum.spec.js",
-  lib = ":sum_test_lib",
+    name = "sum_test",
+    cmd = "jest sum.spec.js",
+    lib = ":sum_test_lib",
 )

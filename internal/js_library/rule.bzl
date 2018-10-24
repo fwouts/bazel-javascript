@@ -1,18 +1,18 @@
 load("//internal/npm_packages:rule.bzl", "NpmPackagesInfo")
 
-JsLibraryInfo = provider(fields=[
-  # Path of the BUILD.bazel file relative to the workspace root.
-  "build_file_path",
-  # Directory containing the JavaScript files (and potentially other assets).
-  "compiled_javascript_dir",
-  # Source files provided as input.
-  "javascript_source_files",
-  # Other js_library targets depended upon.
-  "internal_deps",
-  # Depset of npm_packages depended upon (at most one element).
-  "npm_packages",
-  # Directory in which node_modules/ with external NPM packages can be found.
-  "npm_packages_installed_dir",
+JsLibraryInfo = provider(fields = [
+    # Path of the BUILD.bazel file relative to the workspace root.
+    "build_file_path",
+    # Directory containing the JavaScript files (and potentially other assets).
+    "compiled_javascript_dir",
+    # Source files provided as input.
+    "javascript_source_files",
+    # Other js_library targets depended upon.
+    "internal_deps",
+    # Depset of npm_packages depended upon (at most one element).
+    "npm_packages",
+    # Directory in which node_modules/ with external NPM packages can be found.
+    "npm_packages_installed_dir",
 ])
 
 def _js_library_impl(ctx):
@@ -160,43 +160,43 @@ def _js_library_compile(ctx, internal_deps, npm_packages):
   )
 
 js_library = rule(
-  implementation=_js_library_impl,
-  attrs = {
-    "srcs": attr.label_list(
-      allow_files = True,
-      mandatory = True,
-    ),
-    "deps": attr.label_list(
-      providers = [
-        [JsLibraryInfo],
-        [NpmPackagesInfo],
-      ],
-      default = [],
-    ),
-    "_internal_packages": attr.label(
-      default = Label("//internal:packages"),
-    ),
-    "_internal_nodejs": attr.label(
-      allow_files = True,
-      single_file = True,
-      default = Label("@nodejs//:node"),
-    ),
-    "_js_library_create_full_src_script": attr.label(
-      allow_files = True,
-      single_file = True,
-      default = Label("//internal/js_library:create_full_src.js"),
-    ),
-    "_js_library_compile_script": attr.label(
-      allow_files = True,
-      single_file = True,
-      default = Label("//internal/js_library:compile.js"),
-    ),
-    "_empty_npm_packages": attr.label(
-      default = Label("//internal/npm_packages/empty:packages"),
-    ),
-  },
-  outputs = {
-    "compiled_dir": "%{name}_compiled",
-    "compiled_javascript_dir": "%{name}_full_src",
-  },
+    attrs = {
+        "srcs": attr.label_list(
+            allow_files = True,
+            mandatory = True,
+        ),
+        "deps": attr.label_list(
+            providers = [
+                [JsLibraryInfo],
+                [NpmPackagesInfo],
+            ],
+            default = [],
+        ),
+        "_internal_packages": attr.label(
+            default = Label("//internal:packages"),
+        ),
+        "_internal_nodejs": attr.label(
+            allow_files = True,
+            single_file = True,
+            default = Label("@nodejs//:node"),
+        ),
+        "_js_library_create_full_src_script": attr.label(
+            allow_files = True,
+            single_file = True,
+            default = Label("//internal/js_library:create_full_src.js"),
+        ),
+        "_js_library_compile_script": attr.label(
+            allow_files = True,
+            single_file = True,
+            default = Label("//internal/js_library:compile.js"),
+        ),
+        "_empty_npm_packages": attr.label(
+            default = Label("//internal/npm_packages/empty:packages"),
+        ),
+    },
+    outputs = {
+        "compiled_dir": "%{name}_compiled",
+        "compiled_javascript_dir": "%{name}_full_src",
+    },
+    implementation = _js_library_impl,
 )

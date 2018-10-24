@@ -1,13 +1,13 @@
 load("//internal/js_library:rule.bzl", "JsLibraryInfo")
 load("//internal/npm_packages:rule.bzl", "NpmPackagesInfo")
 
-TsLibraryInfo = provider(fields=[
-  # Directory containing the TypeScript files (and potentially other assets).
-  "original_typescript_dir",
-  # Source files provided as input.
-  "typescript_source_files",
-  # Directory containing the generated TypeScript definitions and compiled JavaScript.
-  "compiled_typescript_dir",
+TsLibraryInfo = provider(fields = [
+    # Directory containing the TypeScript files (and potentially other assets).
+    "original_typescript_dir",
+    # Source files provided as input.
+    "typescript_source_files",
+    # Directory containing the generated TypeScript definitions and compiled JavaScript.
+    "compiled_typescript_dir",
 ])
 
 def _ts_library_impl(ctx):
@@ -232,55 +232,55 @@ def _ts_library_transpile(ctx, internal_deps, npm_packages):
   )
 
 ts_library = rule(
-  implementation=_ts_library_impl,
-  attrs = {
-    "srcs": attr.label_list(
-      allow_files = True,
-      mandatory = True,
-    ),
-    "deps": attr.label_list(
-      providers = [
-        [JsLibraryInfo],
-        [NpmPackagesInfo],
-      ],
-      default = [],
-    ),
-    "tsconfig": attr.label(
-      allow_files = [".json"],
-      single_file = True,
-      default = Label("//internal/ts_library:default_tsconfig.json"),
-    ),
-    "_internal_nodejs": attr.label(
-      allow_files = True,
-      single_file = True,
-      default = Label("@nodejs//:node"),
-    ),
-    "_internal_packages": attr.label(
-      default = Label("//internal:packages"),
-    ),
-    "_ts_library_create_full_src_script": attr.label(
-      allow_files = True,
-      single_file = True,
-      default = Label("//internal/ts_library:create_full_src.js"),
-    ),
-    "_ts_library_compile_script": attr.label(
-      allow_files = True,
-      single_file = True,
-      default = Label("//internal/ts_library:compile.js"),
-    ),
-    "_ts_library_transpile_script": attr.label(
-      allow_files = True,
-      single_file = True,
-      default = Label("//internal/ts_library:transpile.js"),
-    ),
-    "_empty_npm_packages": attr.label(
-      default = Label("//internal/npm_packages/empty:packages"),
-    ),
-  },
-  outputs = {
-    "compilation_src_dir": "%{name}_compilation_src",
-    "compiled_dir": "%{name}_compiled",
-    "transpilation_src_dir": "%{name}_transpilation_src",
-    "transpiled_dir": "%{name}_transpiled",
-  },
+    attrs = {
+        "srcs": attr.label_list(
+            allow_files = True,
+            mandatory = True,
+        ),
+        "deps": attr.label_list(
+            providers = [
+                [JsLibraryInfo],
+                [NpmPackagesInfo],
+            ],
+            default = [],
+        ),
+        "tsconfig": attr.label(
+            allow_files = [".json"],
+            single_file = True,
+            default = Label("//internal/ts_library:default_tsconfig.json"),
+        ),
+        "_internal_nodejs": attr.label(
+            allow_files = True,
+            single_file = True,
+            default = Label("@nodejs//:node"),
+        ),
+        "_internal_packages": attr.label(
+            default = Label("//internal:packages"),
+        ),
+        "_ts_library_create_full_src_script": attr.label(
+            allow_files = True,
+            single_file = True,
+            default = Label("//internal/ts_library:create_full_src.js"),
+        ),
+        "_ts_library_compile_script": attr.label(
+            allow_files = True,
+            single_file = True,
+            default = Label("//internal/ts_library:compile.js"),
+        ),
+        "_ts_library_transpile_script": attr.label(
+            allow_files = True,
+            single_file = True,
+            default = Label("//internal/ts_library:transpile.js"),
+        ),
+        "_empty_npm_packages": attr.label(
+            default = Label("//internal/npm_packages/empty:packages"),
+        ),
+    },
+    outputs = {
+        "compilation_src_dir": "%{name}_compilation_src",
+        "compiled_dir": "%{name}_compiled",
+        "transpilation_src_dir": "%{name}_transpilation_src",
+        "transpiled_dir": "%{name}_transpiled",
+    },
+    implementation = _ts_library_impl,
 )

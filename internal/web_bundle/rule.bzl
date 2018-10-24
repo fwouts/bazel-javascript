@@ -227,85 +227,85 @@ def _create_webpack_config(ctx):
 # Shared attributes between bundle and devserver rules.
 _ATTRS = {
     "lib": attr.label(
-      providers = [JsLibraryInfo],
-      mandatory = True,
+        providers = [JsLibraryInfo],
+        mandatory = True,
     ),
     "modules": attr.label_list(
-      providers = [JsModuleInfo],
+        providers = [JsModuleInfo],
     ),
     "env": attr.string_dict(),
     "entry": attr.string(
-      mandatory = True,
+        mandatory = True,
     ),
     "output": attr.string(
-      default = "bundle.js",
+        default = "bundle.js",
     ),
     "mode": attr.string(
-      values = [
-        "none",
-        "development",
-        "production",
-      ],
-      default = "none",
+        values = [
+            "none",
+            "development",
+            "production",
+        ],
+        default = "none",
     ),
     "split_chunks": attr.bool(
-      default = False,
+        default = False,
     ),
     "html_template": attr.label(
-      allow_files = True,
-      single_file = True,
+        allow_files = True,
+        single_file = True,
     ),
     "library_name": attr.string(),
     "library_target": attr.string(
-      values = [
-        "var",
-        "assign",
-        "this",
-        "window",
-        "global",
-        "commonjs",
-        "commonjs2",
-        "amd",
-        "umd",
-        "jsonp",
-      ],
-      default = "umd",
+        values = [
+            "var",
+            "assign",
+            "this",
+            "window",
+            "global",
+            "commonjs",
+            "commonjs2",
+            "amd",
+            "umd",
+            "jsonp",
+        ],
+        default = "umd",
     ),
     "_internal_nodejs": attr.label(
-      allow_files = True,
-      single_file = True,
-      default = Label("@nodejs//:node"),
+        allow_files = True,
+        single_file = True,
+        default = Label("@nodejs//:node"),
     ),
     "_internal_packages": attr.label(
-      default = Label("//internal:packages"),
+        default = Label("//internal:packages"),
     ),
     "_web_bundle_compile_script": attr.label(
-      allow_files = True,
-      single_file = True,
-      default = Label("//internal/web_bundle:compile.js"),
+        allow_files = True,
+        single_file = True,
+        default = Label("//internal/web_bundle:compile.js"),
     ),
     "_web_bundle_create_webpack_config_script": attr.label(
-      allow_files = True,
-      single_file = True,
-      default = Label("//internal/web_bundle:create_webpack_config.js"),
+        allow_files = True,
+        single_file = True,
+        default = Label("//internal/web_bundle:create_webpack_config.js"),
     ),
-  }
+}
 
 _web_bundle = rule(
-  implementation=_web_bundle_impl,
-  attrs = _ATTRS,
-  outputs = {
-    "bundle_dir": "%{name}_bundle",
-  },
+    attrs = _ATTRS,
+    outputs = {
+        "bundle_dir": "%{name}_bundle",
+    },
+    implementation = _web_bundle_impl,
 )
 
 _web_bundle_dev_server = rule(
-  implementation=_web_bundle_dev_server_impl,
-  attrs = _ATTRS,
-  outputs = {
-    "devserver": "%{name}_devserver",
-  },
-  executable = True,
+    attrs = _ATTRS,
+    executable = True,
+    outputs = {
+        "devserver": "%{name}_devserver",
+    },
+    implementation = _web_bundle_dev_server_impl,
 )
 
 def web_bundle(name, tags = [], **kwargs):

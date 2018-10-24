@@ -66,62 +66,62 @@ def _js_script_impl(ctx):
   ]
 
 js_script = rule(
-  implementation = _js_script_impl,
-  attrs = {
-    "cmd": attr.string(),
-    "lib": attr.label(
-      providers = [JsLibraryInfo],
-    ),
-    "_internal_nodejs": attr.label(
-      allow_files = True,
-      single_file = True,
-      default = Label("@nodejs//:node"),
-    ),
-    "_internal_packages": attr.label(
-      default = Label("//internal:packages"),
-    ),
-    "_js_script_compile_script": attr.label(
-      allow_files = True,
-      single_file = True,
-      default = Label("//internal/js_script_and_test:compile.js"),
-    ),
-  },
-  executable = True,
-  outputs = {
-    "compiled_dir": "%{name}_compiled_dir",
-    "executable_file": "%{name}.sh",
-  },
+    attrs = {
+        "cmd": attr.string(),
+        "lib": attr.label(
+            providers = [JsLibraryInfo],
+        ),
+        "_internal_nodejs": attr.label(
+            allow_files = True,
+            single_file = True,
+            default = Label("@nodejs//:node"),
+        ),
+        "_internal_packages": attr.label(
+            default = Label("//internal:packages"),
+        ),
+        "_js_script_compile_script": attr.label(
+            allow_files = True,
+            single_file = True,
+            default = Label("//internal/js_script_and_test:compile.js"),
+        ),
+    },
+    executable = True,
+    outputs = {
+        "compiled_dir": "%{name}_compiled_dir",
+        "executable_file": "%{name}.sh",
+    },
+    implementation = _js_script_impl,
 )
 
 # js_test is identical to js_script, but it's marked as "test" instead of
 # "executable".
 js_test = rule(
-  implementation = _js_script_impl,
-  attrs = {
-    "cmd": attr.string(
-      mandatory = True,
-    ),
-    "lib": attr.label(
-      providers = [JsLibraryInfo],
-      mandatory = True,
-    ),
-    "_internal_nodejs": attr.label(
-      allow_files = True,
-      single_file = True,
-      default = Label("@nodejs//:node"),
-    ),
-    "_internal_packages": attr.label(
-      default = Label("//internal:packages"),
-    ),
-    "_js_script_compile_script": attr.label(
-      allow_files = True,
-      single_file = True,
-      default = Label("//internal/js_script_and_test:compile.js"),
-    ),
-  },
-  test = True,
-  outputs = {
-    "compiled_dir": "%{name}_compiled_dir",
-    "executable_file": "%{name}.sh",
-  },
+    attrs = {
+        "cmd": attr.string(
+            mandatory = True,
+        ),
+        "lib": attr.label(
+            providers = [JsLibraryInfo],
+            mandatory = True,
+        ),
+        "_internal_nodejs": attr.label(
+            allow_files = True,
+            single_file = True,
+            default = Label("@nodejs//:node"),
+        ),
+        "_internal_packages": attr.label(
+            default = Label("//internal:packages"),
+        ),
+        "_js_script_compile_script": attr.label(
+            allow_files = True,
+            single_file = True,
+            default = Label("//internal/js_script_and_test:compile.js"),
+        ),
+    },
+    outputs = {
+        "compiled_dir": "%{name}_compiled_dir",
+        "executable_file": "%{name}.sh",
+    },
+    test = True,
+    implementation = _js_script_impl,
 )

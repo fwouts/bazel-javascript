@@ -4,8 +4,8 @@ load("@io_bazel_rules_docker//container:container.bzl", "container_image", "cont
 
 ## The Backend Base Image
 container_image(
-  name = "service",
-  base = "@node_alpine_image//image:image",
-  stamp = True,
-  workdir = "/app",
+    name = "service",
+    base = "@node_alpine_image//image:image",
+    stamp = True,
+    workdir = "/app",
 )

@@ -40,39 +40,39 @@ def _js_binary_impl(ctx):
   ]
 
 js_binary = rule(
-  implementation=_js_binary_impl,
-  attrs = {
-    "lib": attr.label(
-      providers = [JsLibraryInfo],
-      mandatory = True,
-    ),
-    "entry": attr.string(
-      mandatory = True,
-    ),
-    "mode": attr.string(
-      values = [
-        "none",
-        "development",
-        "production",
-      ],
-      default = "none",
-    ),
-    "_internal_nodejs": attr.label(
-      allow_files = True,
-      single_file = True,
-      default = Label("@nodejs//:node"),
-    ),
-    "_internal_packages": attr.label(
-      default = Label("//internal:packages"),
-    ),
-    "_js_binary_compile_script": attr.label(
-      allow_files = True,
-      single_file = True,
-      default = Label("//internal/js_binary:compile.js"),
-    ),
-  },
-  executable = True,
-  outputs = {
-    "executable_file": "%{name}.js",
-  },
+    attrs = {
+        "lib": attr.label(
+            providers = [JsLibraryInfo],
+            mandatory = True,
+        ),
+        "entry": attr.string(
+            mandatory = True,
+        ),
+        "mode": attr.string(
+            values = [
+                "none",
+                "development",
+                "production",
+            ],
+            default = "none",
+        ),
+        "_internal_nodejs": attr.label(
+            allow_files = True,
+            single_file = True,
+            default = Label("@nodejs//:node"),
+        ),
+        "_internal_packages": attr.label(
+            default = Label("//internal:packages"),
+        ),
+        "_js_binary_compile_script": attr.label(
+            allow_files = True,
+            single_file = True,
+            default = Label("//internal/js_binary:compile.js"),
+        ),
+    },
+    executable = True,
+    outputs = {
+        "executable_file": "%{name}.js",
+    },
+    implementation = _js_binary_impl,
 )

@@ -23,18 +23,18 @@ def _npm_binary_impl(ctx):
   ]
 
 npm_binary = rule(
-  implementation = _npm_binary_impl,
-  attrs = {
-    "install": attr.label(
-      providers = [NpmPackagesInfo],
-      mandatory = True,
-    ),
-    "binary": attr.string(
-      mandatory = True,
-    ),
-  },
-  outputs = {
-    "bin": "%{name}.sh"
-  },
-  executable = True,
+    attrs = {
+        "install": attr.label(
+            providers = [NpmPackagesInfo],
+            mandatory = True,
+        ),
+        "binary": attr.string(
+            mandatory = True,
+        ),
+    },
+    executable = True,
+    outputs = {
+        "bin": "%{name}.sh",
+    },
+    implementation = _npm_binary_impl,
 )

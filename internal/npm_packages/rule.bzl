@@ -1,5 +1,5 @@
-NpmPackagesInfo = provider(fields=[
-  "installed_dir",
+NpmPackagesInfo = provider(fields = [
+    "installed_dir",
 ])
 
 def _npm_packages_impl(ctx):
@@ -29,30 +29,30 @@ def _npm_packages_impl(ctx):
   ]
 
 npm_packages = rule(
-  implementation = _npm_packages_impl,
-  attrs = {
-    "package_json": attr.label(
-      allow_files = True,
-      single_file = True,
-      mandatory = True,
-    ),
-    "yarn_lock": attr.label(
-      allow_files = True,
-      single_file = True,
-      mandatory = True,
-    ),
-    "_internal_nodejs": attr.label(
-      allow_files = True,
-      single_file = True,
-      default = Label("@nodejs//:node"),
-    ),
-    "_npm_packages_install": attr.label(
-      allow_files = True,
-      single_file = True,
-      default = Label("//internal/npm_packages:install.js"),
-    ),
-  },
-  outputs = {
-    "installed_dir": "%{name}_installed_dir",
-  },
+    attrs = {
+        "package_json": attr.label(
+            allow_files = True,
+            single_file = True,
+            mandatory = True,
+        ),
+        "yarn_lock": attr.label(
+            allow_files = True,
+            single_file = True,
+            mandatory = True,
+        ),
+        "_internal_nodejs": attr.label(
+            allow_files = True,
+            single_file = True,
+            default = Label("@nodejs//:node"),
+        ),
+        "_npm_packages_install": attr.label(
+            allow_files = True,
+            single_file = True,
+            default = Label("//internal/npm_packages:install.js"),
+        ),
+    },
+    outputs = {
+        "installed_dir": "%{name}_installed_dir",
+    },
+    implementation = _npm_packages_impl,
 )
