@@ -122,5 +122,5 @@ function safeSymlink(fromPath, toPath) {
 module.exports = {
   safeSymlink,
   ensureArray,
-  BazelAction,
-}
+  BazelAction
+};
