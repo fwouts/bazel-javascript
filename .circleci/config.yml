@@ -68,7 +68,7 @@ jobs:
             cd examples/react-app-javascript
             yarn install
             bazel build ...
-  lint:
+  prettier-check:
     <<: *job_configuration
     steps:
       - checkout
@@ -94,4 +94,4 @@ workflows:
       - build_react_examples
       - build_react_app_with_node_modules_preinstalled
       - build_dockerized_example
-      - lint
+      - prettier-check
