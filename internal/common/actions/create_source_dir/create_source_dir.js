@@ -6,11 +6,6 @@ const { BazelAction, ensureArray } = require("../run_js/BazelAction");
  * Action for creating a directory with the passed in files for symlinking and
  * copying.
  *
- * The files can follow a uri syntax with params:
- * recurse=false (default)
- * symlink=true (default)
- *
- *
  * The files to be populated have flags set on them for the appropriate actions:
  * [flags]:./file/path
  * Possible flags:
