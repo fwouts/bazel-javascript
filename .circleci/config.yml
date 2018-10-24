@@ -68,6 +68,16 @@ jobs:
             cd examples/react-app-javascript
             yarn install
             bazel build ...
+  lint:
+    <<: *job_configuration
+    steps:
+      - checkout
+      - run:
+          name: Prettier
+          command: |
+            yarn global add prettier
+            prettier --list-different "**/*.js" "**/*.jsx" "**/*.ts" "**/*.tsx"
+
 workflows:
   version: 2
   build_and_test:
