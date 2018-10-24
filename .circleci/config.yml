@@ -86,3 +86,4 @@ workflows:
       - build_react_examples
       - build_react_app_with_node_modules_preinstalled
       - build_dockerized_example
+      - lint
