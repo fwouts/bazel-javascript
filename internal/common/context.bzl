@@ -76,12 +76,6 @@ Including this as a dependency should add the "package_name" as a key for
 nonrelative imports
 """
 
-JsModuleMap = provider(
-    fields = [
-        "module_map",
-    ],
-)
-
 ###############################################################################
 # Common Attributes
 
