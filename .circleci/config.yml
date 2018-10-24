@@ -72,11 +72,19 @@ jobs:
     <<: *job_configuration
     steps:
       - checkout
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "package.json" }}
+          - v1-dependencies-
+      - run: yarn install
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-dependencies-{{ checksum "package.json" }}
       - run:
           name: Prettier
           command: |
-            yarn global add prettier
-            prettier --list-different "**/*.js" "**/*.jsx" "**/*.ts" "**/*.tsx"
+            ./node_modules/.bin/prettier --list-different "**/*.js" "**/*.jsx" "**/*.ts" "**/*.tsx"
 
 workflows:
   version: 2
