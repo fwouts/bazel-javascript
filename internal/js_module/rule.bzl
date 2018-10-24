@@ -6,13 +6,13 @@ JsModuleInfo = provider(fields = [
 ])
 
 def _js_module_impl(ctx):
-  return [
-    ctx.attr.lib[JsLibraryInfo],
-    JsModuleInfo(
-      name = ctx.label.name,
-      single_file = ctx.attr.single_file,
-    ),
-  ]
+    return [
+        ctx.attr.lib[JsLibraryInfo],
+        JsModuleInfo(
+            name = ctx.label.name,
+            single_file = ctx.attr.single_file,
+        ),
+    ]
 
 js_module = rule(
     attrs = {

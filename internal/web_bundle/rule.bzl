@@ -3,61 +3,63 @@ load("//internal/js_module:rule.bzl", "JsModuleInfo")
 load("//internal/npm_packages:rule.bzl", "NpmPackagesInfo")
 
 def _web_bundle_impl(ctx):
-  webpack_config = _create_webpack_config(ctx)
+    webpack_config = _create_webpack_config(ctx)
 
-  # Compile using the Webpack config.
-  ctx.actions.run(
-    inputs = [
-      ctx.file._web_bundle_compile_script,
-      ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
-      ctx.attr.lib[JsLibraryInfo].npm_packages_installed_dir,
-      ctx.attr.lib[JsLibraryInfo].compiled_javascript_dir,
-      webpack_config,
-    ] + [
-      module[JsLibraryInfo].compiled_javascript_dir
-      for module in ctx.attr.modules
-    ] + ctx.files.html_template,
-    outputs = [
-      ctx.outputs.bundle_dir,
-    ],
-    executable = ctx.file._internal_nodejs,
-    env = {
-      "NODE_PATH": ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules"
-    },
-    arguments = [
-      # Run `node web_bundle/compile.js`.
-      ctx.file._web_bundle_compile_script.path,
-      # Template index.html for Webpack.
-      ctx.file.html_template.path if ctx.file.html_template else "",
-      # Directory containing internal NPM dependencies (for build tools).
-      ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path,
-      # Directory containing external NPM dependencies the code depends on.
-      ctx.attr.lib[JsLibraryInfo].npm_packages_installed_dir.path,
-      # Directory containing the compiled source code of the js_library.
-      ctx.attr.lib[JsLibraryInfo].compiled_javascript_dir.path,
-      # Modules to expose to Webpack through aliases.
-      ("|".join([
-        module[JsModuleInfo].name + ":" + module[JsLibraryInfo].compiled_javascript_dir.path + '/' + _strip_buildfile(module[JsLibraryInfo].build_file_path) + ('/' + module[JsModuleInfo].single_file if module[JsModuleInfo].single_file else '') for module in ctx.attr.modules
-      ])),
-      # Environment variables to set in compiled JavaScript.
-      ("|".join([
-        key + ":" + value for key, value in ctx.attr.env.items()
-      ])),
-      # Directory in which to place the compiled JavaScript.
-      ctx.outputs.bundle_dir.path,
-      # Path of the webpack config file.
-      webpack_config.path,
-    ],
-  )
+    # Compile using the Webpack config.
+    ctx.actions.run(
+        inputs = [
+            ctx.file._web_bundle_compile_script,
+            ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
+            ctx.attr.lib[JsLibraryInfo].npm_packages_installed_dir,
+            ctx.attr.lib[JsLibraryInfo].compiled_javascript_dir,
+            webpack_config,
+        ] + [
+            module[JsLibraryInfo].compiled_javascript_dir
+            for module in ctx.attr.modules
+        ] + ctx.files.html_template,
+        outputs = [
+            ctx.outputs.bundle_dir,
+        ],
+        executable = ctx.file._internal_nodejs,
+        env = {
+            "NODE_PATH": ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules",
+        },
+        arguments = [
+            # Run `node web_bundle/compile.js`.
+            ctx.file._web_bundle_compile_script.path,
+            # Template index.html for Webpack.
+            ctx.file.html_template.path if ctx.file.html_template else "",
+            # Directory containing internal NPM dependencies (for build tools).
+            ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path,
+            # Directory containing external NPM dependencies the code depends on.
+            ctx.attr.lib[JsLibraryInfo].npm_packages_installed_dir.path,
+            # Directory containing the compiled source code of the js_library.
+            ctx.attr.lib[JsLibraryInfo].compiled_javascript_dir.path,
+            # Modules to expose to Webpack through aliases.
+            ("|".join([
+                module[JsModuleInfo].name + ":" + module[JsLibraryInfo].compiled_javascript_dir.path + "/" + _strip_buildfile(module[JsLibraryInfo].build_file_path) + ("/" + module[JsModuleInfo].single_file if module[JsModuleInfo].single_file else "")
+                for module in ctx.attr.modules
+            ])),
+            # Environment variables to set in compiled JavaScript.
+            ("|".join([
+                key + ":" + value
+                for key, value in ctx.attr.env.items()
+            ])),
+            # Directory in which to place the compiled JavaScript.
+            ctx.outputs.bundle_dir.path,
+            # Path of the webpack config file.
+            webpack_config.path,
+        ],
+    )
 
 def _web_bundle_dev_server_impl(ctx):
-  webpack_config = _create_webpack_config(ctx)
+    webpack_config = _create_webpack_config(ctx)
 
-  # Serve using Webpack development server.
-  webpack_devserver_js = ctx.actions.declare_file(ctx.label.name + ".serve.js")
-  ctx.actions.write(
-    output = webpack_devserver_js,
-    content = """
+    # Serve using Webpack development server.
+    webpack_devserver_js = ctx.actions.declare_file(ctx.label.name + ".serve.js")
+    ctx.actions.write(
+        output = webpack_devserver_js,
+        content = """
 const fs = require("fs-extra");
 const path = require("path");
 const serve = require("webpack-serve");
@@ -129,100 +131,102 @@ serve({{}}, {{
   hot: true,
 }});
 """.format(
-      webpack_config = webpack_config.short_path,
-      # Directory containing the compiled source code of the js_library.
-      source_dir = ctx.attr.lib[JsLibraryInfo].compiled_javascript_dir.short_path,
-      # Modules to expose to Webpack through aliases.
-      aliases = (",".join([
-        "'" + module[JsModuleInfo].name + "': path.resolve('" + module[JsLibraryInfo].compiled_javascript_dir.short_path + '/' + _strip_buildfile(module[JsLibraryInfo].build_file_path) + ('/' + module[JsModuleInfo].single_file if module[JsModuleInfo].single_file else '') + "')" for module in ctx.attr.modules
-      ])),
-      # Environment variables to set in compiled JavaScript.
-      env = (",".join([
-        "'" + key + "': JSON.stringify('" + value + "')" for key, value in ctx.attr.env.items()
-      ])),
-      # Unused output bundle directory.
-      output_bundle_dir = "",
-      # Directory containing external NPM dependencies the code depends on.
-      dependencies_packages_dir = ctx.attr.lib[JsLibraryInfo].npm_packages_installed_dir.short_path,
-      # Directory containing internal NPM dependencies (for build tools).
-      internal_packages_dir = ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.short_path,
-      # Template index.html for Webpack.
-      html_template = ctx.file.html_template.short_path if ctx.file.html_template else "",
-    ),
-  )
-  ctx.actions.write(
-    output = ctx.outputs.devserver,
-    is_executable = True,
-    content = "NODE_PATH=" + ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.short_path + "/node_modules " + ctx.file._internal_nodejs.path + " " + webpack_devserver_js.short_path,
-  )
+            webpack_config = webpack_config.short_path,
+            # Directory containing the compiled source code of the js_library.
+            source_dir = ctx.attr.lib[JsLibraryInfo].compiled_javascript_dir.short_path,
+            # Modules to expose to Webpack through aliases.
+            aliases = (",".join([
+                "'" + module[JsModuleInfo].name + "': path.resolve('" + module[JsLibraryInfo].compiled_javascript_dir.short_path + "/" + _strip_buildfile(module[JsLibraryInfo].build_file_path) + ("/" + module[JsModuleInfo].single_file if module[JsModuleInfo].single_file else "") + "')"
+                for module in ctx.attr.modules
+            ])),
+            # Environment variables to set in compiled JavaScript.
+            env = (",".join([
+                "'" + key + "': JSON.stringify('" + value + "')"
+                for key, value in ctx.attr.env.items()
+            ])),
+            # Unused output bundle directory.
+            output_bundle_dir = "",
+            # Directory containing external NPM dependencies the code depends on.
+            dependencies_packages_dir = ctx.attr.lib[JsLibraryInfo].npm_packages_installed_dir.short_path,
+            # Directory containing internal NPM dependencies (for build tools).
+            internal_packages_dir = ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.short_path,
+            # Template index.html for Webpack.
+            html_template = ctx.file.html_template.short_path if ctx.file.html_template else "",
+        ),
+    )
+    ctx.actions.write(
+        output = ctx.outputs.devserver,
+        is_executable = True,
+        content = "NODE_PATH=" + ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.short_path + "/node_modules " + ctx.file._internal_nodejs.path + " " + webpack_devserver_js.short_path,
+    )
 
-  return [
-    DefaultInfo(
-      executable = ctx.outputs.devserver,
-      runfiles = ctx.runfiles(
-        files = [
-          ctx.file._internal_nodejs,
-          ctx.file._web_bundle_compile_script,
-          webpack_devserver_js,
-          ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
-          ctx.attr.lib[JsLibraryInfo].npm_packages_installed_dir,
-          ctx.attr.lib[JsLibraryInfo].compiled_javascript_dir,
-          webpack_config,
-        ] + [
-          module[JsLibraryInfo].compiled_javascript_dir
-          for module in ctx.attr.modules
-        ] + ctx.files.html_template
-      ),
-    ),
-  ]
+    return [
+        DefaultInfo(
+            executable = ctx.outputs.devserver,
+            runfiles = ctx.runfiles(
+                files = [
+                    ctx.file._internal_nodejs,
+                    ctx.file._web_bundle_compile_script,
+                    webpack_devserver_js,
+                    ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
+                    ctx.attr.lib[JsLibraryInfo].npm_packages_installed_dir,
+                    ctx.attr.lib[JsLibraryInfo].compiled_javascript_dir,
+                    webpack_config,
+                ] + [
+                    module[JsLibraryInfo].compiled_javascript_dir
+                    for module in ctx.attr.modules
+                ] + ctx.files.html_template,
+            ),
+        ),
+    ]
 
 def _strip_buildfile(path):
-  if path.endswith('/BUILD.bazel'):
-    return path[:-12]
-  elif path.endswith('/BUILD'):
-    return path[:-6]
-  else:
-    return path
+    if path.endswith("/BUILD.bazel"):
+        return path[:-12]
+    elif path.endswith("/BUILD"):
+        return path[:-6]
+    else:
+        return path
 
 def _create_webpack_config(ctx):
-  webpack_config = ctx.actions.declare_file(ctx.label.name + ".webpack.config.js")
+    webpack_config = ctx.actions.declare_file(ctx.label.name + ".webpack.config.js")
 
-  # Create the Webpack config file.
-  ctx.actions.run(
-    inputs = [
-      ctx.file._web_bundle_create_webpack_config_script,
-      ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
-      ctx.attr.lib[JsLibraryInfo].npm_packages_installed_dir,
-      ctx.attr.lib[JsLibraryInfo].compiled_javascript_dir,
-    ],
-    outputs = [
-      webpack_config,
-    ],
-    executable = ctx.file._internal_nodejs,
-    env = {
-      "NODE_PATH": ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules"
-    },
-    arguments = [
-      # Run `node web_bundle/create_webpack_config.js`.
-      ctx.file._web_bundle_create_webpack_config_script.path,
-      # Path of the directory containing the lib's BUILD.bazel file.
-      ctx.attr.lib[JsLibraryInfo].build_file_path,
-      # Entry point for Webpack (e.g. "main.ts").
-      ctx.attr.entry,
-      # Output file name (e.g. "bundle.js").
-      ctx.attr.output,
-      # Mode for Webpack.
-      ctx.attr.mode,
-      # Library for Webpack (optional).
-      ctx.attr.library_name + "/" + ctx.attr.library_target if ctx.attr.library_name else "",
-      # Enable split chunks or not.
-      "1" if ctx.attr.split_chunks else "0",
-      # Path where to create the Webpack config.
-      webpack_config.path,
-    ],
-  )
+    # Create the Webpack config file.
+    ctx.actions.run(
+        inputs = [
+            ctx.file._web_bundle_create_webpack_config_script,
+            ctx.attr._internal_packages[NpmPackagesInfo].installed_dir,
+            ctx.attr.lib[JsLibraryInfo].npm_packages_installed_dir,
+            ctx.attr.lib[JsLibraryInfo].compiled_javascript_dir,
+        ],
+        outputs = [
+            webpack_config,
+        ],
+        executable = ctx.file._internal_nodejs,
+        env = {
+            "NODE_PATH": ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules",
+        },
+        arguments = [
+            # Run `node web_bundle/create_webpack_config.js`.
+            ctx.file._web_bundle_create_webpack_config_script.path,
+            # Path of the directory containing the lib's BUILD.bazel file.
+            ctx.attr.lib[JsLibraryInfo].build_file_path,
+            # Entry point for Webpack (e.g. "main.ts").
+            ctx.attr.entry,
+            # Output file name (e.g. "bundle.js").
+            ctx.attr.output,
+            # Mode for Webpack.
+            ctx.attr.mode,
+            # Library for Webpack (optional).
+            ctx.attr.library_name + "/" + ctx.attr.library_target if ctx.attr.library_name else "",
+            # Enable split chunks or not.
+            "1" if ctx.attr.split_chunks else "0",
+            # Path where to create the Webpack config.
+            webpack_config.path,
+        ],
+    )
 
-  return webpack_config
+    return webpack_config
 
 # Shared attributes between bundle and devserver rules.
 _ATTRS = {
@@ -309,16 +313,16 @@ _web_bundle_dev_server = rule(
 )
 
 def web_bundle(name, tags = [], **kwargs):
-  _web_bundle(
-    name = name,
-    tags = tags,
-    **kwargs
-  )
-  _web_bundle_dev_server(
-    name = name + "_server",
-    tags = tags + [
-      "ibazel_notify_changes",
-      "ibazel_live_reload",
-    ],
-    **kwargs
-  )
+    _web_bundle(
+        name = name,
+        tags = tags,
+        **kwargs
+    )
+    _web_bundle_dev_server(
+        name = name + "_server",
+        tags = tags + [
+            "ibazel_notify_changes",
+            "ibazel_live_reload",
+        ],
+        **kwargs
+    )
