@@ -14,9 +14,6 @@ TsLibraryInfo = provider(fields = [
 def _ts_library_impl(ctx):
     js = js_context(ctx)
     providers = []
-    # for i, d in enumerate(ctx.attr.deps):
-    #     print("  {}. label = {}".format(i + 1, d.label))
-    #     print("    files = " + str([f.path for f in d.files.to_list()]))
 
     js_library = js.library_info(js)
     providers.append(js_library)
