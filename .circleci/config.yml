@@ -82,6 +82,24 @@ jobs:
           name: Buildifier check
           command: |
             buildifier -showlog -mode=check $(find . -type f \( -iname BUILD -or -iname BUILD.bazel -or -iname "*.bzl" \))
+  prettier-check:
+    <<: *job_configuration
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "package.json" }}
+          - v1-dependencies-
+      - run: yarn install
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-dependencies-{{ checksum "package.json" }}
+      - run:
+          name: Prettier
+          command: |
+            ./node_modules/.bin/prettier --list-different "**/*.js" "**/*.jsx" "**/*.ts" "**/*.tsx"
+
 workflows:
   version: 2
   build_and_test:
@@ -91,3 +109,4 @@ workflows:
       - build_react_app_with_node_modules_preinstalled
       - build_dockerized_example
       - buildifier-check
+      - prettier-check
