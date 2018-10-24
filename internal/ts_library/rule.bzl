@@ -19,7 +19,7 @@ def _ts_library_impl(ctx):
     providers.append(js_library)
 
     js_source = js.library_to_source_info(js, js_library, gen_scripts = [
-        [ctx.file._ts_config_genscript, ctx.file.tsconfig]
+        [ctx.file._ts_config_genscript, ctx.file.tsconfig],
     ])
     providers.append(js_source)
 
@@ -28,10 +28,10 @@ def _ts_library_impl(ctx):
     if js.module_name:
         js_module = js.library_to_module_info(
             js,
-            js_library, 
-            module_name = js.module_name, 
+            js_library,
+            module_name = js.module_name,
             module_root = ctx.outputs.compiled_dir,
-            )
+        )
         providers.append(js_module)
 
     compile_args = js.script_args(js, ctx.file._ts_library_compile_script.path)
@@ -51,7 +51,7 @@ def _ts_library_impl(ctx):
         script_args = compile_args,
     )
 
-    return providers 
+    return providers
 
 def _compiled_extension(path):
     if path.endswith(".tsx"):
@@ -88,7 +88,7 @@ ts_library = rule(
             allow_files = True,
             single_file = True,
             default = Label("//internal/ts_library:tsconfig.gen.js"),
-        )
+        ),
     }),
     outputs = {
         "compilation_src_dir": "%{name}_compilation_src",
