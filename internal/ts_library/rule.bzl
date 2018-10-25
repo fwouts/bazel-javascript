@@ -34,7 +34,7 @@ def _ts_library_impl(ctx):
         )
         providers.append(js_module)
 
-    compile_args = js.script_args(js, ctx.file._ts_library_compile_script.path)
+    compile_args = js.script_args(js)
     compile_args.add("--project", ctx.outputs.compilation_src_dir)
     compile_args.add("--outDir", ctx.outputs.compiled_dir)
 

@@ -231,7 +231,7 @@ def _library_to_module_info(js, library, module_root, module_name):
         module_name = module_name,
     )
 
-def _script_args(js, script_file):
+def _script_args(js):
     """Create Args object that can be used with js.run_js()
 
     Args:
@@ -246,8 +246,6 @@ def _script_args(js, script_file):
     # If the args get too big then spill over into the param file
     args.use_param_file("--param=%s")
     args.set_param_file_format("multiline")
-
-    # args.add(script_file)
 
     args.add("--current_target", js.label)
     args.add("--workspace_name", js.workspace_name)
