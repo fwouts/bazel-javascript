@@ -289,6 +289,9 @@ web_bundle(
 
 Used to compile a `js_library` to a JavaScript bundle to include in an HTML page.
 
+You can run a webpack-dev-server with `bazel run //target_server` (append `_server` to your target name).
+Live reloading is supported if you use [`ibazel`](https://github.com/bazelbuild/bazel-watcher).
+
 <table>
   <thead>
     <tr>
