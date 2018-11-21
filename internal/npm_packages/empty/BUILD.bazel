@@ -5,7 +5,7 @@ load("//:defs.bzl", "npm_packages")
 # This rule is used by ts_library targets that don't depend on any npm_packages
 # targets (because they don't use any external NPM packages).
 npm_packages(
-  name = "packages",
-  package_json = ":package.json",
-  yarn_lock = ":yarn.lock",
+    name = "packages",
+    package_json = ":package.json",
+    yarn_lock = ":yarn.lock",
 )

@@ -1,7 +1,7 @@
 package(default_visibility = ["//visibility:public"])
 
 exports_files([
-  "compile.js",
-  "create_webpack_config.js",
-  "rule.bzl",
+    "compile.js",
+    "create_webpack_config.js",
+    "rule.bzl",
 ])

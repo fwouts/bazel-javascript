@@ -41,15 +41,11 @@ git_repository(
 git_repository(
     name = "build_bazel_rules_nodejs",
     remote = "https://github.com/bazelbuild/rules_nodejs.git",
-    tag = "0.14.2",
+    tag = "0.15.0",
 )
 
-# Required by build_bazel_rules_nodejs.
-git_repository(
-    name = "bazel_skylib",
-    remote = "https://github.com/bazelbuild/bazel-skylib.git",
-    tag = "0.5.0",
-)
+load("@build_bazel_rules_nodejs//:package.bzl", "rules_nodejs_dependencies")
+rules_nodejs_dependencies()
 
 load("@build_bazel_rules_nodejs//:defs.bzl", "node_repositories")
 
@@ -292,6 +288,9 @@ web_bundle(
 ```
 
 Used to compile a `js_library` to a JavaScript bundle to include in an HTML page.
+
+You can run a webpack-dev-server with `bazel run //target_server` (append `_server` to your target name).
+Live reloading is supported if you use [`ibazel`](https://github.com/bazelbuild/bazel-watcher).
 
 <table>
   <thead>

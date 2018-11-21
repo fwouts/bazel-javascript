@@ -3,36 +3,36 @@ package(default_visibility = ["//visibility:public"])
 load("@bazel_javascript//:defs.bzl", "ts_library")
 
 ts_library(
-  name = "storybook",
-  srcs = [
-    ".storybook/config.ts",
-  ],
-  deps = [
-    ":component_story",
-    "//:packages",
-  ],
+    name = "storybook",
+    srcs = [
+        ".storybook/config.ts",
+    ],
+    deps = [
+        ":component_story",
+        "//:packages",
+    ],
 )
 
 ts_library(
-  name = "component_story",
-  srcs = [
-    "component.story.tsx",
-  ],
-  deps = [
-    ":component",
-    "//:packages",
-  ],
+    name = "component_story",
+    srcs = [
+        "component.story.tsx",
+    ],
+    deps = [
+        ":component",
+        "//:packages",
+    ],
 )
 
 ts_library(
-  name = "component",
-  srcs = [
-    "component1.tsx",
-    "component1.css",
-    "component2.tsx",
-    "component2.css",
-  ],
-  deps = [
-    "//:packages",
-  ],
+    name = "component",
+    srcs = [
+        "component1.css",
+        "component1.tsx",
+        "component2.css",
+        "component2.tsx",
+    ],
+    deps = [
+        "//:packages",
+    ],
 )
