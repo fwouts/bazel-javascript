@@ -11,7 +11,7 @@ const [
   optionalLibrary,
   splitChunksStr,
   publicPath,
-  webpackConfigPath,
+  webpackConfigPath
 ] = process.argv;
 
 const [libraryName, libraryTarget] = optionalLibrary.split("/");
