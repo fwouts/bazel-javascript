@@ -10,6 +10,7 @@ const [
   mode,
   optionalLibrary,
   splitChunksStr,
+  publicPath,
   webpackConfigPath
 ] = process.argv;
 
@@ -60,6 +61,7 @@ module.exports = (
     output: {
       filename: "${outputFileName}",
       path: path.resolve(outputBundleDir),
+      publicPath: "${publicPath}",
       ${
         optionalLibrary
           ? `library: "${libraryName}",
