@@ -4,24 +4,24 @@ load("//:defs.bzl", "js_library", "js_script", "js_test")
 
 # This is a script, producing an executable (bazel run).
 js_script(
-  name = "script",
-  lib = ":lib",
-  cmd = "jest",
+    name = "script",
+    cmd = "jest",
+    lib = ":lib",
 )
 
 # This is a script, producing a test (bazel test).
 js_test(
-  name = "test",
-  lib = ":lib",
-  cmd = "jest",
+    name = "test",
+    cmd = "jest",
+    lib = ":lib",
 )
 
 js_library(
-  name = "lib",
-  srcs = [
-    "example.spec.js",
-  ],
-  deps = [
-    "//tests/js-library-complex/nested:combined",
-  ],
+    name = "lib",
+    srcs = [
+        "example.spec.js",
+    ],
+    deps = [
+        "//tests/js-library-complex/nested:combined",
+    ],
 )

@@ -3,23 +3,23 @@ package(default_visibility = ["//visibility:public"])
 load("//:defs.bzl", "ts_library")
 
 ts_library(
-  name = "constants",
-  srcs = [
-    "constants.ts",
-  ],
-  deps = [
-    ":nodeps",
-    "//tests/ts-example/src/testing:sum",
-    "//tests/ts-example:packages",
-  ],
-  tsconfig = "//tests/ts-example:tsconfig.json",
+    name = "constants",
+    srcs = [
+        "constants.ts",
+    ],
+    tsconfig = "//tests/ts-example:tsconfig.json",
+    deps = [
+        ":nodeps",
+        "//tests/ts-example:packages",
+        "//tests/ts-example/src/testing:sum",
+    ],
 )
 
 ts_library(
-  name = "nodeps",
-  srcs = [
-    "nodeps.ts",
-    "suffix.ts",
-  ],
-  tsconfig = "//tests/ts-example:tsconfig.json",
+    name = "nodeps",
+    srcs = [
+        "nodeps.ts",
+        "suffix.ts",
+    ],
+    tsconfig = "//tests/ts-example:tsconfig.json",
 )

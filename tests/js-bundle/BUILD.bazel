@@ -3,8 +3,8 @@ package(default_visibility = ["//visibility:public"])
 load("//:defs.bzl", "web_bundle")
 
 web_bundle(
-  name = "bundle",
-  lib = "//tests/js-bundle/src:main",
-  entry = "main.js",
-  output = "app.js",
+    name = "bundle",
+    entry = "main.js",
+    lib = "//tests/js-bundle/src:main",
+    output = "app.js",
 )
