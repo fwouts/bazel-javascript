@@ -258,7 +258,7 @@ _ATTRS = {
         default = False,
     ),
     "public_path": attr.string(
-      default = "/",
+        default = "/",
     ),
     "html_template": attr.label(
         allow_files = True,
