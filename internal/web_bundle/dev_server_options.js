@@ -1,7 +1,7 @@
 const options = {
   hot: true,
   inline: true,
-  contentBase: '/',
+  contentBase: "/"
 };
 
 module.exports = options;
