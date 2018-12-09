@@ -1,7 +1,27 @@
-load("//internal/js_library:rule.bzl", "JsLibraryInfo")
 load("//internal/npm_packages:rule.bzl", "NpmPackagesInfo")
+load("//internal/common:context.bzl", "JS_LIBRARY_ATTRIBUTES", "js_context")
 
 def _js_binary_impl(ctx):
+    js = js_context(ctx)
+    providers = []
+
+    compile_args = js.script_args(js)
+    # Run `node js_binary/compile.js`.
+    ctx.file._js_binary_compile_script.path,
+    # Path of the directory containing the lib's BUILD.bazel file.
+    ctx.attr.lib[JsLibraryInfo].build_file_path,
+    # Entry point for Webpack (e.g. "main.ts").
+    ctx.attr.entry,
+    # Mode for Webpack.
+    ctx.attr.mode,
+    # Directory containing external NPM dependencies the code depends on.
+    ctx.attr.lib[JsLibraryInfo].npm_packages_installed_dir.path,
+    # Directory containing the compiled source code of the js_library.
+    ctx.attr.lib[JsLibraryInfo].compiled_javascript_dir.path,
+    # Directory in which to place the compiled JavaScript.
+    ctx.outputs.executable_file.path, 
+    
+
     ctx.actions.run(
         inputs = [
             ctx.file._js_binary_compile_script,
