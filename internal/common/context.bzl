@@ -84,7 +84,7 @@ JS_CONTEXT_ATTRIBUTES = {
     "_common_js_files": attr.label(
         allow_files = True,
         default = Label("//internal/common:_common_js_files")
-    )
+    ),
     "_actions_bazel_action_js": attr.label(
         allow_files = True,
         single_file = True,
