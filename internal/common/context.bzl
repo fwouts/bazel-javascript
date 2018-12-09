@@ -172,7 +172,7 @@ def _js_library_info(js, attr = None):
             dep_js_module = dep[JsModuleInfo]
             transitive_dep_modules.append(dep_js_module.all_dep_modules)
             transitive_dep_module_targets.append(dep_js_module.all_dep_module_targets)
-        elif hasattr(dep, "tags") and "NODE_MODULES_MARKER" in getattr(dep, "tags"):
+        elif hasattr(dep, "tags") and "NODE_MODULE_MARKER" in getattr(dep, "tags"):
             # The dependency is a module defined by rules_nodejs
             direct_modules += dep
 
