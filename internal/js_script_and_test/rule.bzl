@@ -1,5 +1,5 @@
-load("//internal/js_library:rule.bzl", "JsLibraryInfo")
 load("//internal/npm_packages:rule.bzl", "NpmPackagesInfo")
+load("//internal/common:context.bzl", "JsLibraryInfo", "JsModuleInfo", "JS_LIBRARY_ATTRIBUTES", "js_context")
 
 def _js_script_impl(ctx):
     # Create a directory that contains:

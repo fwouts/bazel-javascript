@@ -1,4 +1,3 @@
-load("//internal/js_library:rule.bzl", "JsLibraryInfo")
 load("//internal/npm_packages:rule.bzl", "NpmPackagesInfo")
 load("//internal/common:context.bzl", "JS_LIBRARY_ATTRIBUTES", "js_context")
 

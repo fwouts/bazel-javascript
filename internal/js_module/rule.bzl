@@ -1,11 +1,7 @@
-load("//internal/js_library:rule.bzl", "JsLibraryInfo")
-
-JsModuleInfo = provider(fields = [
-    "name",
-    "single_file",
-])
+load("//internal/common:context.bzl", "JsLibraryInfo", "JsModuleInfo", "JS_LIBRARY_ATTRIBUTES", "js_context")
 
 def _js_module_impl(ctx):
+    
     return [
         ctx.attr.lib[JsLibraryInfo],
         JsModuleInfo(
