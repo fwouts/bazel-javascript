@@ -43,7 +43,8 @@ JsSourceInfo = provider(fields = [
     "js",
     # The source js files
     "src_files",
-    # List of scripts to output
+    # List of scripts that will be used to generate files in the source directory
+    # For an example of these scripts see internal/ts_library/tsconfig.gen.js
     "gen_scripts",
     # The library rule that generated this source
     "library",
