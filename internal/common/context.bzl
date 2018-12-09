@@ -18,9 +18,9 @@ JsLibraryInfo = provider(
         # Path of the BUILD.bazel file relative to the workspace root.
         "package_path",
         # Source files provided as input.
-        "srcs",
+        "src_files",
         # All source files provided as input
-        "all_sources",
+        "all_src_files",
         # Entire paths to add to npm modules (eg. a node_modules path)
         "node_modules_dirs",
         # Modules that  are depended upon directly
@@ -42,7 +42,7 @@ as: module dependencies, source files, paths to merge into node_modules.
 JsSourceInfo = provider(fields = [
     "js",
     # The source js files
-    "srcs",
+    "src_files",
     # List of scripts to output
     "gen_scripts",
     # The library rule that generated this source
@@ -81,6 +81,10 @@ nonrelative imports
 
 # Attributes that should be included for any rule that wants to create a JsContext
 JS_CONTEXT_ATTRIBUTES = {
+    "_common_js_files": attr.label(
+        allow_files = True,
+        default = Label("//internal/common:_common_js_files")
+    )
     "_actions_bazel_action_js": attr.label(
         allow_files = True,
         single_file = True,
@@ -199,8 +203,8 @@ def _js_library_info(js, attr = None):
     return JsLibraryInfo(
         js = js,
         package_path = js.package_path,
-        srcs = src_files,
-        all_sources = all_src_files,
+        src_files = src_files,
+        all_src_files = all_src_files,
         node_modules_dirs = node_modules_dirs,
         dep_modules = dep_modules,
         all_dep_modules = all_dep_modules,
@@ -216,7 +220,7 @@ def _library_to_source_info(js, library, gen_scripts = None):
 
     return JsSourceInfo(
         js = js,
-        srcs = library.all_sources,
+        src_files = library.all_src_files,
         gen_scripts = gen_scripts,
         library = library,
     )
@@ -238,9 +242,6 @@ def _script_args(js):
     js: JsContext object
     script_file: File object for the script to be run
     """
-    if script_file == None:
-        fail("No script file provided to script args")
-
     args = js.actions.args()
 
     # If the args get too big then spill over into the param file
