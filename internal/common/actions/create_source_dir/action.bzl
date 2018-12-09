@@ -23,7 +23,7 @@ def create_source_dir(js, js_source, create_dir):
     transitive_inputs = [library.all_sources]
     # Depset with all of the sources in it
 
-    script_args = js.script_args(js, js._create_source_dir_js)
+    script_args = js.script_args(js)
     script_args.add("--into", create_dir)
     script_args.add("--from", js.package_path)
 
