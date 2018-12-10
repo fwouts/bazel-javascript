@@ -217,6 +217,10 @@ def _library_to_source_info(js, library, gen_scripts = None):
     """Create a JsSource provider for a given library
     The library is a target, but this resolves the actual source files needed
     to build the js library.
+
+    The gen_scripts is a list of js files that export a single function whose output
+    generates a list of files:
+    modules.exports = async ({ package, into, inputs})
     """
 
     return JsSourceInfo(
@@ -241,7 +245,6 @@ def _script_args(js):
 
     Args:
     js: JsContext object
-    script_file: File object for the script to be run
     """
     args = js.actions.args()
 
