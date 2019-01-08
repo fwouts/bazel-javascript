@@ -6,6 +6,7 @@ local_repository(
   path = "../..",
 )
 
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 # git_repository(
 #     name = "bazel_javascript",
 #     remote = "https://github.com/zenclabs/bazel-javascript.git",

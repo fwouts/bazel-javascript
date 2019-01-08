@@ -30,6 +30,8 @@ First, install [Bazel](https://docs.bazel.build/versions/master/install.html) an
 Next, create a `WORKSPACE` file in your project root containing:
 
 ```python
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+
 # Required for access to js_library, ts_library, js_test, web_bundle, etc.
 git_repository(
   name = "bazel_javascript",
