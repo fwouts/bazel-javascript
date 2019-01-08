@@ -166,7 +166,7 @@ server.listen(port, 'localhost', function (err) {{
             internal_packages_dir = ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.short_path,
             # Template index.html for Webpack.
             html_template = ctx.file.html_template.short_path if ctx.file.html_template else "",
-            dev_server_options = ctx.attr.lib[JsLibraryInfo].compiled_javascript_dir.short_path + "/" + ctx.file.dev_server_options.short_path,
+            dev_server_options = ctx.file.dev_server_options.short_path,
         ),
     )
     ctx.actions.write(
@@ -180,6 +180,7 @@ server.listen(port, 'localhost', function (err) {{
             executable = ctx.outputs.devserver,
             runfiles = ctx.runfiles(
                 files = [
+                    ctx.file.dev_server_options,
                     ctx.file._internal_nodejs,
                     ctx.file._web_bundle_compile_script,
                     webpack_devserver_js,
