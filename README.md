@@ -163,6 +163,7 @@ js_library(
 ```
 
 Run and build the binary:
+
 ```sh
 $ bazel run //:app John
 INFO: Analysed target //:app (0 packages loaded).
