@@ -36,7 +36,7 @@ load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 git_repository(
   name = "bazel_javascript",
   remote = "https://github.com/zenclabs/bazel-javascript.git",
-  tag = "0.0.26",
+  tag = "0.0.27",
 )
 
 # Required for underlying dependencies such as Node and Yarn.
