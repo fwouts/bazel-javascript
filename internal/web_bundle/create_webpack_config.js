@@ -121,7 +121,11 @@ module.exports = (
             {
               test: /\\.module\\.css$/,
               use: [
-                "style-loader",
+                ${
+                  mode === "production"
+                    ? "MiniCssExtractPlugin.loader"
+                    : '"style-loader"'
+                },
                 {
                   loader: "css-loader",
                   options: {
@@ -134,7 +138,11 @@ module.exports = (
             {
               test: /\\.css$/,
               use: [
-                "style-loader",
+                ${
+                  mode === "production"
+                    ? "MiniCssExtractPlugin.loader"
+                    : '"style-loader"'
+                },
                 "css-loader"
               ]
             },
@@ -206,8 +214,8 @@ module.exports = (
       ${
         mode === "production"
           ? `new MiniCssExtractPlugin({
-        filename: 'static/css/[name].[contenthash:8].css',
-        chunkFilename: 'static/css/[name].[contenthash:8].chunk.css',
+        filename: '[name].[contenthash].css',
+        chunkFilename: '[name].[contenthash].chunk.css',
       }),`
           : ""
       }
