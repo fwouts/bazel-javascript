@@ -1,6 +1,5 @@
-load("//internal/js_library:rule.bzl", "JsLibraryInfo")
-load("//internal/js_module:rule.bzl", "JsModuleInfo")
 load("//internal/npm_packages:rule.bzl", "NpmPackagesInfo")
+load("//internal/common:context.bzl", "JsLibraryInfo", "JsModuleInfo", "JS_LIBRARY_ATTRIBUTES", "js_context")
 
 def _web_bundle_impl(ctx):
     webpack_config = _create_webpack_config(ctx)

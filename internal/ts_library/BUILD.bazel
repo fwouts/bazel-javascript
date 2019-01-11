@@ -6,4 +6,5 @@ exports_files([
     "default_tsconfig.json",
     "rule.bzl",
     "transpile.js",
+    "tsconfig.gen.js",
 ])

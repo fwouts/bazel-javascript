@@ -1,7 +1,12 @@
-load("//internal/js_library:rule.bzl", "JsLibraryInfo")
 load("//internal/npm_packages:rule.bzl", "NpmPackagesInfo")
+load("//internal/common:context.bzl", "JsLibraryInfo", "JS_LIBRARY_ATTRIBUTES", "js_context")
 
 def _js_binary_impl(ctx):
+    js = js_context(ctx)
+    providers = []
+
+    compile_args = js.script_args(js)
+
     ctx.actions.run(
         inputs = [
             ctx.file._js_binary_compile_script,

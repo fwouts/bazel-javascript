@@ -1,4 +1,5 @@
-load("//internal/js_library:rule.bzl", "JsLibraryInfo", "js_library")
+load("//internal/common:context.bzl", "JsLibraryInfo", "JsModuleInfo")
+load("//internal/js_library:rule.bzl",  "js_library")
 load("//internal/ts_library:rule.bzl", "ts_library")
 load("//internal/js_module:rule.bzl", "js_module")
 load("//internal/js_binary:rule.bzl", "js_binary")

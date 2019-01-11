@@ -1,6 +1,6 @@
 import * as Koa from "koa";
 import * as sass from "node-sass";
-import { greet } from "../../../libs/shared-package/greeter";
+import { greet } from "shared-package/greeter";
 
 const app = new Koa();
 
