@@ -136,6 +136,25 @@ module.exports = (
               ]
             },
             {
+              test: /\\.module\\.scss$/,
+              use: [
+                ${
+                  mode === "production"
+                    ? "MiniCssExtractPlugin.loader"
+                    : '"style-loader"'
+                },
+                {
+                  loader: "css-loader",
+                  options: {
+                    importLoaders: 1,
+                    modules: true,
+                    camelCase: true
+                  }
+                },
+                "sass-loader"
+              ]
+            },
+            {
               test: /\\.css$/,
               use: [
                 ${
@@ -144,6 +163,23 @@ module.exports = (
                     : '"style-loader"'
                 },
                 "css-loader"
+              ]
+            },
+            {
+              test: /\\.scss$/,
+              use: [
+                ${
+                  mode === "production"
+                    ? "MiniCssExtractPlugin.loader"
+                    : '"style-loader"'
+                },
+                {
+                  loader: "css-loader",
+                  options: {
+                    importLoaders: 1,
+                  }
+                },
+                "sass-loader"
               ]
             },
             {
