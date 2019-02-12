@@ -207,6 +207,9 @@ def _strip_buildfile(path):
 def _create_webpack_config(ctx):
     webpack_config = ctx.actions.declare_file(ctx.label.name + ".webpack.config.js")
 
+    mode_arg = ctx.attr.mode
+    mode_arg = ctx.expand_make_variables("mode", mode_arg, {})
+
     # Create the Webpack config file.
     ctx.actions.run(
         inputs = [
@@ -232,7 +235,7 @@ def _create_webpack_config(ctx):
             # Output file name (e.g. "bundle.js").
             ctx.attr.output,
             # Mode for Webpack.
-            ctx.attr.mode,
+            mode_arg,
             # Library for Webpack (optional).
             ctx.attr.library_name + "/" + ctx.attr.library_target if ctx.attr.library_name else "",
             # Enable split chunks or not.
@@ -263,11 +266,6 @@ _ATTRS = {
         default = "bundle.js",
     ),
     "mode": attr.string(
-        values = [
-            "none",
-            "development",
-            "production",
-        ],
         default = "none",
     ),
     "split_chunks": attr.bool(
