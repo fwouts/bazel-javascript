@@ -52,6 +52,9 @@ module.exports = (
   const OptimizeCSSAssetsPlugin = require(path.resolve(\`\${loadersNpmPackagesDir}/node_modules/optimize-css-assets-webpack-plugin\`));
   const UglifyJsPlugin = require(path.resolve(\`\${loadersNpmPackagesDir}/node_modules/uglifyjs-webpack-plugin\`));
 
+  const base = path.join(process.cwd(), sourceDir)
+  const gendir = path.join(base, process.env["GENDIR"], '..', 'bin')
+
   return {
     entry: (sourceDir.startsWith("/") ? "" : "./") + path.join(
       sourceDir,
@@ -63,20 +66,20 @@ module.exports = (
       path: path.resolve(outputBundleDir),
       publicPath: "${publicPath}",
       ${
-        optionalLibrary
-          ? `library: "${libraryName}",
+  optionalLibrary
+    ? `library: "${libraryName}",
       libraryTarget: "${libraryTarget}",
       `
-          : ""
-      }
+    : ""
+  }
     },
     mode: "${mode}",
     bail: ${mode === "production" ? "true" : "false"},
     target: "web",
     optimization: {
       ${
-        mode === "production"
-          ? `minimizer: [
+  mode === "production"
+    ? `minimizer: [
         new UglifyJsPlugin({
           uglifyOptions: {
             parse: {
@@ -102,17 +105,17 @@ module.exports = (
         }),
         new OptimizeCSSAssetsPlugin(),
       ],`
-          : ""
-      }
+    : ""
+  }
       ${
-        splitChunks
-          ? `splitChunks: {
+  splitChunks
+    ? `splitChunks: {
         chunks: 'all',
         name: 'vendors',
       },
       runtimeChunk: true,`
-          : ""
-      }
+    : ""
+  }
     },
     module: {
       rules: [
@@ -122,10 +125,10 @@ module.exports = (
               test: /\\.module\\.css$/,
               use: [
                 ${
-                  mode === "production"
-                    ? "MiniCssExtractPlugin.loader"
-                    : '"style-loader"'
-                },
+  mode === "production"
+    ? "MiniCssExtractPlugin.loader"
+    : '"style-loader"'
+  },
                 {
                   loader: "css-loader",
                   options: {
@@ -139,10 +142,10 @@ module.exports = (
               test: /\\.module\\.scss$/,
               use: [
                 ${
-                  mode === "production"
-                    ? "MiniCssExtractPlugin.loader"
-                    : '"style-loader"'
-                },
+  mode === "production"
+    ? "MiniCssExtractPlugin.loader"
+    : '"style-loader"'
+  },
                 {
                   loader: "css-loader",
                   options: {
@@ -158,10 +161,10 @@ module.exports = (
               test: /\\.css$/,
               use: [
                 ${
-                  mode === "production"
-                    ? "MiniCssExtractPlugin.loader"
-                    : '"style-loader"'
-                },
+  mode === "production"
+    ? "MiniCssExtractPlugin.loader"
+    : '"style-loader"'
+  },
                 "css-loader"
               ]
             },
@@ -169,10 +172,10 @@ module.exports = (
               test: /\\.scss$/,
               use: [
                 ${
-                  mode === "production"
-                    ? "MiniCssExtractPlugin.loader"
-                    : '"style-loader"'
-                },
+  mode === "production"
+    ? "MiniCssExtractPlugin.loader"
+    : '"style-loader"'
+  },
                 {
                   loader: "css-loader",
                   options: {
@@ -211,7 +214,9 @@ module.exports = (
       modules: [
         path.join(installedNpmPackagesDir, "node_modules"),
         // Necessary for webpack-hot-client with the dev server.
-        path.join(loadersNpmPackagesDir, "node_modules")
+        path.join(loadersNpmPackagesDir, "node_modules"),
+        base,
+        gendir,
       ]
     },
     resolveLoader: {
@@ -225,8 +230,8 @@ module.exports = (
           template: htmlTemplatePath,
           inject: true,
           ${
-            mode === "production"
-              ? `minify: {
+  mode === "production"
+    ? `minify: {
             removeComments: true,
             collapseWhitespace: true,
             removeRedundantAttributes: true,
@@ -238,8 +243,8 @@ module.exports = (
             minifyCSS: true,
             minifyURLs: true,
           }`
-              : ""
-          }
+    : ""
+  }
         })]
         : []
       ),
@@ -248,21 +253,21 @@ module.exports = (
         NODE_ENV: "${mode}",
       }),
       ${
-        mode === "production"
-          ? `new MiniCssExtractPlugin({
+  mode === "production"
+    ? `new MiniCssExtractPlugin({
         filename: '[name].[contenthash].css',
         chunkFilename: '[name].[contenthash].chunk.css',
       }),`
-          : ""
-      }
+    : ""
+  }
       ${
-        // Chunk splitting is enabled by default.
-        splitChunks
-          ? `new webpack.optimize.LimitChunkCountPlugin({
+  // Chunk splitting is enabled by default.
+  splitChunks
+    ? `new webpack.optimize.LimitChunkCountPlugin({
         maxChunks: 1
       }),`
-          : ""
-      }
+    : ""
+  }
     ]
   };
 }

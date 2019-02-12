@@ -23,6 +23,7 @@ def _web_bundle_impl(ctx):
         executable = ctx.file._internal_nodejs,
         env = {
             "NODE_PATH": ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules",
+            "GENDIR": ctx.var["GENDIR"],
         },
         arguments = [
             # Run `node web_bundle/compile.js`.
