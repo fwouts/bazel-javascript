@@ -5,14 +5,14 @@
 version: 2
 job_configuration: &job_configuration
   docker:
-    - image: circleci/node:8.11.3
+    - image: circleci/node
   working_directory: ~/repo
 install_bazel: &install_bazel
   run:
     name: Install Bazel
     command: |
       sudo apt-get install pkg-config zip g++ zlib1g-dev unzip python
-      BAZEL_VERSION=0.21.0
+      BAZEL_VERSION=0.22.0
       BAZEL_INSTALL_SCRIPT=bazel-$BAZEL_VERSION-installer-linux-x86_64.sh
       wget https://github.com/bazelbuild/bazel/releases/download/$BAZEL_VERSION/$BAZEL_INSTALL_SCRIPT
       chmod +x $BAZEL_INSTALL_SCRIPT
@@ -70,7 +70,7 @@ jobs:
             bazel build ...
   buildifier-check:
     docker:
-      - image: circleci/golang:1.9
+      - image: circleci/golang
     working_directory: ~/repo
     steps:
       - checkout
