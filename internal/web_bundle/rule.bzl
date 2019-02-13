@@ -225,6 +225,7 @@ def _create_webpack_config(ctx):
         executable = ctx.file._internal_nodejs,
         env = {
             "NODE_PATH": ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules",
+            "GENDIR": ctx.var["GENDIR"],
         },
         arguments = [
             # Run `node web_bundle/create_webpack_config.js`.
@@ -245,6 +246,11 @@ def _create_webpack_config(ctx):
             ctx.attr.public_path,
             # Path where to create the Webpack config.
             webpack_config.path,
+            # Externals definitions
+            ("|".join([
+                key + ":" + value
+                for key, value in ctx.attr.externals.items()
+            ])),
         ],
     )
 
@@ -260,6 +266,7 @@ _ATTRS = {
         providers = [JsModuleInfo],
     ),
     "env": attr.string_dict(),
+    "externals": attr.string_dict(),
     "entry": attr.string(
         mandatory = True,
     ),

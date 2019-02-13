@@ -11,8 +11,22 @@ const [
   optionalLibrary,
   splitChunksStr,
   publicPath,
-  webpackConfigPath
+  webpackConfigPath,
+  joinedExternals
 ] = process.argv;
+
+const externals = joinedExternals
+  .split("|")
+  .map(extTuple => extTuple.split(":", 2))
+  .reduce((exts, [k, v]) => {
+    if (k == "") {
+      return exts;
+    }
+
+    exts.push(`"${k}": "${v}"`);
+    return exts;
+  }, [])
+  .join(",");
 
 const [libraryName, libraryTarget] = optionalLibrary.split("/");
 const splitChunks = splitChunksStr === "1";
@@ -73,6 +87,7 @@ module.exports = (
           : ""
       }
     },
+    externals: {${externals}},
     mode: "${mode}",
     bail: ${mode === "production" ? "true" : "false"},
     target: "web",
