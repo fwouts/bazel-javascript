@@ -52,6 +52,8 @@ def _js_script_impl(ctx):
             ctx.attr.lib[JsLibraryInfo].build_file_path,
             # Path to generate the shell script.
             ctx.outputs.executable_file.path,
+            # Path to yarn
+            ctx.file._internal_yarn.path,
         ],
     )
     return [
@@ -59,6 +61,8 @@ def _js_script_impl(ctx):
             executable = ctx.outputs.executable_file,
             runfiles = ctx.runfiles(
                 files = [
+                    ctx.file._internal_yarn,
+                    ctx.file._internal_nodejs,
                     ctx.attr.lib[JsLibraryInfo].npm_packages_installed_dir,
                     ctx.outputs.compiled_dir,
                 ],
@@ -76,6 +80,11 @@ js_script = rule(
             allow_files = True,
             single_file = True,
             default = Label("@nodejs//:node"),
+        ),
+        "_internal_yarn": attr.label(
+            allow_files = True,
+            single_file = True,
+            default = Label("@nodejs//:bin/yarn"),
         ),
         "_internal_packages": attr.label(
             default = Label("//internal:packages"),
@@ -109,6 +118,11 @@ js_test = rule(
             allow_files = True,
             single_file = True,
             default = Label("@nodejs//:node"),
+        ),
+        "_internal_yarn": attr.label(
+            allow_files = True,
+            single_file = True,
+            default = Label("@nodejs//:bin/yarn"),
         ),
         "_internal_packages": attr.label(
             default = Label("//internal:packages"),

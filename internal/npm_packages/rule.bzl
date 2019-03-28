@@ -11,6 +11,9 @@ def _npm_packages_impl(ctx):
         ],
         outputs = [ctx.outputs.installed_dir],
         executable = ctx.file._internal_nodejs,
+        tools = depset(
+            items = [ctx.file._internal_yarn],
+        ),
         arguments = [
             # Run `node npm_packages/install.js`.
             ctx.file._npm_packages_install.path,
@@ -20,6 +23,8 @@ def _npm_packages_impl(ctx):
             ctx.file.yarn_lock.path,
             # Path to install into (node_modules/ will be created there).
             ctx.outputs.installed_dir.path,
+            # Path to yarn
+            ctx.file._internal_yarn.path,
         ],
     )
     return [
@@ -39,6 +44,11 @@ npm_packages = rule(
             allow_files = True,
             single_file = True,
             mandatory = True,
+        ),
+        "_internal_yarn": attr.label(
+            allow_files = True,
+            single_file = True,
+            default = Label("@nodejs//:bin/yarn"),
         ),
         "_internal_nodejs": attr.label(
             allow_files = True,

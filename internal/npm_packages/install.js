@@ -12,7 +12,8 @@ const [
   scriptPath,
   packageJsonPath,
   yarnLockPath,
-  destinationDir
+  destinationDir,
+  yarnPath
 ] = process.argv;
 
 // Create the destination directory and copy package.json and yarn.lock.
@@ -27,4 +28,4 @@ fs.writeFileSync(
 );
 
 // Run `yarn`, which will install packages from NPM into node_modules/.
-runYarn(destinationDir);
+runYarn(yarnPath, destinationDir);

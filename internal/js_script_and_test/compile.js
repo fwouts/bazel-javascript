@@ -14,7 +14,8 @@ const [
   destinationDir,
   destinationDirShort,
   libBuildfilePath,
-  executablePath
+  executablePath,
+  yarnPath
 ] = process.argv;
 
 fs.copySync(sourceDir, destinationDir);
@@ -49,7 +50,7 @@ export NODE_PATH=${path.relative(
   )}/node_modules
 export GENDIR=${process.env.GENDIR}
 export LIB_DIR=${path.dirname(libBuildfilePath)}
-${yarnShellCommand(destinationDirShort, "start")}
+${yarnShellCommand(yarnPath, destinationDirShort, "start")}
 `,
   "utf8"
 );
