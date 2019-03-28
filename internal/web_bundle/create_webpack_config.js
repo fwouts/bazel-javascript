@@ -11,8 +11,22 @@ const [
   optionalLibrary,
   splitChunksStr,
   publicPath,
-  webpackConfigPath
+  webpackConfigPath,
+  joinedExternals
 ] = process.argv;
+
+const externals = joinedExternals
+  .split("|")
+  .map(extTuple => extTuple.split(":", 2))
+  .reduce((exts, [k, v]) => {
+    if (k == "") {
+      return exts;
+    }
+
+    exts.push(`"${k}": "${v}"`);
+    return exts;
+  }, [])
+  .join(",");
 
 const [libraryName, libraryTarget] = optionalLibrary.split("/");
 const splitChunks = splitChunksStr === "1";
@@ -52,6 +66,9 @@ module.exports = (
   const OptimizeCSSAssetsPlugin = require(path.resolve(\`\${loadersNpmPackagesDir}/node_modules/optimize-css-assets-webpack-plugin\`));
   const UglifyJsPlugin = require(path.resolve(\`\${loadersNpmPackagesDir}/node_modules/uglifyjs-webpack-plugin\`));
 
+  const base = path.join(process.cwd(), sourceDir)
+  const gendir = path.join(base, process.env["GENDIR"], '..', 'bin')
+
   return {
     entry: (sourceDir.startsWith("/") ? "" : "./") + path.join(
       sourceDir,
@@ -70,6 +87,7 @@ module.exports = (
           : ""
       }
     },
+    externals: {${externals}},
     mode: "${mode}",
     bail: ${mode === "production" ? "true" : "false"},
     target: "web",
@@ -211,7 +229,9 @@ module.exports = (
       modules: [
         path.join(installedNpmPackagesDir, "node_modules"),
         // Necessary for webpack-hot-client with the dev server.
-        path.join(loadersNpmPackagesDir, "node_modules")
+        path.join(loadersNpmPackagesDir, "node_modules"),
+        base,
+        gendir,
       ]
     },
     resolveLoader: {

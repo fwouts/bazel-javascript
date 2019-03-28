@@ -47,6 +47,7 @@ export NODE_PATH=${path.relative(
     destinationDirShort,
     installedNpmPackagesDirShort
   )}/node_modules
+export GENDIR=${process.env.GENDIR}
 export LIB_DIR=${path.dirname(libBuildfilePath)}
 ${yarnShellCommand(destinationDirShort, "start")}
 `,

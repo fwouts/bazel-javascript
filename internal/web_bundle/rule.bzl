@@ -23,6 +23,7 @@ def _web_bundle_impl(ctx):
         executable = ctx.file._internal_nodejs,
         env = {
             "NODE_PATH": ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules",
+            "GENDIR": ctx.var["GENDIR"],
         },
         arguments = [
             # Run `node web_bundle/compile.js`.
@@ -207,6 +208,9 @@ def _strip_buildfile(path):
 def _create_webpack_config(ctx):
     webpack_config = ctx.actions.declare_file(ctx.label.name + ".webpack.config.js")
 
+    mode_arg = ctx.attr.mode
+    mode_arg = ctx.expand_make_variables("mode", mode_arg, {})
+
     # Create the Webpack config file.
     ctx.actions.run(
         inputs = [
@@ -221,6 +225,7 @@ def _create_webpack_config(ctx):
         executable = ctx.file._internal_nodejs,
         env = {
             "NODE_PATH": ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.path + "/node_modules",
+            "GENDIR": ctx.var["GENDIR"],
         },
         arguments = [
             # Run `node web_bundle/create_webpack_config.js`.
@@ -232,7 +237,7 @@ def _create_webpack_config(ctx):
             # Output file name (e.g. "bundle.js").
             ctx.attr.output,
             # Mode for Webpack.
-            ctx.attr.mode,
+            mode_arg,
             # Library for Webpack (optional).
             ctx.attr.library_name + "/" + ctx.attr.library_target if ctx.attr.library_name else "",
             # Enable split chunks or not.
@@ -241,6 +246,11 @@ def _create_webpack_config(ctx):
             ctx.attr.public_path,
             # Path where to create the Webpack config.
             webpack_config.path,
+            # Externals definitions
+            ("|".join([
+                key + ":" + value
+                for key, value in ctx.attr.externals.items()
+            ])),
         ],
     )
 
@@ -256,6 +266,7 @@ _ATTRS = {
         providers = [JsModuleInfo],
     ),
     "env": attr.string_dict(),
+    "externals": attr.string_dict(),
     "entry": attr.string(
         mandatory = True,
     ),
@@ -263,11 +274,6 @@ _ATTRS = {
         default = "bundle.js",
     ),
     "mode": attr.string(
-        values = [
-            "none",
-            "development",
-            "production",
-        ],
         default = "none",
     ),
     "split_chunks": attr.bool(
