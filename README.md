@@ -2,7 +2,7 @@
 
 [![CircleCI](https://circleci.com/gh/zenclabs/bazel-javascript/tree/master.svg?style=svg)](https://circleci.com/gh/zenclabs/bazel-javascript/tree/master)
 
-Consider this beta software. Feel free to report issues and propose improvements!
+# ⚠️ Looking for new maintainers
 
 ## Rules
 
