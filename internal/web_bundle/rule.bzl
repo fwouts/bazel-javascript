@@ -173,7 +173,7 @@ server.listen(port, 'localhost', function (err) {{
     ctx.actions.write(
         output = ctx.outputs.devserver,
         is_executable = True,
-        content = "NODE_PATH=" + ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.short_path + "/node_modules " + ctx.file._internal_nodejs.path + " " + webpack_devserver_js.short_path,
+        content = "GENDIR=" + ctx.var["GENDIR"] + " NODE_PATH=" + ctx.attr._internal_packages[NpmPackagesInfo].installed_dir.short_path + "/node_modules " + ctx.file._internal_nodejs.path + " " + webpack_devserver_js.short_path,
     )
 
     return [
