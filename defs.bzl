@@ -1,8 +1,31 @@
-load("//internal/js_library:rule.bzl", "JsLibraryInfo", "js_library")
-load("//internal/ts_library:rule.bzl", "ts_library")
-load("//internal/js_module:rule.bzl", "js_module")
-load("//internal/js_binary:rule.bzl", "js_binary")
-load("//internal/web_bundle:rule.bzl", "web_bundle")
-load("//internal/js_script_and_test:rule.bzl", "js_script", "js_test")
-load("//internal/npm_packages:rule.bzl", "NpmPackagesInfo", "npm_packages")
-load("//internal/npm_binary:rule.bzl", "npm_binary")
+load("//internal/js_binary:rule.bzl", _js_binary = "js_binary")
+load(
+    "//internal/js_library:rule.bzl",
+    _JsLibraryInfo = "JsLibraryInfo",
+    _js_library = "js_library",
+)
+load("//internal/js_module:rule.bzl", _js_module = "js_module")
+load(
+    "//internal/js_script_and_test:rule.bzl",
+    _js_script = "js_script",
+    _js_test = "js_test",
+)
+load("//internal/npm_binary:rule.bzl", _npm_binary = "npm_binary")
+load("//internal/ts_library:rule.bzl", _ts_library = "ts_library")
+load("//internal/web_bundle:rule.bzl", _web_bundle = "web_bundle")
+load(
+    "//internal/npm_packages:rule.bzl",
+    _NpmPackagesInfo = "NpmPackagesInfo",
+    _npm_packages = "npm_packages",
+)
+
+js_binary = _js_binary
+js_library = _js_library
+js_module = _js_module
+js_script = _js_script
+js_test = _js_test
+JsLibraryInfo = _JsLibraryInfo
+npm_binary = _npm_binary
+npm_packages = _npm_packages
+NpmPackagesInfo = _NpmPackagesInfo
+web_bundle = _web_bundle
