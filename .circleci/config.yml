@@ -81,7 +81,7 @@ jobs:
       - run:
           name: Buildifier check
           command: |
-            buildifier -showlog -mode=check $(find . -type f \( -iname BUILD -or -iname BUILD.bazel -or -iname "*.bzl" \))
+            buildifier -mode=check $(find . -type f \( -iname BUILD -or -iname BUILD.bazel -or -iname "*.bzl" \))
   prettier-check:
     <<: *job_configuration
     steps:
