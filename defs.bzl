@@ -28,4 +28,5 @@ JsLibraryInfo = _JsLibraryInfo
 npm_binary = _npm_binary
 npm_packages = _npm_packages
 NpmPackagesInfo = _NpmPackagesInfo
+ts_library = _ts_library
 web_bundle = _web_bundle
