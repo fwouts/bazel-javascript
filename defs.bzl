@@ -1,8 +1,8 @@
 load("//internal/js_binary:rule.bzl", _js_binary = "js_binary")
 load(
     "//internal/js_library:rule.bzl",
-    _JsLibraryInfo = "JsLibraryInfo",
     _js_library = "js_library",
+    _JsLibraryInfo = "JsLibraryInfo",
 )
 load("//internal/js_module:rule.bzl", _js_module = "js_module")
 load(
@@ -15,8 +15,8 @@ load("//internal/ts_library:rule.bzl", _ts_library = "ts_library")
 load("//internal/web_bundle:rule.bzl", _web_bundle = "web_bundle")
 load(
     "//internal/npm_packages:rule.bzl",
-    _NpmPackagesInfo = "NpmPackagesInfo",
     _npm_packages = "npm_packages",
+    _NpmPackagesInfo = "NpmPackagesInfo",
 )
 
 js_binary = _js_binary
