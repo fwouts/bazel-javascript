@@ -11,13 +11,13 @@ load(
     _js_test = "js_test",
 )
 load("//internal/npm_binary:rule.bzl", _npm_binary = "npm_binary")
-load("//internal/ts_library:rule.bzl", _ts_library = "ts_library")
-load("//internal/web_bundle:rule.bzl", _web_bundle = "web_bundle")
 load(
     "//internal/npm_packages:rule.bzl",
     _npm_packages = "npm_packages",
     _NpmPackagesInfo = "NpmPackagesInfo",
 )
+load("//internal/ts_library:rule.bzl", _ts_library = "ts_library")
+load("//internal/web_bundle:rule.bzl", _web_bundle = "web_bundle")
 
 js_binary = _js_binary
 js_library = _js_library
