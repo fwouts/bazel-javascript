@@ -77,21 +77,18 @@ js_script = rule(
             providers = [JsLibraryInfo],
         ),
         "_internal_nodejs": attr.label(
-            allow_files = True,
-            single_file = True,
+            allow_single_file = True,
             default = Label("@nodejs//:node"),
         ),
         "_internal_yarn": attr.label(
-            allow_files = True,
-            single_file = True,
+            allow_single_file = True,
             default = Label("@nodejs//:bin/yarn"),
         ),
         "_internal_packages": attr.label(
             default = Label("//internal:packages"),
         ),
         "_js_script_compile_script": attr.label(
-            allow_files = True,
-            single_file = True,
+            allow_single_file = True,
             default = Label("//internal/js_script_and_test:compile.js"),
         ),
     },
@@ -115,21 +112,18 @@ js_test = rule(
             mandatory = True,
         ),
         "_internal_nodejs": attr.label(
-            allow_files = True,
-            single_file = True,
+            allow_single_file = True,
             default = Label("@nodejs//:node"),
         ),
         "_internal_yarn": attr.label(
-            allow_files = True,
-            single_file = True,
+            allow_single_file = True,
             default = Label("@nodejs//:bin/yarn"),
         ),
         "_internal_packages": attr.label(
             default = Label("//internal:packages"),
         ),
         "_js_script_compile_script": attr.label(
-            allow_files = True,
-            single_file = True,
+            allow_single_file = True,
             default = Label("//internal/js_script_and_test:compile.js"),
         ),
     },

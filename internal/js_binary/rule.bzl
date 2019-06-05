@@ -57,16 +57,14 @@ js_binary = rule(
             default = "none",
         ),
         "_internal_nodejs": attr.label(
-            allow_files = True,
-            single_file = True,
+            allow_single_file = True,
             default = Label("@nodejs//:node"),
         ),
         "_internal_packages": attr.label(
             default = Label("//internal:packages"),
         ),
         "_js_binary_compile_script": attr.label(
-            allow_files = True,
-            single_file = True,
+            allow_single_file = True,
             default = Label("//internal/js_binary:compile.js"),
         ),
     },

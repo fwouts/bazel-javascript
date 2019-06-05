@@ -1,7 +1,6 @@
 package(default_visibility = ["//visibility:public"])
 
-load("//:defs.bzl", "js_binary")
-load("//:defs.bzl", "ts_library")
+load("//:defs.bzl", "js_binary", "ts_library")
 
 js_binary(
     name = "app",

@@ -1,7 +1,6 @@
 package(default_visibility = ["//visibility:public"])
 
-load("//:defs.bzl", "js_test")
-load("//:defs.bzl", "ts_library")
+load("//:defs.bzl", "js_test", "ts_library")
 
 ts_library(
     name = "sum",

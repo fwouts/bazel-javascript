@@ -283,8 +283,7 @@ _ATTRS = {
         default = "/",
     ),
     "html_template": attr.label(
-        allow_files = True,
-        single_file = True,
+        allow_single_file = True,
     ),
     "library_name": attr.string(),
     "library_target": attr.string(
@@ -303,26 +302,22 @@ _ATTRS = {
         default = "umd",
     ),
     "dev_server_options": attr.label(
-        allow_files = True,
-        single_file = True,
+        allow_single_file = True,
         default = Label("//internal/web_bundle:dev_server_options.js"),
     ),
     "_internal_nodejs": attr.label(
-        allow_files = True,
-        single_file = True,
+        allow_single_file = True,
         default = Label("@nodejs//:node"),
     ),
     "_internal_packages": attr.label(
         default = Label("//internal:packages"),
     ),
     "_web_bundle_compile_script": attr.label(
-        allow_files = True,
-        single_file = True,
+        allow_single_file = True,
         default = Label("//internal/web_bundle:compile.js"),
     ),
     "_web_bundle_create_webpack_config_script": attr.label(
-        allow_files = True,
-        single_file = True,
+        allow_single_file = True,
         default = Label("//internal/web_bundle:create_webpack_config.js"),
     ),
 }
