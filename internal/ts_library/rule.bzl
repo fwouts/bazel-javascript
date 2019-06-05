@@ -132,7 +132,7 @@ def _ts_library_create_full_src(ctx, internal_deps, npm_packages, output_dir, fo
             ctx.file.tsconfig,
         ] + [
             d[TsLibraryInfo].original_typescript_dir if for_compilation and TsLibraryInfo in d else d[JsLibraryInfo].compiled_javascript_dir
-            for d in internal_deps
+            for d in internal_deps.to_list()
         ] + ctx.files.srcs,
         outputs = [output_dir],
         executable = ctx.file._internal_nodejs,
@@ -158,7 +158,7 @@ def _ts_library_create_full_src(ctx, internal_deps, npm_packages, output_dir, fo
                 (
                     d[TsLibraryInfo].original_typescript_dir.path if for_compilation and TsLibraryInfo in d else d[JsLibraryInfo].compiled_javascript_dir.path
                 )
-                for d in internal_deps
+                for d in internal_deps.to_list()
             ])),
             # List of source files, which will be processed ("import" statements
             # automatically replaced) and copied into the new directory.
@@ -180,7 +180,7 @@ def _ts_library_compile(ctx, internal_deps, npm_packages):
             npm_packages[NpmPackagesInfo].installed_dir,
         ] + [
             d[TsLibraryInfo].original_typescript_dir if TsLibraryInfo in d else d[JsLibraryInfo].compiled_javascript_dir
-            for d in internal_deps
+            for d in internal_deps.to_list()
         ],
         outputs = [ctx.outputs.compiled_dir],
         executable = ctx.file._internal_nodejs,
@@ -207,7 +207,7 @@ def _ts_library_transpile(ctx, internal_deps, npm_packages):
             npm_packages[NpmPackagesInfo].installed_dir,
         ] + [
             d[JsLibraryInfo].compiled_javascript_dir
-            for d in internal_deps
+            for d in internal_deps.to_list()
         ],
         outputs = [ctx.outputs.transpiled_dir],
         executable = ctx.file._internal_nodejs,
