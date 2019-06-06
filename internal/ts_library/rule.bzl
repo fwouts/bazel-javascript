@@ -239,31 +239,26 @@ ts_library = rule(
             default = [],
         ),
         "tsconfig": attr.label(
-            allow_files = [".json"],
-            single_file = True,
+            allow_single_file = [".json"],
             default = Label("//internal/ts_library:default_tsconfig.json"),
         ),
         "_internal_nodejs": attr.label(
-            allow_files = True,
-            single_file = True,
+            allow_single_file = True,
             default = Label("@nodejs//:node"),
         ),
         "_internal_packages": attr.label(
             default = Label("//internal:packages"),
         ),
         "_ts_library_create_full_src_script": attr.label(
-            allow_files = True,
-            single_file = True,
+            allow_single_file = True,
             default = Label("//internal/ts_library:create_full_src.js"),
         ),
         "_ts_library_compile_script": attr.label(
-            allow_files = True,
-            single_file = True,
+            allow_single_file = True,
             default = Label("//internal/ts_library:compile.js"),
         ),
         "_ts_library_transpile_script": attr.label(
-            allow_files = True,
-            single_file = True,
+            allow_single_file = True,
             default = Label("//internal/ts_library:transpile.js"),
         ),
         "_empty_npm_packages": attr.label(

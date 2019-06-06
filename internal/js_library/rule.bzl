@@ -180,18 +180,15 @@ js_library = rule(
             default = Label("//internal:packages"),
         ),
         "_internal_nodejs": attr.label(
-            allow_files = True,
-            single_file = True,
+            allow_single_file = True,
             default = Label("@nodejs//:node"),
         ),
         "_js_library_create_full_src_script": attr.label(
-            allow_files = True,
-            single_file = True,
+            allow_single_file = True,
             default = Label("//internal/js_library:create_full_src.js"),
         ),
         "_js_library_compile_script": attr.label(
-            allow_files = True,
-            single_file = True,
+            allow_single_file = True,
             default = Label("//internal/js_library:compile.js"),
         ),
         "_empty_npm_packages": attr.label(

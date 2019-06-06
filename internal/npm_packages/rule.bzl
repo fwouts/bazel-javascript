@@ -36,28 +36,23 @@ def _npm_packages_impl(ctx):
 npm_packages = rule(
     attrs = {
         "package_json": attr.label(
-            allow_files = True,
-            single_file = True,
+            allow_single_file = True,
             mandatory = True,
         ),
         "yarn_lock": attr.label(
-            allow_files = True,
-            single_file = True,
+            allow_single_file = True,
             mandatory = True,
         ),
         "_internal_yarn": attr.label(
-            allow_files = True,
-            single_file = True,
+            allow_single_file = True,
             default = Label("@nodejs//:bin/yarn"),
         ),
         "_internal_nodejs": attr.label(
-            allow_files = True,
-            single_file = True,
+            allow_single_file = True,
             default = Label("@nodejs//:node"),
         ),
         "_npm_packages_install": attr.label(
-            allow_files = True,
-            single_file = True,
+            allow_single_file = True,
             default = Label("//internal/npm_packages:install.js"),
         ),
     },
