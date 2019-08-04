@@ -68,6 +68,7 @@ module.exports = (
 
   const base = path.join(process.cwd(), sourceDir)
   const gendir = path.join(base, process.env["GENDIR"], '..', 'bin')
+  const gendir2 = path.join(base, process.env["GENDIR"])
 
   return {
     entry: (sourceDir.startsWith("/") ? "" : "./") + path.join(
@@ -232,6 +233,7 @@ module.exports = (
         path.join(loadersNpmPackagesDir, "node_modules"),
         base,
         gendir,
+        gendir2,
       ]
     },
     resolveLoader: {
